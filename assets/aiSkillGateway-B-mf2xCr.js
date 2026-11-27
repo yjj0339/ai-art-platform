@@ -1,1 +1,0 @@
-import{b as a}from"./index-C3kucuBw.js";function i(t){return(t==null?void 0:t.data)||{}}async function r(t){const n=await a.get("/ai-skills",{params:{}});return i(n).skills||[]}async function o(t,n){const s=await a.post(`/ai-skills/${encodeURIComponent(t)}/runs`,{values:n});return i(s)}export{r as l,o as r};
