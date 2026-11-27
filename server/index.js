@@ -60,7 +60,7 @@ import {
   CREDIT_ABILITIES, CREDIT_MESSAGE_DEFAULTS,
 } from './credit-store.js'
 import { createEnrollmentCode, disableCampus, listOrganizationSetup, registerWithEnrollment, saveCampus, saveClass } from './organization-store.js'
-import { isDatabaseConfigured } from './db.js'
+import { isDatabaseConfigured, warnIfRowSecurityBypassed } from './db.js'
 import { listPromptLibrary, listAdminPromptLibrary, removePrompt, removePromptCategory, savePrompt, savePromptCategory } from './prompt-library-store.js'
 import { batchUpdateImageStyles, createImageStyleGroup, getImageStylePanelSettings, listAdminImageStyles, listImageStyleGroups, listStudentImageStyles, removeImageStyle, saveImageStylePanelSettings, removeImageStyleGroup, renameImageStyleGroup, reorderImageStyles, saveImageStyle, setImageStyleCoverRoot } from './image-style-store.js'
 import { isProviderCooling, isProviderFailure, providerHealthView, recordProviderFailure, recordProviderSuccess, resetProviderHealth } from './provider-health.js'
@@ -8682,6 +8682,7 @@ process.on('unhandledRejection', (reason) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`AI backend gateway running at http://127.0.0.1:${PORT}`)
+  warnIfRowSecurityBypassed().catch(() => {})
 })
 // 端口被占用时，Node 默认会让 error 事件无人接管 → 进程直接崩掉。
 // 表现就是启动日志只剩前端那一行「VITE ready」，看起来像"后端没启动 / 启动不了"。

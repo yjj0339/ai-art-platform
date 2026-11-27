@@ -30,10 +30,11 @@ async function adminAccess(client, admin) {
   }
 }
 
-function scopeClause(access, alias = 'u', startIndex = 2) {
+// column：账号、班级、权限组这些表用 campus_id 指向分部；分部表自己用主键 id。
+function scopeClause(access, alias = 'u', startIndex = 2, column = 'campus_id') {
   if (access.organizationWide) return { sql: '', values: [] }
   if (!access.campusIds.length) return { sql: ' AND FALSE', values: [] }
-  return { sql: ` AND ${alias}.campus_id = ANY($${startIndex}::text[])`, values: [access.campusIds] }
+  return { sql: ` AND ${alias}.${column} = ANY($${startIndex}::text[])`, values: [access.campusIds] }
 }
 
 async function assertCampusAccess(client, admin, campusId, { allowOrganization = false } = {}) {
@@ -162,7 +163,8 @@ export async function listAccounts(admin, filters = {}) {
 export async function listAccountOptions(admin) {
   return withTransaction(async (client) => {
     const access = await adminAccess(client, admin)
-    const scope = scopeClause(access, 'c', 2)
+    // 分部表没有 campus_id 列：以前按 c.campus_id 过滤，分部管理员一打开账号权限页就报 500
+    const scope = scopeClause(access, 'c', 2, 'id')
     const campuses = await client.query(
       `SELECT c.id, c.code, c.name FROM campuses c
        WHERE c.organization_id = $1 AND c.status = 'active'${scope.sql}

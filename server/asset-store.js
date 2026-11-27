@@ -96,9 +96,12 @@ export async function createOwnAssetFromBuffer(user, payload, dataDir) {
 
 export async function getAccessibleAsset(user, assetId, dataDir) {
   const result = await queryAsUser(user,
+    // 权限在 SQL 里明确再判一次，不能只靠数据库行级权限（RLS）：连接账号是超级用户 / BYPASSRLS 时 RLS 不生效，
+    // 本机和不少服务器都是这样连的。规则和 RLS 一样：本人；带这个班的讲师；管得到这个分部的管理员。
     `SELECT id, owner_user_id, original_name, mime_type, storage_key, byte_size
      FROM user_assets
      WHERE id = $1 AND organization_id = $2 AND deleted_at IS NULL
+       AND app_can_read_student(owner_user_id, organization_id, campus_id)
      LIMIT 1`,
     [assetId, user.organization.id],
   )

@@ -71,3 +71,12 @@ export async function closeDb() {
   if (pool) await pool.end()
   pool = undefined
 }
+
+/** 连接账号是超级用户或带 BYPASSRLS 时，数据库的行级权限（RLS）不生效：启动时提醒一次。代码里的权限判断不受影响。 */
+export async function warnIfRowSecurityBypassed() {
+  if (!isDatabaseConfigured()) return
+  const row = (await query('SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user')).rows[0]
+  if (row?.rolsuper || row?.rolbypassrls) {
+    console.warn('[config] 数据库连接账号是超级用户（或能绕过行级权限）：数据库这一层的按人隔离不生效，只靠代码里的权限判断。正式环境建议给后端单独建一个普通数据库账号。')
+  }
+}
