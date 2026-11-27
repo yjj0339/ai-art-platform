@@ -1171,18 +1171,12 @@ button.ax-stat { min-height: 0; }
 /* ==========================================================================
    页面专用：AI 用量与计费（AdminDashboard.vue 里 activeNav === 'creditBilling'）
    ========================================================================== */
-.billing-ability-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-.billing-ability {
-  display: grid;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--ax-line);
-  border-radius: var(--ax-radius);
-  background: var(--ax-surface-2);
-}
-.billing-ability > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.billing-ability-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; transition: opacity 0.15s ease; }
-.billing-ability.is-off .billing-ability-fields { opacity: 0.45; }
+/* 每类能力默认额度：紧凑表格（11-27 按客户要求从卡片改成表格） */
+.bl-ability-table td { vertical-align: middle; }
+.bl-ability-table .billing-num-input.is-sm { width: 120px; }
+.bl-ability-table .billing-num-input:has(input:disabled) { opacity: 0.45; }
+.bl-ability-table .billing-effect { color: var(--ax-muted); font-size: 12.5px; min-width: 200px; line-height: 1.5; }
+.bl-ability-table tr.is-off .ax-cell-main strong { color: var(--ax-muted); }
 .billing-num { display: grid; gap: 4px; min-width: 0; color: var(--ax-muted); font-size: 12px; }
 .billing-num-input {
   display: flex;

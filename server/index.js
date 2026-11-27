@@ -9,6 +9,7 @@ import { deflateSync } from 'node:zlib'
 import { ai3d } from 'tencentcloud-sdk-nodejs-ai3d'
 import { clearSessionCookie, getCurrentUser, loginWithPassword, logoutRequest, requireRole, sessionCookie } from './auth.js'
 import { isUnexpectedError, listAppErrors, opsOverview, recordAppError, resolveAppErrors, trackRequest } from './ops-store.js'
+import { listCreditLedgerLogs, listOperationLogs } from './log-store.js'
 import { createOwnDocument, deleteOwnDocument, getOwnDocument, getStudentDocument, listAccessibleStudents, listOwnDocuments, listStudentDocuments, updateOwnDocument } from './document-store.js'
 import { createOwnAsset, createOwnAssetFromBuffer, getAccessibleAsset } from './asset-store.js'
 import { readRemoteArtwork } from './artwork-image.js'
@@ -6432,6 +6433,13 @@ async function route(req, res) {
   if (req.method === 'POST' && url.pathname === '/api/admin/ops/errors/resolve') {
     return sendJson(res, 200, { ok: true, ...await resolveAppErrors(currentUser, await readJson(req, 64 * 1024, '请求内容过大。')) })
   }
+  // 后台「操作日志」：操作记录（audit_logs）和积分流水（credit_ledger），只读，见 server/log-store.js。
+  if (req.method === 'GET' && url.pathname === '/api/admin/logs/operations') {
+    return sendJson(res, 200, { ok: true, ...await listOperationLogs(currentUser, Object.fromEntries(url.searchParams)) })
+  }
+  if (req.method === 'GET' && url.pathname === '/api/admin/logs/credits') {
+    return sendJson(res, 200, { ok: true, ...await listCreditLedgerLogs(currentUser, Object.fromEntries(url.searchParams)) })
+  }
 
   if (req.method === 'GET' && url.pathname === '/api/prompt-library') {
     return sendJson(res, 200, { ok: true, ...await listPromptLibrary(currentUser, url.searchParams.get('edition') || '') })
@@ -7532,6 +7540,16 @@ async function route(req, res) {
       if (prepared.usageReserved) await releaseStudentSkillUsage(currentUser, prepared.skill).catch(() => {})
       return sendJson(res, 409, { ok: false, message: '这个风格刚刚更新过，请刷新页面再生成。' })
     }
+    // H5 报告按后台「AI 用量与计费 → H5 报告」收费：每天先用赠送份数，送完按每份积分扣；
+    // 积分不够直接 402（前端原样显示提示）。后台把 H5 报告停用 = 不收费。生成失败原路退回。
+    const reportBizId = `h5-canvas-${randomBytes(10).toString('hex')}`
+    let reportCharge = null
+    try {
+      reportCharge = await chargeAbility(currentUser, { ability: 'report_h5', count: 1, bizType: 'h5-report', bizId: reportBizId })
+    } catch (error) {
+      if (prepared.usageReserved) await releaseStudentSkillUsage(currentUser, prepared.skill).catch(() => {})
+      throw error
+    }
     try {
       const executed = await runImageSkillSteps(prepared, currentUser)
       // 和 /api/ai/image/generate 同一条规矩：上游给的是 24 小时临时签名链接，
@@ -7584,6 +7602,7 @@ async function route(req, res) {
         materialImages: executed.materialImages,
         executedNodes: executed.stepResults.length,
         nodeResults,
+        credits: { charged: reportCharge?.charged || 0, fromFree: reportCharge?.freeCovered || 0, balance: reportCharge?.balance ?? null },
         warnings: [
           ...(prepared.warnings || []),
           ...(prepared.materialItems.length ? [] : ['当前项目没有可用图片素材，工作流已按纯文字模式生成视觉结果。']),
@@ -7592,6 +7611,9 @@ async function route(req, res) {
       })
     } catch (error) {
       if (prepared.batchIndex === 0) await releaseStudentSkillUsage(currentUser, prepared.skill).catch(() => {})
+      if (reportCharge && !reportCharge.free) {
+        await refundAbility(currentUser, { ability: 'report_h5', bizType: 'h5-report', bizId: reportBizId, charge: reportCharge, reason: 'H5 报告生成失败自动退回' }).catch(() => {})
+      }
       throw error
     }
   }

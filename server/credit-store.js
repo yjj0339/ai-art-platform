@@ -69,7 +69,7 @@ function mapCodeRow(row) {
 // ---------- 基础：钱包 / 日额度 / 价目 ----------
 
 /**
- * 五类会计费的能力。
+ * 会计费的能力（2026-11-27 加了第六类「技能玩法」）。
  * ability 是稳定键（写进数据库和流水），label/unit 只影响后台和学生端怎么叫。
  * priceCode 指向 credit_prices 里的「能力兜底价」那一行。
  */
@@ -79,6 +79,9 @@ export const CREDIT_ABILITIES = [
   { ability: 'model3d', label: '3D 模型', unit: '个', priceCode: 'model3d', dailyFree: 1, credits: 20, sort: 30 },
   { ability: 'report_h5', label: 'H5 报告', unit: '份', priceCode: 'report_h5', dailyFree: 1, credits: 40, sort: 40 },
   { ability: 'ai_text', label: 'AI 文字', unit: '次', priceCode: 'ai_text', dailyFree: 5, credits: 2, sort: 50 },
+  // AI 伙伴用技能（SKILL.md）的那一轮对话按「技能玩法」计一次，代替这一轮的 AI 文字费用。
+  // 新机构默认「停用」= 不收费，和以前一样；后台「AI 用量与计费」里打开并填价格后才开始扣。
+  { ability: 'skill', label: '技能玩法', unit: '次', priceCode: 'skill_use', dailyFree: 5, credits: 2, sort: 45, defaultStatus: 'disabled' },
 ]
 
 export const CREDIT_ABILITY_MAP = new Map(CREDIT_ABILITIES.map((item) => [item.ability, item]))
@@ -124,12 +127,12 @@ export async function ensureAbilityPrices(client, organizationId) {
   for (const item of CREDIT_ABILITIES) {
     await client.query(
       `INSERT INTO credit_prices
-         (id, organization_id, code, label, credits, sort_order, ability, provider, model, daily_free)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'','',$8)
+         (id, organization_id, code, label, credits, sort_order, ability, provider, model, daily_free, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'','',$8,$9)
        ON CONFLICT (organization_id, code) DO NOTHING`,
       [
         `cp_${organizationId}_${item.priceCode}`, organizationId, item.priceCode,
-        item.label, item.credits, item.sort, item.ability, item.dailyFree,
+        item.label, item.credits, item.sort, item.ability, item.dailyFree, item.defaultStatus || 'enabled',
       ],
     )
   }
@@ -174,6 +177,17 @@ async function getPrice(client, organizationId, code) {
 async function resolveAbilityPrice(client, organizationId, { ability, provider = '', model = '' }) {
   const meta = CREDIT_ABILITY_MAP.get(normalizeAbility(ability))
   if (!meta) throw httpError('未知的计费能力。', 400)
+  // 后台把这一类能力「停用」= 这类不收费、不限次数（以前停用后会退回代码里的默认价照扣，开关等于没用）。
+  const abilityRow = await client.query(
+    `SELECT status FROM credit_prices
+     WHERE organization_id=$1 AND ability=$2 AND provider='' AND model=''
+     LIMIT 1`,
+    [organizationId, meta.ability],
+  )
+  const abilityStatus = abilityRow.rows[0]?.status || meta.defaultStatus || 'enabled'
+  if (abilityStatus === 'disabled') {
+    return { ability: meta.ability, label: meta.label, credits: 0, dailyFree: 0, matched: 'off', free: true }
+  }
   const modelKeys = []
   if (model) {
     if (provider) modelKeys.push({ provider, model })
@@ -249,7 +263,7 @@ export async function getSummary(user) {
     )
     const prices = await client.query(
       `SELECT code, label, credits, status, ability, provider, model, daily_free FROM credit_prices
-       WHERE organization_id = $1 AND status = 'enabled' ORDER BY sort_order`,
+       WHERE organization_id = $1 ORDER BY sort_order`,
       [organizationId],
     )
     const usage = await client.query(
@@ -258,11 +272,12 @@ export async function getSummary(user) {
       [organizationId, user.id],
     )
     const usageByAbility = new Map(usage.rows.map((row) => [row.ability, row]))
-    const priceRows = prices.rows.map(mapPriceRow)
+    const allPriceRows = prices.rows.map(mapPriceRow)
+    const priceRows = allPriceRows.filter((row) => row.status === 'enabled')
 
     // 每类能力的「今天白送几次、用了几次、用完扣多少」——学生端直接照着渲染进度条。
     const abilities = CREDIT_ABILITIES.map((meta) => {
-      const row = priceRows.find((r) => r.ability === meta.ability && !r.provider && !r.model)
+      const row = allPriceRows.find((r) => r.ability === meta.ability && !r.provider && !r.model)
       const used = usageByAbility.get(meta.ability)
       const freeTotal = used?.free_total ?? (row ? row.dailyFree : meta.dailyFree)
       const freeUsed = used?.free_used ?? 0
@@ -275,14 +290,14 @@ export async function getSummary(user) {
         freeUsed,
         freeRemaining: Math.max(0, freeTotal - freeUsed),
         paidCount: used?.paid_count ?? 0,
-        enabled: !row || row.status === 'enabled',
+        enabled: row ? row.status === 'enabled' : (meta.defaultStatus || 'enabled') === 'enabled',
       }
     })
 
     // 老的「60 积分/天」字段继续返回，避免已发布的前端页面直接白屏；
     // 数值改成五类赠送次数之和，语义变为「今天总共还有几次白送」。
-    const freeTotal = abilities.reduce((sum, item) => sum + item.dailyFree, 0)
-    const freeUsed = abilities.reduce((sum, item) => sum + item.freeUsed, 0)
+    const freeTotal = abilities.filter((item) => item.enabled).reduce((sum, item) => sum + item.dailyFree, 0)
+    const freeUsed = abilities.filter((item) => item.enabled).reduce((sum, item) => sum + item.freeUsed, 0)
 
     return {
       balance: wallet.balance,
@@ -811,7 +826,7 @@ export async function listPrices(admin) {
         priceCode: meta.priceCode,
         credits: row ? row.credits : meta.credits,
         dailyFree: row ? row.dailyFree : meta.dailyFree,
-        status: row ? row.status : 'enabled',
+        status: row ? row.status : (meta.defaultStatus || 'enabled'),
         priceId: row ? row.id : '',
       }
     })
@@ -986,6 +1001,15 @@ export async function previewCharge(user, { ability, provider = '', model = '', 
     const price = await resolveAbilityPrice(client, organizationId, { ability: meta.ability, provider, model })
     await ensureWallet(client, organizationId, user.id)
     const wallet = await readWallet(client, organizationId, user.id)
+    if (price.free) {
+      const settings = await readCreditSettings(client, organizationId)
+      return {
+        ability: meta.ability, label: meta.label, unit: meta.unit, quantity,
+        unitCredits: 0, priceMatched: 'off', free: true,
+        freeTotal: 0, freeUsed: 0, freeRemaining: 0, freeCovered: 0, paidCount: 0, cost: 0,
+        balance: wallet.balance, needConfirm: false, enough: true, shortfall: 0, messages: settings.messages,
+      }
+    }
     const usage = await client.query(
       `SELECT free_total, free_used FROM credit_usage_daily
        WHERE organization_id=$1 AND user_id=$2 AND usage_date=CURRENT_DATE AND ability=$3`,
@@ -1048,6 +1072,13 @@ export async function chargeAbility(user, { ability, provider = '', model = '', 
 
     const price = await resolveAbilityPrice(client, organizationId, { ability: meta.ability, provider, model })
     await ensureWallet(client, organizationId, user.id)
+    if (price.free) {
+      const wallet = await readWallet(client, organizationId, user.id)
+      return {
+        charged: 0, fromFree: 0, fromWallet: 0, balance: wallet.balance, paidCount: 0, freeCovered: 0,
+        ability: meta.ability, quantity, unitCredits: 0, alreadyCharged: false, free: true,
+      }
+    }
 
     // 固定加锁顺序：钱包 → 当日用量，避免两个标签页同时点生成死锁。
     const wallet = await client.query(

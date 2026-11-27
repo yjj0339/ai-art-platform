@@ -139,6 +139,7 @@
 
       <AdminRiskCenter v-else-if="activeNav === 'risk'" @changed="accountPermissionStore.loadAdminData(true)" />
       <AdminOpsCenter v-else-if="activeNav === 'ops'" />
+      <AdminLogsPanel v-else-if="activeNav === 'logs'" />
 
       <section v-else-if="activeNav === 'accounts'" class="ax-page account-page">
         <header class="ax-head">
@@ -1985,32 +1986,30 @@
           <div class="ax-card-head">
             <div>
               <h3>每类能力的默认额度</h3>
-              <p>「每天赠送」按次数记，不折成积分，当天没用完就作废；送完后按「用完每次扣」从积分余额里扣。改完点右上角「保存计费设置」。</p>
+              <p>「每天赠送」按次数记，不折成积分，当天没用完就作废；送完后按「用完每次扣」从积分余额里扣。<b>停用 = 这一类不收费、不限次数。</b>改完点右上角「保存计费设置」。</p>
             </div>
           </div>
-          <div v-if="billingAbilities.length" class="billing-ability-grid">
-            <article v-for="item in billingAbilities" :key="item.ability" class="billing-ability" :class="{ 'is-off': !item.enabled }">
-              <header>
-                <span class="ax-cell-main"><strong>{{ item.label }}</strong><small>按{{ item.unit }}计</small></span>
-                <label class="ax-switch">
-                  <input v-model="item.enabled" type="checkbox" :aria-label="`${item.label} 启用`" /><i></i>
-                  <span>{{ item.enabled ? '启用' : '停用' }}</span>
-                </label>
-              </header>
-              <div class="billing-ability-fields">
-                <label class="billing-num">
-                  <span>每天赠送</span>
-                  <span class="billing-num-input"><input v-model.number="item.dailyFree" type="number" min="0" step="1" /><em>次</em></span>
-                </label>
-                <label class="billing-num">
-                  <span>用完每次扣</span>
-                  <span class="billing-num-input"><input v-model.number="item.credits" type="number" min="0" step="1" /><em>积分 / {{ item.unit }}</em></span>
-                </label>
-              </div>
-            </article>
+          <div v-if="billingAbilities.length" class="ax-table-wrap">
+            <table class="ax-table bl-ability-table">
+              <thead><tr><th>能力</th><th>计费</th><th>每天赠送</th><th>用完每次扣</th><th>现在的效果</th></tr></thead>
+              <tbody>
+                <tr v-for="item in billingAbilities" :key="item.ability" :class="{ 'is-off': !item.enabled }">
+                  <td><span class="ax-cell-main"><strong>{{ item.label }}</strong><small>按{{ item.unit }}计</small></span></td>
+                  <td>
+                    <label class="ax-switch">
+                      <input v-model="item.enabled" type="checkbox" :aria-label="`${item.label} 启用计费`" /><i></i>
+                      <span>{{ item.enabled ? '收费' : '停用' }}</span>
+                    </label>
+                  </td>
+                  <td><span class="billing-num-input is-sm"><input v-model.number="item.dailyFree" type="number" min="0" step="1" :disabled="!item.enabled" :aria-label="`${item.label} 每天赠送几次`" /><em>次</em></span></td>
+                  <td><span class="billing-num-input is-sm"><input v-model.number="item.credits" type="number" min="0" step="1" :disabled="!item.enabled" :aria-label="`${item.label} 用完每次扣多少积分`" /><em>积分</em></span></td>
+                  <td class="billing-effect">{{ billingEffectText(item) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <div v-else class="ax-empty is-compact"><strong>{{ billingLoading ? '正在读取…' : '没有读到计费设置' }}</strong><span v-if="!billingLoading">点右上角「刷新」再试一次。</span></div>
-          <p class="ax-hint billing-example">例：出图每天送 8 张、用完每次扣 5 分，用户今天出第 9 张图时才扣 5 积分。一份 H5 报告内部要跑 6~8 张图，所以单价建议比出图高。</p>
+          <p class="ax-hint billing-example">例：出图每天送 8 张、用完每次扣 5 分，用户今天出第 9 张图时才扣 5 积分。一份 H5 报告内部要跑 6~8 张图，所以单价建议比出图高。「技能玩法」是 AI 伙伴用技能的那一轮对话，收费时这一轮只按技能扣、不再扣 AI 文字。</p>
         </section>
 
         <section class="ax-card is-flush">
@@ -2226,6 +2225,7 @@ import AdminAvatar from '../components/admin/AdminAvatar.vue'
 import { adminIcon } from '../components/admin/adminIcons.js'
 import AdminRiskCenter from '../components/AdminRiskCenter.vue'
 import AdminOpsCenter from '../components/AdminOpsCenter.vue'
+import AdminLogsPanel from '../components/AdminLogsPanel.vue'
 import AdminBanDialog from '../components/AdminBanDialog.vue'
 import '../styles/admin-theme.scss'
 import '../styles/admin-ui.scss'
@@ -2252,7 +2252,7 @@ const galleryAuditPanel = ref(null)
 const reportTemplateStore = useReportTemplateStore()
 const h5TemplateStore = useH5ReportTemplateStore()
 // 地址栏 ?module= 能直接打开的后台页面：刷新后还停在原来那页，也方便把某一页的链接发给别人。
-const ADDRESSABLE_ADMIN_MODULES = ['accounts', 'risk', 'ops', 'courses', 'api', 'creditBilling', 'agents', 'settings', 'promptLibrary', 'featureManagement', 'imageStyleTemplates', 'workbench', 'partner', 'audit', 'galleryCategories']
+const ADDRESSABLE_ADMIN_MODULES = ['accounts', 'risk', 'ops', 'courses', 'api', 'creditBilling', 'agents', 'settings', 'promptLibrary', 'featureManagement', 'imageStyleTemplates', 'workbench', 'partner', 'audit', 'galleryCategories', 'logs']
 const activeNav = ref(route.path === '/admin/h5-report-workflows'
   ? 'h5WorkflowLibrary'
   : route.path === '/admin/h5-reports' || route.query.module === 'h5ReportTemplates'
@@ -2272,6 +2272,7 @@ const billingError = ref('')
 const billingNotice = ref('')
 const billingLoaded = ref(false)
 const billingAbilities = ref([])
+const billingAgentFlags = ref(null)
 const billingModels = ref([])
 const billingModelsLoading = ref(false)
 const billingRawModelPrices = ref([])
@@ -2771,6 +2772,8 @@ const navItems = [
   // 异常管理：服务器出错和 AI 调用失败的记录（接口 /api/admin/ops/errors）。
   { id: 'ops', label: '异常管理', desc: '服务器出错和 AI 调用失败的记录，处理完标记已解决。', action: '刷新' },
   { id: 'settings', label: '系统设置', desc: '管理平台基础信息、主题与运行环境。', action: '保存设置' },
+  // 操作日志：登录、调积分、风控、配置改动等操作记录 + 积分流水（接口 /api/admin/logs/*，只读）。
+  { id: 'logs', label: '操作日志', desc: '谁在什么时候做了什么，以及每一笔积分的进出。', action: '刷新' },
 ]
 const currentNav = computed(() => navItems.find((item) => item.id === activeNav.value) || navItems[0])
 const adminDisplayName = computed(() => userStore.user?.name || userStore.user?.account || '管理员')
@@ -2792,7 +2795,7 @@ const NAV_SECTIONS = [
   { id: 'apps', label: '应用管理', icon: 'layers', items: ['featureManagement', 'imageStyleTemplates', 'promptLibrary', 'agents', 'partner', 'api'] },
   { id: 'trade', label: '交易管理', icon: 'coins', items: ['creditBilling'] },
   { id: 'risk', label: '风控管理', icon: 'shield', items: ['risk', 'audit'] },
-  { id: 'system', label: '系统管理', icon: 'settings', items: ['settings'] },
+  { id: 'system', label: '系统管理', icon: 'settings', items: ['settings', 'logs'] },
   { id: 'ops', label: '异常管理', icon: 'alert', items: ['ops'] },
 ]
 // 菜单图标：统一放在 src/components/admin/adminIcons.js（侧栏、数据大盘、设置页、API 配置共用一份）
@@ -8142,6 +8145,7 @@ const systemShortcuts = [
   { id: 'accounts', label: '账号权限', desc: '账号、分部班级、邀请码、积分码' },
   { id: 'workbench', label: '工作台管理', desc: '工作台封面、背景和品牌 LOGO' },
   { id: 'ops', label: '异常管理', desc: '服务器错误和 AI 调用失败记录' },
+  { id: 'logs', label: '操作日志', desc: '登录、调积分、封禁等操作和积分流水' },
 ]
 const aiModeLabel = computed(() => ({ api: '真实接口', mock: '演示数据（不调用模型）', auto: '自动（后端可用时走真实接口）' }[aiMode] || aiMode || '—'))
 const systemDefaultProviderLabel = computed(() => {
@@ -8217,6 +8221,17 @@ function creditExportUrl(type) {
 }
 
 // ── AI 用量与计费：读取 / 保存 ──────────────────────────────────────
+// 计费表「现在的效果」一列：一句话说清这类能力现在怎么收
+function billingEffectText(item) {
+  if (!item.enabled) return '不收费，不限次数'
+  const flags = billingAgentFlags.value
+  if (flags && item.ability === 'ai_text' && !flags.chargeTurns) return 'AI 伙伴聊天现在不扣（「AI 伙伴」里「聊天也扣积分」没开）'
+  const free = Number(item.dailyFree) || 0
+  const credits = Number(item.credits) || 0
+  if (!credits) return free ? `每天送 ${free} 次，之后也不扣分` : '不扣分'
+  return free ? `每天前 ${free} 次免费，之后每次扣 ${credits} 分` : `每次都扣 ${credits} 分`
+}
+
 function abilityLabel(ability) {
   const hit = billingAbilities.value.find((item) => item.ability === ability)
   if (hit?.label) return hit.label
@@ -8336,6 +8351,8 @@ async function loadCreditBilling() {
       billingMessageDefaults[field.key] = String(messages[field.key] ?? '')
     }
     await loadCreditBillingModels()
+    // AI 伙伴自己还有「聊天 / 出图 / 视频也扣积分」开关，读出来在表格里写清楚，免得以为填了价就在扣
+    billingAgentFlags.value = await apiClient.get('/admin/agent/config').then((r) => r.data?.config?.billing || null).catch(() => null)
     billingLoaded.value = true
   } catch (error) {
     billingError.value = error?.response?.data?.message || '计费设置读取失败，请确认后台服务已启动。'

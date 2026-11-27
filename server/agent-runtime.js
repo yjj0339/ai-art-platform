@@ -653,6 +653,7 @@ export function createAgentRuntime(deps) {
     let imageCap = Math.min(HARD_MAX_IMAGES, Math.max(config.maxImagesPerTurn, skillImageCap(activeSkill)))
     let finished = false
     let turnCharged = null
+    let skillCharged = null
     let outputBlocked = false
     let blockedOutput = ''
 
@@ -694,7 +695,15 @@ export function createAgentRuntime(deps) {
       const candidates = textCandidates(config)
       if (!candidates.length) throw httpError('还没有可用的文字模型：请管理员先在后台「功能管理 → API 配置」里填好文字模型的密钥，再到「AI 创作伙伴」里选择模型。', 503)
 
-      if (billable && config.billing.chargeTurns) {
+      // 技能计费（后台「AI 用量与计费 → 技能玩法」）：用了技能的这一轮按「技能玩法」计一次，
+      // 代替这一轮的 AI 文字费用；后台把技能玩法停用时 = 不收费，照旧走 AI 文字（默认也不收）。
+      // 用户一开始就选了技能：在这里先扣；聊到一半 AI 自己读技能（load_skill）：读的时候再扣。
+      // 同一轮只扣一次（bizId 用这条回复的 id，服务端按它去重）。
+      if (billable && activeSkill) {
+        skillCharged = await deps.chargeAbility(user, { ability: 'skill', count: 1, bizType: 'agent-skill', bizId: assistantId })
+        if (skillCharged?.charged) send('usage', { credits: skillCharged.charged, balance: skillCharged.balance })
+      }
+      if (billable && config.billing.chargeTurns && !(skillCharged && !skillCharged.free)) {
         turnCharged = await deps.chargeAbility(user, { ability: 'ai_text', count: 1, bizType: 'agent-turn', bizId: assistantId })
         if (turnCharged?.charged) send('usage', { credits: turnCharged.charged, balance: turnCharged.balance })
       }
@@ -736,6 +745,21 @@ export function createAgentRuntime(deps) {
         async load_skill(args, finish) {
           const skill = await getSkillForRuntime(user, args.name, { allowDraft })
           if (!skill) return finish('error', `没有找到技能「${cleanText(args.name, 30)}」`, { ok: false, error: '没有这个技能，请从可用技能列表里选择。' })
+          if (billable && !skillCharged) {
+            try {
+              skillCharged = await deps.chargeAbility(user, { ability: 'skill', count: 1, bizType: 'agent-skill', bizId: assistantId })
+            } catch (error) {
+              if (error?.statusCode === 402) return finish('error', '积分不足，暂时用不了这个技能', { ok: false, error: `${error.message}请告诉用户先不用技能，或者联系管理员充值。` })
+              throw error
+            }
+            if (skillCharged?.charged) send('usage', { credits: skillCharged.charged, balance: skillCharged.balance })
+            // 技能这一轮按技能计费：已经扣的 AI 文字费退回，避免一轮扣两次
+            if (!skillCharged?.free && turnCharged) {
+              const back = await deps.refundAbility(user, { ability: 'ai_text', bizType: 'agent-turn', bizId: assistantId, charge: turnCharged, reason: '本轮按技能玩法计费' }).catch(() => null)
+              if (back?.refunded) send('usage', { refunded: back.refunded, balance: back.balance })
+              turnCharged = null
+            }
+          }
           recordSkillUse(skill.id)
           pushSkill(skill)
           imageCap = Math.min(HARD_MAX_IMAGES, Math.max(imageCap, skillImageCap(skill)))
@@ -989,6 +1013,10 @@ export function createAgentRuntime(deps) {
         // 一个字都没回出来就失败：这一轮不算钱，免费次数也还回去。
         if (turnCharged && !content.trim() && !parts.some((part) => ['image', 'video'].includes(part.type))) {
           const back = await deps.refundAbility(user, { ability: 'ai_text', bizType: 'agent-turn', bizId: assistantId, charge: turnCharged }).catch(() => null)
+          if (back?.refunded) send('usage', { refunded: back.refunded, balance: back.balance })
+        }
+        if (skillCharged && !skillCharged.free && !content.trim() && !parts.some((part) => ['image', 'video'].includes(part.type))) {
+          const back = await deps.refundAbility(user, { ability: 'skill', bizType: 'agent-skill', bizId: assistantId, charge: skillCharged }).catch(() => null)
           if (back?.refunded) send('usage', { refunded: back.refunded, balance: back.balance })
         }
         parts.push({ type: 'error', message: cleanText(message, 200) })
