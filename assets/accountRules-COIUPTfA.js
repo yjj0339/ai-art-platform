@@ -1,0 +1,1 @@
+const e=/^[a-z0-9]+$/,r="账号需 3–20 位，只能用字母和数字（不要下划线、空格、中文）。";function o(t){return String(t??"").trim().toLowerCase()}function c(t){return String(t??"").toLowerCase().replace(/\s+/g,"").replace(/[^a-z0-9]/g,"")}function a(t){const n=o(t);return n?n.length<3||n.length>20||!e.test(n)?r:"":"登录账号不能为空。"}export{a,c as s};

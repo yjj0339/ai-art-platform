@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <rect width="1440" height="900" fill="#edf3f1"/>
+  <rect width="824" height="900" fill="#12343a"/>
+  <path d="M0 0H824V900H0Z" fill="#12343a"/>
+  <path d="M0 646C146 600 160 722 302 671C425 626 477 729 604 660C689 613 753 636 824 602V900H0Z" fill="#0d272d"/>
+  <circle cx="145" cy="124" r="132" fill="#3dced1"/>
+  <circle cx="145" cy="124" r="99" fill="#f3d36d"/>
+  <path d="M0 75C113 18 166 38 274 105C351 153 413 148 506 93C600 37 690 53 824 111V0H0Z" fill="#f16e65"/>
+  <path d="M0 102C115 54 182 78 271 139C344 189 432 185 521 127C612 69 698 79 824 137" fill="none" stroke="#f8f9f4" stroke-width="12"/>
+  <path d="M238 248C324 169 436 185 472 279C505 367 439 411 357 398C282 386 272 311 338 285C394 263 445 303 500 373" fill="none" stroke="#5be0d6" stroke-width="31" stroke-linecap="round"/>
+  <path d="M228 255C322 174 430 185 463 276C493 359 430 400 361 387C294 375 286 317 342 296" fill="none" stroke="#f7b35c" stroke-width="7" stroke-linecap="round"/>
+  <path d="M562 196L721 270L676 410L525 337Z" fill="#e7efed"/>
+  <path d="M583 216L698 269L667 369L550 316Z" fill="#1f5a63"/>
+  <path d="M590 252L659 284" stroke="#f6d56b" stroke-width="12" stroke-linecap="round"/>
+  <path d="M574 289L643 321" stroke="#f16e65" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="658" cy="513" r="68" fill="#f16e65"/>
+  <circle cx="700" cy="547" r="18" fill="#f6d56b"/>
+  <path d="M92 606C144 543 219 531 272 580C326 631 282 697 215 710C154 722 112 677 134 632C156 587 217 581 259 618" fill="none" stroke="#d8f1ed" stroke-width="22" stroke-linecap="round"/>
+  <path d="M334 572L389 513L460 566L424 632Z" fill="#f6d56b"/>
+  <path d="M353 573L390 533L439 568L415 600Z" fill="#f16e65"/>
+  <path d="M510 730C554 639 663 628 708 703" fill="none" stroke="#5be0d6" stroke-width="5"/>
+  <path d="M518 753C575 683 651 684 696 739" fill="none" stroke="#f7b35c" stroke-width="5"/>
+  <text x="86" y="466" fill="#f8faf7" font-family="Microsoft YaHei, Arial, sans-serif" font-size="43" font-weight="700">把想象，画成看得见的作品</text>
+  <text x="88" y="510" fill="#bed3d1" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18">AI 创作 · 美术设计 · 平板课堂</text>
+  <rect x="88" y="88" width="125" height="36" rx="18" fill="#12343a"/>
+  <text x="110" y="112" fill="#f8faf7" font-family="Microsoft YaHei, Arial, sans-serif" font-size="14">创意美术</text>
+  <text x="88" y="833" fill="#8ca9a6" font-family="Microsoft YaHei, Arial, sans-serif" font-size="13">每个孩子都是独一无二的创作者</text>
+  <rect x="824" width="616" height="900" fill="#f7faf8"/>
+  <rect x="824" y="0" width="12" height="900" fill="#f16e65"/>
+  <text x="950" y="139" fill="#607477" font-family="Microsoft YaHei, Arial, sans-serif" font-size="14">AI 创意美术教学平台</text>
+  <text x="950" y="195" fill="#1c3438" font-family="Microsoft YaHei, Arial, sans-serif" font-size="34" font-weight="700">开始今天的创作</text>
+  <path d="M950 224H1012" stroke="#f16e65" stroke-width="5" stroke-linecap="round"/>
+  <rect x="950" y="269" width="388" height="53" rx="9" fill="#e5edeb"/>
+  <rect x="956" y="275" width="88" height="41" rx="7" fill="#12343a"/>
+  <text x="976" y="301" fill="#fff" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15">学生⌄</text>
+  <text x="1083" y="301" fill="#4b6468" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15">老师</text>
+  <text x="1178" y="301" fill="#4b6468" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15">家长</text>
+  <text x="1270" y="301" fill="#4b6468" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15">管理员</text>
+  <text x="950" y="376" fill="#52676b" font-family="Microsoft YaHei, Arial, sans-serif" font-size="13">账号</text>
+  <rect x="950" y="391" width="388" height="52" rx="8" fill="#fff" stroke="#d5e0dd"/>
+  <text x="970" y="423" fill="#a3b1ae" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15">请输入账号</text>
+  <text x="950" y="484" fill="#52676b" font-family="Microsoft YaHei, Arial, sans-serif" font-size="13">密码</text>
+  <rect x="950" y="499" width="388" height="52" rx="8" fill="#fff" stroke="#d5e0dd"/>
+  <text x="970" y="531" fill="#a3b1ae" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15">请输入密码</text>
+  <rect x="950" y="593" width="388" height="55" rx="8" fill="#12343a"/>
+  <path d="M958 635H1330" stroke="#5be0d6" stroke-width="2" opacity=".75"/>
+  <text x="1076" y="627" fill="#fff" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="700">进入学生工作台</text>
+  <text x="950" y="712" fill="#718386" font-family="Microsoft YaHei, Arial, sans-serif" font-size="13">学生版本：初级版　⌄</text>
+  <path d="M950 755H1338" stroke="#d9e4e1" stroke-width="1"/>
+  <text x="950" y="795" fill="#9aabaa" font-family="Microsoft YaHei, Arial, sans-serif" font-size="13">让每一次创作，都成为成长的作品</text>
+</svg>

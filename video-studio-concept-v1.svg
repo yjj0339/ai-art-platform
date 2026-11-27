@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <rect width="1440" height="900" fill="#eef3f3"/>
+  <rect x="0" y="0" width="1440" height="72" fill="#ffffff"/>
+  <path d="M0 72H1440" stroke="#dfe8e6"/>
+  <rect x="32" y="19" width="108" height="34" rx="7" fill="#fff4e5"/>
+  <text x="55" y="42" fill="#d9781f" font-family="Microsoft YaHei, Arial" font-size="14" font-weight="700">返回工作台</text>
+  <text x="170" y="42" fill="#1f3437" font-family="Microsoft YaHei, Arial" font-size="25" font-weight="700">AI视频创作</text>
+  <text x="340" y="42" fill="#829193" font-family="Microsoft YaHei, Arial" font-size="14">把作品变成会讲故事的短片</text>
+  <rect x="1330" y="20" width="76" height="32" rx="16" fill="#ede4fb"/>
+  <text x="1350" y="42" fill="#7653b8" font-family="Microsoft YaHei, Arial" font-size="14" font-weight="700">高级版</text>
+  <rect x="24" y="92" width="266" height="780" rx="10" fill="#ffffff"/>
+  <text x="48" y="129" fill="#21383b" font-family="Microsoft YaHei, Arial" font-size="16" font-weight="700">创作素材</text>
+  <text x="48" y="153" fill="#879597" font-family="Microsoft YaHei, Arial" font-size="12">选择一张作品，或继续添加参考图</text>
+  <rect x="48" y="174" width="218" height="158" rx="8" fill="#d8eef0"/>
+  <rect x="56" y="182" width="202" height="142" rx="6" fill="#71c9d0"/>
+  <circle cx="106" cy="227" r="31" fill="#f7d16b"/>
+  <path d="M79 298C96 264 130 256 148 278C164 297 181 265 212 251C228 244 246 252 257 267V324H56V305Z" fill="#3d8f9b"/>
+  <path d="M143 252C158 219 190 221 204 243C214 260 202 282 180 285C160 287 144 273 143 252Z" fill="#f18c76"/>
+  <circle cx="163" cy="248" r="3" fill="#1c4248"/><circle cx="184" cy="248" r="3" fill="#1c4248"/>
+  <path d="M170 260C176 264 181 264 187 260" fill="none" stroke="#1c4248" stroke-width="2" stroke-linecap="round"/>
+  <rect x="56" y="300" width="84" height="18" rx="9" fill="#1e5058"/>
+  <text x="68" y="313" fill="#ffffff" font-family="Microsoft YaHei, Arial" font-size="11">当前作品</text>
+  <text x="48" y="361" fill="#30484b" font-family="Microsoft YaHei, Arial" font-size="14" font-weight="700">飞翔的小狗</text>
+  <text x="48" y="385" fill="#859496" font-family="Microsoft YaHei, Arial" font-size="12">已选择 1 张主素材</text>
+  <rect x="48" y="410" width="218" height="42" rx="7" fill="#f3f7f6" stroke="#dbe6e4"/>
+  <text x="68" y="436" fill="#527074" font-family="Microsoft YaHei, Arial" font-size="14">＋ 添加参考图</text>
+  <path d="M48 483H266" stroke="#e4ecea"/>
+  <text x="48" y="517" fill="#21383b" font-family="Microsoft YaHei, Arial" font-size="15" font-weight="700">视频设置</text>
+  <text x="48" y="554" fill="#647a7d" font-family="Microsoft YaHei, Arial" font-size="13">时长</text>
+  <rect x="48" y="566" width="218" height="39" rx="7" fill="#f7faf9" stroke="#dbe6e4"/>
+  <text x="63" y="591" fill="#2d4548" font-family="Microsoft YaHei, Arial" font-size="14">10 秒</text><text x="239" y="591" fill="#6c8285" font-family="Arial" font-size="14">⌄</text>
+  <text x="48" y="642" fill="#647a7d" font-family="Microsoft YaHei, Arial" font-size="13">画面比例</text>
+  <rect x="48" y="654" width="68" height="38" rx="7" fill="#163f46"/><text x="70" y="678" fill="#fff" font-family="Arial" font-size="13">16:9</text>
+  <rect x="124" y="654" width="68" height="38" rx="7" fill="#f7faf9" stroke="#dbe6e4"/><text x="146" y="678" fill="#576f72" font-family="Arial" font-size="13">9:16</text>
+  <rect x="200" y="654" width="66" height="38" rx="7" fill="#f7faf9" stroke="#dbe6e4"/><text x="221" y="678" fill="#576f72" font-family="Arial" font-size="13">1:1</text>
+  <path d="M48 725H266" stroke="#e4ecea"/><text x="48" y="763" fill="#3c585c" font-family="Microsoft YaHei, Arial" font-size="14">线稿预处理</text>
+  <rect x="222" y="744" width="44" height="24" rx="12" fill="#49a9b6"/><circle cx="253" cy="756" r="9" fill="#fff"/>
+  <path d="M48 804H266" stroke="#e4ecea"/><text x="48" y="839" fill="#3c585c" font-family="Microsoft YaHei, Arial" font-size="14">更多高级设置　⌄</text>
+  <rect x="314" y="92" width="660" height="780" rx="10" fill="#ffffff"/>
+  <text x="346" y="132" fill="#233c3f" font-family="Microsoft YaHei, Arial" font-size="16" font-weight="700">视频预览</text>
+  <text x="346" y="156" fill="#899799" font-family="Microsoft YaHei, Arial" font-size="12">生成后可在这里播放、下载或继续调整</text>
+  <rect x="346" y="180" width="596" height="430" rx="8" fill="#132f35"/>
+  <rect x="371" y="204" width="546" height="381" rx="6" fill="#255c66"/>
+  <circle cx="757" cy="294" r="64" fill="#f8d56a"/>
+  <path d="M371 482C446 418 499 452 560 498C630 551 706 477 787 441C840 418 881 438 917 464V585H371Z" fill="#4eb5bb"/>
+  <path d="M390 540C460 501 524 548 590 520C672 486 707 530 765 510C816 492 870 510 917 544V585H371Z" fill="#1b4951"/>
+  <path d="M537 422C560 376 607 368 636 397C653 414 647 443 624 454C605 463 592 447 576 441C558 434 545 442 537 422Z" fill="#f08a74"/>
+  <path d="M604 400C633 365 673 371 695 395" fill="none" stroke="#f7f8f2" stroke-width="22" stroke-linecap="round"/>
+  <path d="M663 385L703 357L713 401Z" fill="#f7f8f2"/>
+  <path d="M558 402L528 371L525 418Z" fill="#f7f8f2"/>
+  <circle cx="591" cy="409" r="4" fill="#1b4850"/><circle cx="617" cy="409" r="4" fill="#1b4850"/>
+  <rect x="625" y="377" width="78" height="78" rx="39" fill="#ffffff" opacity=".92"/>
+  <path d="M654 399L654 433L681 416Z" fill="#164149"/>
+  <rect x="371" y="633" width="546" height="5" rx="2" fill="#e1ebea"/><rect x="371" y="633" width="155" height="5" rx="2" fill="#f08a74"/>
+  <text x="371" y="672" fill="#6f8587" font-family="Microsoft YaHei, Arial" font-size="13">00:00 / 00:10</text>
+  <text x="819" y="672" fill="#6f8587" font-family="Microsoft YaHei, Arial" font-size="13">生成预览</text>
+  <path d="M346 713H942" stroke="#e4ecea"/>
+  <text x="346" y="752" fill="#3f5b5e" font-family="Microsoft YaHei, Arial" font-size="14">镜头节奏</text>
+  <rect x="346" y="773" width="112" height="38" rx="7" fill="#eff5f3"/><text x="376" y="797" fill="#476467" font-family="Microsoft YaHei, Arial" font-size="13">轻快</text>
+  <rect x="467" y="773" width="112" height="38" rx="7" fill="#163f46"/><text x="497" y="797" fill="#fff" font-family="Microsoft YaHei, Arial" font-size="13">电影感</text>
+  <rect x="588" y="773" width="112" height="38" rx="7" fill="#eff5f3"/><text x="618" y="797" fill="#476467" font-family="Microsoft YaHei, Arial" font-size="13">梦幻</text>
+  <rect x="998" y="92" width="418" height="780" rx="10" fill="#ffffff"/>
+  <text x="1030" y="132" fill="#233c3f" font-family="Microsoft YaHei, Arial" font-size="16" font-weight="700">视频描述</text>
+  <text x="1030" y="156" fill="#899799" font-family="Microsoft YaHei, Arial" font-size="12">告诉 AI 你想看到的动态效果</text>
+  <rect x="1030" y="180" width="354" height="205" rx="8" fill="#f8fbfa" stroke="#d8e5e3"/>
+  <text x="1050" y="214" fill="#3c5558" font-family="Microsoft YaHei, Arial" font-size="14">小狗展开翅膀，在云朵间缓慢飞行，</text>
+  <text x="1050" y="241" fill="#3c5558" font-family="Microsoft YaHei, Arial" font-size="14">阳光从画面右侧照进来，镜头轻轻推进。</text>
+  <text x="1050" y="354" fill="#9caeae" font-family="Microsoft YaHei, Arial" font-size="12">0 / 500</text>
+  <rect x="1030" y="407" width="354" height="42" rx="7" fill="#eff7f5"/>
+  <text x="1050" y="434" fill="#42808a" font-family="Microsoft YaHei, Arial" font-size="14">✦ 帮我优化描述</text>
+  <path d="M1030 486H1384" stroke="#e4ecea"/>
+  <text x="1030" y="525" fill="#233c3f" font-family="Microsoft YaHei, Arial" font-size="15" font-weight="700">生成提示</text>
+  <text x="1030" y="557" fill="#6e8486" font-family="Microsoft YaHei, Arial" font-size="13">预计生成约 1 分钟</text>
+  <text x="1030" y="586" fill="#6e8486" font-family="Microsoft YaHei, Arial" font-size="13">将消耗 8 个创作点</text>
+  <rect x="1030" y="631" width="354" height="54" rx="8" fill="#f08069"/>
+  <text x="1156" y="665" fill="#fff" font-family="Microsoft YaHei, Arial" font-size="16" font-weight="700">生成视频</text>
+  <path d="M1030 716H1384" stroke="#e4ecea"/>
+  <text x="1030" y="754" fill="#3e5a5d" font-family="Microsoft YaHei, Arial" font-size="14">最近生成</text>
+  <rect x="1030" y="774" width="92" height="65" rx="6" fill="#d4eef0"/><path d="M1030 821L1063 789L1091 819L1112 799L1122 811V839H1030Z" fill="#4daeb7"/>
+  <text x="1136" y="802" fill="#405b5e" font-family="Microsoft YaHei, Arial" font-size="13">飞翔的小狗</text><text x="1136" y="826" fill="#94a3a5" font-family="Microsoft YaHei, Arial" font-size="12">刚刚生成</text>
+</svg>

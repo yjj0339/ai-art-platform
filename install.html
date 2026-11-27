@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>安装 AI 美术课堂</title>
+<style>
+  :root { --brand:#7c3aed; --brand-2:#a78bfa; --ink:#1f2937; --muted:#6b7280; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    margin:0; min-height:100vh; padding:28px 20px 40px;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f6f5fb; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .card {
+    width:100%; max-width:520px; background:#fff; border-radius:20px;
+    box-shadow:0 12px 40px rgba(76,29,149,.12); padding:26px 24px;
+  }
+  .head { display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .logo {
+    width:52px; height:52px; border-radius:15px; flex:0 0 auto;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:flex; align-items:center; justify-content:center;
+  }
+  h1 { font-size:20px; margin:0; }
+  .sub { font-size:13px; color:var(--muted); margin:2px 0 0; }
+  .btn {
+    display:block; width:100%; margin:22px 0 8px; height:54px; border:0; border-radius:14px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff;
+    font-size:17px; font-weight:700; cursor:pointer;
+    box-shadow:0 8px 20px rgba(124,58,237,.28);
+  }
+  .btn:active { transform:translateY(1px); }
+  .btn[disabled] { opacity:.6; }
+  .hint { text-align:center; font-size:12px; color:var(--muted); }
+  ol { margin:20px 0 0; padding-left:20px; font-size:13.5px; line-height:2; color:#4b5563; }
+  code { background:#ece9fb; color:#5b21b6; padding:1px 6px; border-radius:5px; font-size:12px; }
+  .note { margin-top:18px; padding:12px 14px; background:#fffbeb; border:1px solid #fde68a;
+    border-radius:12px; font-size:12.5px; color:#92400e; line-height:1.8; }
+  a.plain { color:var(--brand); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+      </div>
+      <div>
+        <h1>AI 美术课堂</h1>
+        <p class="sub">安卓平板 · 安装包 41 KB</p>
+      </div>
+    </div>
+
+    <button class="btn" id="dl">下载安装包</button>
+    <p class="hint" id="hint">点上面按钮，下载完成后直接打开即可安装</p>
+
+    <ol>
+      <li>点「下载安装包」</li>
+      <li>下载完成后，在通知栏或「下载」里点这个文件</li>
+      <li>系统提示「未知来源」→ 允许本次安装</li>
+      <li>装好后桌面出现紫色闪电图标，点开填一次电脑地址</li>
+    </ol>
+
+    <div class="note">
+      如果按钮没反应，用浏览器地址栏直接打开：<br />
+      <a class="plain" href="/ai-art-platform/AI-Art-Class.apk">/AI-Art-Class.apk</a>
+    </div>
+  </div>
+
+<script>
+  var btn = document.getElementById('dl');
+  var hint = document.getElementById('hint');
+  var FILE = '/ai-art-platform/AI-Art-Class.apk';
+
+  btn.addEventListener('click', function () {
+    btn.disabled = true;
+    hint.textContent = '正在准备…';
+    fetch(FILE, { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('下载失败 ' + r.status);
+        return r.blob();
+      })
+      .then(function (b) {
+        // 用正确的 MIME 造 blob，浏览器才会当成安装包处理
+        var apk = new Blob([b], { type: 'application/vnd.android.package-archive' });
+        var url = URL.createObjectURL(apk);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'AI美术课堂.apk';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 8000);
+        hint.textContent = '已开始下载，去通知栏点开它安装';
+        btn.disabled = false;
+      })
+      .catch(function (e) {
+        hint.textContent = '下载出错：' + e.message + '，试试下面的地址';
+        btn.disabled = false;
+      });
+  });
+</script>
+</body>
+</html>

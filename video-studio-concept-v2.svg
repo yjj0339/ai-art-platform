@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <rect width="1440" height="900" fill="#edf3f2"/>
+  <rect width="1440" height="70" fill="#ffffff"/>
+  <path d="M0 70H1440" stroke="#dce7e5"/>
+  <text x="34" y="43" fill="#d77b27" font-family="Microsoft YaHei,Arial" font-size="14" font-weight="700">返回工作台</text>
+  <text x="158" y="43" fill="#1f373a" font-family="Microsoft YaHei,Arial" font-size="25" font-weight="700">AI视频创作</text>
+  <text x="330" y="43" fill="#879698" font-family="Microsoft YaHei,Arial" font-size="14">用作品，生成一段会动的故事</text>
+  <rect x="1332" y="19" width="75" height="31" rx="15" fill="#eee5fb"/><text x="1352" y="40" fill="#7552b6" font-family="Microsoft YaHei,Arial" font-size="14" font-weight="700">高级版</text>
+  <rect x="24" y="94" width="266" height="776" rx="10" fill="#ffffff"/>
+  <text x="48" y="132" fill="#21393c" font-family="Microsoft YaHei,Arial" font-size="16" font-weight="700">创作素材</text>
+  <text x="48" y="156" fill="#879799" font-family="Microsoft YaHei,Arial" font-size="12">当前视频将以这张作品为基础</text>
+  <rect x="48" y="176" width="218" height="154" rx="8" fill="#d7eef0"/>
+  <rect x="58" y="186" width="198" height="134" rx="6" fill="#70c8d1"/><circle cx="95" cy="220" r="25" fill="#f6d26c"/>
+  <path d="M58 292C98 254 134 269 162 294C187 317 218 268 256 255V320H58Z" fill="#338e9d"/>
+  <path d="M145 252C155 225 184 226 196 246C205 260 195 277 179 279C162 281 151 267 145 252Z" fill="#f08b75"/>
+  <path d="M170 243L193 225L199 253M157 244L140 229L141 256" fill="#f7f9f4"/>
+  <text x="48" y="360" fill="#30494d" font-family="Microsoft YaHei,Arial" font-size="14" font-weight="700">飞翔的小狗</text><text x="48" y="384" fill="#879799" font-family="Microsoft YaHei,Arial" font-size="12">已选择 1 张主素材</text>
+  <rect x="48" y="408" width="218" height="42" rx="7" fill="#f3f7f6" stroke="#d9e5e3"/><text x="71" y="435" fill="#4f7073" font-family="Microsoft YaHei,Arial" font-size="14">＋ 添加参考图</text>
+  <path d="M48 483H266" stroke="#e3ecea"/><text x="48" y="519" fill="#21393c" font-family="Microsoft YaHei,Arial" font-size="15" font-weight="700">基础设置</text>
+  <text x="48" y="554" fill="#667e81" font-family="Microsoft YaHei,Arial" font-size="13">视频时长</text><rect x="48" y="566" width="218" height="40" rx="7" fill="#f7faf9" stroke="#d9e5e3"/><text x="64" y="591" fill="#334d50" font-family="Microsoft YaHei,Arial" font-size="14">10 秒</text><text x="242" y="591" fill="#74898b" font-family="Arial" font-size="14">⌄</text>
+  <text x="48" y="644" fill="#667e81" font-family="Microsoft YaHei,Arial" font-size="13">画面比例</text><rect x="48" y="657" width="67" height="38" rx="7" fill="#17434a"/><text x="70" y="681" fill="#fff" font-family="Arial" font-size="13">16:9</text><rect x="124" y="657" width="67" height="38" rx="7" fill="#f7faf9" stroke="#d9e5e3"/><text x="146" y="681" fill="#5b7275" font-family="Arial" font-size="13">9:16</text><rect x="200" y="657" width="66" height="38" rx="7" fill="#f7faf9" stroke="#d9e5e3"/><text x="221" y="681" fill="#5b7275" font-family="Arial" font-size="13">1:1</text>
+  <path d="M48 731H266" stroke="#e3ecea"/><text x="48" y="768" fill="#405c60" font-family="Microsoft YaHei,Arial" font-size="14">线稿预处理</text><rect x="222" y="749" width="44" height="24" rx="12" fill="#4aaab8"/><circle cx="253" cy="761" r="9" fill="#fff"/><path d="M48 810H266" stroke="#e3ecea"/><text x="48" y="844" fill="#405c60" font-family="Microsoft YaHei,Arial" font-size="14">更多高级设置　⌄</text>
+  <rect x="314" y="94" width="1102" height="776" rx="10" fill="#ffffff"/>
+  <text x="346" y="133" fill="#233c3f" font-family="Microsoft YaHei,Arial" font-size="16" font-weight="700">视频预览</text><text x="346" y="156" fill="#8b999a" font-family="Microsoft YaHei,Arial" font-size="12">先确认画面，再补充你希望它如何运动</text>
+  <rect x="346" y="179" width="724" height="406" rx="8" fill="#15343a"/><rect x="365" y="198" width="686" height="368" rx="6" fill="#28636e"/>
+  <circle cx="837" cy="269" r="54" fill="#f7d56b"/><path d="M365 464C445 405 495 432 564 482C630 530 708 452 790 427C881 399 956 450 1051 484V566H365Z" fill="#54b6bd"/><path d="M365 524C433 480 511 533 590 504C662 478 708 531 782 502C887 461 953 514 1051 537V566H365Z" fill="#194d56"/>
+  <path d="M596 395C615 354 654 352 677 380C693 399 681 427 657 431C636 435 624 420 608 413C599 409 592 405 596 395Z" fill="#f08b75"/><path d="M622 379L594 353L591 392M654 377L687 349L697 389" fill="#f7f8f2" stroke="#f7f8f2" stroke-width="10" stroke-linejoin="round"/>
+  <circle cx="638" cy="389" r="4" fill="#173e46"/><circle cx="660" cy="389" r="4" fill="#173e46"/><rect x="675" y="371" width="74" height="74" rx="37" fill="#ffffff" opacity=".94"/><path d="M705 392V424L730 408Z" fill="#17434a"/>
+  <rect x="365" y="602" width="686" height="5" rx="2" fill="#e2eae8"/><rect x="365" y="602" width="183" height="5" rx="2" fill="#f1816a"/><text x="365" y="638" fill="#718789" font-family="Microsoft YaHei,Arial" font-size="13">00:00 / 00:10</text><text x="957" y="638" fill="#718789" font-family="Microsoft YaHei,Arial" font-size="13">预览未生成</text>
+  <rect x="1102" y="179" width="282" height="460" rx="8" fill="#f6f9f8"/>
+  <text x="1126" y="215" fill="#304a4d" font-family="Microsoft YaHei,Arial" font-size="15" font-weight="700">视频计划</text><text x="1126" y="244" fill="#8b9a9b" font-family="Microsoft YaHei,Arial" font-size="12">根据描述自动规划镜头</text>
+  <circle cx="1137" cy="293" r="12" fill="#f08069"/><text x="1162" y="298" fill="#445e61" font-family="Microsoft YaHei,Arial" font-size="13">第 1 镜：展开翅膀</text><path d="M1137 317H1348" stroke="#dae5e2"/>
+  <circle cx="1137" cy="354" r="12" fill="#f3c864"/><text x="1162" y="359" fill="#445e61" font-family="Microsoft YaHei,Arial" font-size="13">第 2 镜：飞向云朵</text><path d="M1137 378H1348" stroke="#dae5e2"/>
+  <circle cx="1137" cy="415" r="12" fill="#50adb8"/><text x="1162" y="420" fill="#445e61" font-family="Microsoft YaHei,Arial" font-size="13">第 3 镜：镜头推进</text><path d="M1137 439H1348" stroke="#dae5e2"/>
+  <text x="1126" y="492" fill="#617a7c" font-family="Microsoft YaHei,Arial" font-size="13">镜头节奏</text><rect x="1126" y="507" width="74" height="35" rx="7" fill="#e8f0ef"/><text x="1145" y="529" fill="#567174" font-family="Microsoft YaHei,Arial" font-size="12">轻快</text><rect x="1208" y="507" width="74" height="35" rx="7" fill="#17434a"/><text x="1227" y="529" fill="#fff" font-family="Microsoft YaHei,Arial" font-size="12">电影感</text><rect x="1290" y="507" width="58" height="35" rx="7" fill="#e8f0ef"/><text x="1304" y="529" fill="#567174" font-family="Microsoft YaHei,Arial" font-size="12">梦幻</text>
+  <path d="M1126 574H1348" stroke="#dae5e2"/><text x="1126" y="606" fill="#7d9091" font-family="Microsoft YaHei,Arial" font-size="12">生成后可继续调整镜头顺序</text>
+  <path d="M346 680H1384" stroke="#e0e9e7"/>
+  <text x="346" y="721" fill="#233c3f" font-family="Microsoft YaHei,Arial" font-size="16" font-weight="700">视频提示词</text><text x="451" y="721" fill="#8c9a9c" font-family="Microsoft YaHei,Arial" font-size="12">描述动作、镜头和氛围</text>
+  <rect x="346" y="742" width="748" height="91" rx="8" fill="#f8fbfa" stroke="#d5e4e1"/>
+  <text x="367" y="771" fill="#3b5659" font-family="Microsoft YaHei,Arial" font-size="14">小狗展开翅膀，在云朵间缓慢飞行，阳光从画面右侧照进来，</text><text x="367" y="797" fill="#3b5659" font-family="Microsoft YaHei,Arial" font-size="14">镜头轻轻推进。</text>
+  <text x="367" y="822" fill="#9aa9aa" font-family="Microsoft YaHei,Arial" font-size="12">0 / 500</text>
+  <rect x="1117" y="742" width="267" height="42" rx="7" fill="#eaf5f3"/><text x="1140" y="769" fill="#40808a" font-family="Microsoft YaHei,Arial" font-size="14">✦ 帮我优化描述</text>
+  <rect x="1117" y="796" width="267" height="54" rx="8" fill="#f08069"/><text x="1207" y="830" fill="#fff" font-family="Microsoft YaHei,Arial" font-size="16" font-weight="700">生成视频</text>
+</svg>

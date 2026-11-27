@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI绘画创作页 - 3套美化方案对比</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f0f0f0;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* 顶部方案切换 */
+  .scheme-switcher {
+    max-width: 1400px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .scheme-switcher h1 {
+    font-size: 20px;
+    color: #333;
+    margin-right: 10px;
+  }
+  .scheme-btn {
+    padding: 10px 22px;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .scheme-btn .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+  }
+  .scheme-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .scheme-btn.active { border-color: #333; background: #333; color: white; }
+
+  .scheme-desc {
+    max-width: 1400px;
+    margin: 0 auto 16px;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.7;
+  }
+  .scheme-desc strong { color: #333; }
+
+  /* 页面容器 */
+  .page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    transition: background 0.5s;
+  }
+
+  /* ===== 通用页面结构 ===== */
+  .paint-page {
+    min-height: 780px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.5s;
+  }
+
+  /* 顶部导航 */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    transition: all 0.5s;
+  }
+  .top-bar .back-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .top-bar h1 {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .top-bar .top-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .top-bar .voice-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .top-bar .difficulty {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* 主体区域 */
+  .main-area {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+
+  /* 左侧面板 */
+  .side-panel {
+    width: 280px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    padding: 16px 14px;
+    transition: all 0.5s;
+  }
+  .panel-title {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .panel-title h2 { font-size: 16px; font-weight: 700; }
+  .panel-title p { font-size: 11px; margin-top: 2px; }
+
+  .cat-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .cat-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 4px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .cat-tab img { width: 24px; height: 24px; object-fit: contain; border-radius: 5px; }
+  .cat-tab span { font-size: 10px; font-weight: 600; white-space: nowrap; }
+
+  .group-label {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .group-label small { font-size: 10px; font-weight: 400; }
+
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+  }
+  .icon-card {
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .icon-card:hover { transform: translateY(-2px); }
+  .icon-card .card-img {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+  .icon-card .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .icon-card .card-name {
+    padding: 5px 2px 6px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .icon-card.selected .check {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .panel-footer {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+  .panel-footer p { font-size: 11px; margin-bottom: 8px; }
+  .panel-footer button {
+    width: 100%;
+    padding: 7px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* 中间画布 */
+  .canvas-area {
+    flex: 1;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s;
+    min-height: 480px;
+  }
+  .canvas-placeholder {
+    text-align: center;
+    z-index: 2;
+  }
+  .canvas-placeholder .big-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+  .canvas-placeholder h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .canvas-placeholder p {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+  /* 画布装饰背景 */
+  .canvas-deco {
+    position: absolute;
+    inset: 0;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* 底部输入区 */
+  .bottom-area {
+    padding: 0 20px 16px;
+    display: flex;
+    gap: 16px;
+  }
+  .bottom-left {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bottom-left button {
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .bottom-input {
+    flex: 1;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.5s;
+  }
+  .input-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .ref-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    transform: rotate(-5deg);
+    flex-shrink: 0;
+  }
+  .input-box {
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    min-height: 56px;
+  }
+  .input-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .input-actions button {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .send-btn {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+  }
+  .param-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .param-tag {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ===== 方案1：温暖童趣风 ===== */
+  .scheme-warm .paint-page {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 50%, #FFE0B2 100%);
+  }
+  .scheme-warm .top-bar {
+    background: linear-gradient(135deg, #FF8A65, #FF7043);
+    box-shadow: 0 2px 12px rgba(255,112,67,0.3);
+  }
+  .scheme-warm .top-bar h1 { color: white; }
+  .scheme-warm .back-btn { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-warm .back-btn:hover { background: rgba(255,255,255,0.4); }
+  .scheme-warm .voice-btn { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-warm .difficulty { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-warm .side-panel {
+    background: rgba(255,253,231,0.92);
+    border: 2px solid #FFCC80;
+    box-shadow: 0 4px 16px rgba(255,143,0,0.12);
+  }
+  .scheme-warm .panel-title h2 { color: #E65100; }
+  .scheme-warm .panel-title p { color: #FF8F00; }
+  .scheme-warm .cat-tab { background: rgba(255,255,255,0.6); border: 1.5px solid #FFE0B2; }
+  .scheme-warm .cat-tab span { color: #E65100; }
+  .scheme-warm .cat-tab.active { background: linear-gradient(135deg, #FF8A65, #FF7043); border-color: #FF7043; }
+  .scheme-warm .cat-tab.active span { color: white; }
+  .scheme-warm .group-label { color: #E65100; }
+  .scheme-warm .group-label small { color: #FFB74D; }
+  .scheme-warm .icon-card { background: white; border: 1.5px solid #FFE0B2; }
+  .scheme-warm .icon-card:hover { border-color: #FF8A65; box-shadow: 0 4px 12px rgba(255,112,67,0.2); }
+  .scheme-warm .icon-card.selected { background: #FFF3E0; border-color: #FF7043; box-shadow: 0 4px 12px rgba(255,112,67,0.25); }
+  .scheme-warm .icon-card .card-name { color: #E65100; background: #FFF8E1; }
+  .scheme-warm .icon-card.selected .card-name { color: #E65100; background: #FFE0B2; }
+  .scheme-warm .icon-card .check { background: #FF7043; }
+  .scheme-warm .panel-footer { border-color: #FFE0B2; }
+  .scheme-warm .panel-footer p { color: #FF8F00; }
+  .scheme-warm .panel-footer button { background: #FFF8E1; color: #FFB74D; border-color: #FFE0B2; }
+  .scheme-warm .canvas-area {
+    background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+    border: 2px solid #FFCC80;
+    box-shadow: inset 0 2px 20px rgba(255,143,0,0.08);
+  }
+  .scheme-warm .canvas-placeholder h3 { color: #E65100; }
+  .scheme-warm .canvas-placeholder p { color: #FF8F00; }
+  .scheme-warm .canvas-deco {
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,138,101,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(255,193,7,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(255,112,67,0.08) 0%, transparent 60%);
+  }
+  .scheme-warm .bottom-left button {
+    background: rgba(255,253,231,0.92);
+    color: #E65100;
+    border: 2px solid #FFCC80;
+  }
+  .scheme-warm .bottom-left button:hover { background: #FFECB3; }
+  .scheme-warm .bottom-input {
+    background: rgba(255,253,231,0.92);
+    border: 2px solid #FFCC80;
+  }
+  .scheme-warm .ref-img { background: linear-gradient(135deg, #FFCC80, #FF8A65); color: white; }
+  .scheme-warm .input-box { background: white; color: #E65100; border: 1.5px solid #FFE0B2; }
+  .scheme-warm .input-actions button { background: #FFF3E0; color: #E65100; }
+  .scheme-warm .send-btn { background: linear-gradient(135deg, #FF8A65, #FF7043) !important; color: white !important; }
+  .scheme-warm .param-tag { background: #FFECB3; color: #E65100; }
+
+  /* ===== 方案2：清新活力风 ===== */
+  .scheme-fresh .paint-page {
+    background: linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 50%, #C8E6C9 100%);
+  }
+  .scheme-fresh .top-bar {
+    background: linear-gradient(135deg, #26A69A, #00897B);
+    box-shadow: 0 2px 12px rgba(0,137,123,0.3);
+  }
+  .scheme-fresh .top-bar h1 { color: white; }
+  .scheme-fresh .back-btn { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-fresh .back-btn:hover { background: rgba(255,255,255,0.4); }
+  .scheme-fresh .voice-btn { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-fresh .difficulty { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-fresh .side-panel {
+    background: rgba(241,248,233,0.92);
+    border: 2px solid #A5D6A7;
+    box-shadow: 0 4px 16px rgba(0,137,123,0.12);
+  }
+  .scheme-fresh .panel-title h2 { color: #00695C; }
+  .scheme-fresh .panel-title p { color: #00897B; }
+  .scheme-fresh .cat-tab { background: rgba(255,255,255,0.6); border: 1.5px solid #C8E6C9; }
+  .scheme-fresh .cat-tab span { color: #00695C; }
+  .scheme-fresh .cat-tab.active { background: linear-gradient(135deg, #26A69A, #00897B); border-color: #00897B; }
+  .scheme-fresh .cat-tab.active span { color: white; }
+  .scheme-fresh .group-label { color: #00695C; }
+  .scheme-fresh .group-label small { color: #4DB6AC; }
+  .scheme-fresh .icon-card { background: white; border: 1.5px solid #C8E6C9; }
+  .scheme-fresh .icon-card:hover { border-color: #26A69A; box-shadow: 0 4px 12px rgba(0,137,123,0.2); }
+  .scheme-fresh .icon-card.selected { background: #E0F2F1; border-color: #00897B; box-shadow: 0 4px 12px rgba(0,137,123,0.25); }
+  .scheme-fresh .icon-card .card-name { color: #00695C; background: #F1F8E9; }
+  .scheme-fresh .icon-card.selected .card-name { color: #00695C; background: #B2DFDB; }
+  .scheme-fresh .icon-card .check { background: #00897B; }
+  .scheme-fresh .panel-footer { border-color: #C8E6C9; }
+  .scheme-fresh .panel-footer p { color: #00897B; }
+  .scheme-fresh .panel-footer button { background: #F1F8E9; color: #4DB6AC; border-color: #C8E6C9; }
+  .scheme-fresh .canvas-area {
+    background: linear-gradient(135deg, #E0F2F1, #B2DFDB);
+    border: 2px solid #A5D6A7;
+    box-shadow: inset 0 2px 20px rgba(0,137,123,0.08);
+  }
+  .scheme-fresh .canvas-placeholder h3 { color: #00695C; }
+  .scheme-fresh .canvas-placeholder p { color: #00897B; }
+  .scheme-fresh .canvas-deco {
+    background:
+      radial-gradient(circle at 20% 30%, rgba(38,166,154,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(76,175,80,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(0,137,123,0.08) 0%, transparent 60%);
+  }
+  .scheme-fresh .bottom-left button {
+    background: rgba(241,248,233,0.92);
+    color: #00695C;
+    border: 2px solid #A5D6A7;
+  }
+  .scheme-fresh .bottom-left button:hover { background: #B2DFDB; }
+  .scheme-fresh .bottom-input {
+    background: rgba(241,248,233,0.92);
+    border: 2px solid #A5D6A7;
+  }
+  .scheme-fresh .ref-img { background: linear-gradient(135deg, #81C784, #26A69A); color: white; }
+  .scheme-fresh .input-box { background: white; color: #00695C; border: 1.5px solid #C8E6C9; }
+  .scheme-fresh .input-actions button { background: #E0F2F1; color: #00695C; }
+  .scheme-fresh .send-btn { background: linear-gradient(135deg, #26A69A, #00897B) !important; color: white !important; }
+  .scheme-fresh .param-tag { background: #B2DFDB; color: #00695C; }
+
+  /* ===== 方案3：梦幻创意风 ===== */
+  .scheme-dream .paint-page {
+    background: linear-gradient(135deg, #F3E5F5 0%, #E8EAF6 50%, #EDE7F6 100%);
+  }
+  .scheme-dream .top-bar {
+    background: linear-gradient(135deg, #7E57C2, #5C6BC0);
+    box-shadow: 0 2px 12px rgba(92,107,192,0.3);
+  }
+  .scheme-dream .top-bar h1 { color: white; }
+  .scheme-dream .back-btn { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-dream .back-btn:hover { background: rgba(255,255,255,0.4); }
+  .scheme-dream .voice-btn { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-dream .difficulty { background: rgba(255,255,255,0.25); color: white; }
+  .scheme-dream .side-panel {
+    background: rgba(248,244,255,0.92);
+    border: 2px solid #CE93D8;
+    box-shadow: 0 4px 16px rgba(124,77,255,0.12);
+  }
+  .scheme-dream .panel-title h2 { color: #4A148C; }
+  .scheme-dream .panel-title p { color: #7E57C2; }
+  .scheme-dream .cat-tab { background: rgba(255,255,255,0.6); border: 1.5px solid #E1BEE7; }
+  .scheme-dream .cat-tab span { color: #4A148C; }
+  .scheme-dream .cat-tab.active { background: linear-gradient(135deg, #7E57C2, #5C6BC0); border-color: #5C6BC0; }
+  .scheme-dream .cat-tab.active span { color: white; }
+  .scheme-dream .group-label { color: #4A148C; }
+  .scheme-dream .group-label small { color: #BA68C8; }
+  .scheme-dream .icon-card { background: white; border: 1.5px solid #E1BEE7; }
+  .scheme-dream .icon-card:hover { border-color: #7E57C2; box-shadow: 0 4px 12px rgba(124,77,255,0.2); }
+  .scheme-dream .icon-card.selected { background: #F3E5F5; border-color: #5C6BC0; box-shadow: 0 4px 12px rgba(124,77,255,0.25); }
+  .scheme-dream .icon-card .card-name { color: #4A148C; background: #F8F4FF; }
+  .scheme-dream .icon-card.selected .card-name { color: #4A148C; background: #E1BEE7; }
+  .scheme-dream .icon-card .check { background: #5C6BC0; }
+  .scheme-dream .panel-footer { border-color: #E1BEE7; }
+  .scheme-dream .panel-footer p { color: #7E57C2; }
+  .scheme-dream .panel-footer button { background: #F8F4FF; color: #BA68C8; border-color: #E1BEE7; }
+  .scheme-dream .canvas-area {
+    background: linear-gradient(135deg, #F3E5F5, #E8EAF6);
+    border: 2px solid #CE93D8;
+    box-shadow: inset 0 2px 20px rgba(124,77,255,0.08);
+  }
+  .scheme-dream .canvas-placeholder h3 { color: #4A148C; }
+  .scheme-dream .canvas-placeholder p { color: #7E57C2; }
+  .scheme-dream .canvas-deco {
+    background:
+      radial-gradient(circle at 20% 30%, rgba(126,87,194,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(92,107,192,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(186,104,200,0.1) 0%, transparent 60%);
+  }
+  .scheme-dream .bottom-left button {
+    background: rgba(248,244,255,0.92);
+    color: #4A148C;
+    border: 2px solid #CE93D8;
+  }
+  .scheme-dream .bottom-left button:hover { background: #E1BEE7; }
+  .scheme-dream .bottom-input {
+    background: rgba(248,244,255,0.92);
+    border: 2px solid #CE93D8;
+  }
+  .scheme-dream .ref-img { background: linear-gradient(135deg, #BA68C8, #7E57C2); color: white; }
+  .scheme-dream .input-box { background: white; color: #4A148C; border: 1.5px solid #E1BEE7; }
+  .scheme-dream .input-actions button { background: #F3E5F5; color: #4A148C; }
+  .scheme-dream .send-btn { background: linear-gradient(135deg, #7E57C2, #5C6BC0) !important; color: white !important; }
+  .scheme-dream .param-tag { background: #E1BEE7; color: #4A148C; }
+
+  /* 隐藏所有方案，只显示激活的 */
+  .page-wrapper { display: none; }
+  .page-wrapper.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="scheme-switcher">
+  <h1>🎨 AI绘画创作页美化方案</h1>
+  <button class="scheme-btn active" data-scheme="warm" onclick="switchScheme('warm')">
+    <span class="dot" style="background:linear-gradient(135deg,#FF8A65,#FF7043)"></span>
+    方案1：温暖童趣风
+  </button>
+  <button class="scheme-btn" data-scheme="fresh" onclick="switchScheme('fresh')">
+    <span class="dot" style="background:linear-gradient(135deg,#26A69A,#00897B)"></span>
+    方案2：清新活力风
+  </button>
+  <button class="scheme-btn" data-scheme="dream" onclick="switchScheme('dream')">
+    <span class="dot" style="background:linear-gradient(135deg,#7E57C2,#5C6BC0)"></span>
+    方案3：梦幻创意风
+  </button>
+</div>
+
+<div class="scheme-desc" id="scheme-desc">
+  <strong>方案1：温暖童趣风（奶油美术教室）</strong> — 奶油黄+暖橙色渐变底色，像走进一间阳光明媚的美术教室。温暖、活泼、有创造力，最适合 6-12 岁低龄孩子。顶部导航用珊瑚橙，卡片用奶油白，整体充满手绘和颜料的温暖感。
+</div>
+
+<!-- 方案1：温暖童趣风 -->
+<div class="page-wrapper active scheme-warm" id="page-warm">
+  <div class="page-container">
+    <div class="paint-page">
+      <div class="top-bar">
+        <button class="back-btn">← 返回</button>
+        <h1>AI绘画创作页</h1>
+        <div class="top-right">
+          <button class="voice-btn">🔊 语音</button>
+          <div class="difficulty">入门版 ▾</div>
+        </div>
+      </div>
+      <div class="main-area">
+        <div class="side-panel">
+          <div class="panel-title">
+            <h2>提示词库</h2>
+            <p>点击图标组合画面</p>
+          </div>
+          <div class="cat-tabs">
+            <div class="cat-tab active"><img src="/ai-art-platform/assets/prompt-icons/cat-subject.png"><span>画什么</span></div>
+            <div class="cat-tab"><img src="/ai-art-platform/assets/prompt-icons/cat-scene.png"><span>在哪里</span></div>
+            <div class="cat-tab"><img src="/ai-art-platform/assets/prompt-icons/cat-background.png"><span>天空和背景</span></div>
+          </div>
+          <div class="group-label">画什么 <small>上下滑动选择</small></div>
+          <div class="icon-grid">
+            <div class="icon-card selected"><div class="check">✓</div><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/dog.png"></div><div class="card-name">小狗</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/cat.png"></div><div class="card-name">小猫</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/rabbit.png"></div><div class="card-name">小兔子</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/dinosaur.png"></div><div class="card-name">小恐龙</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/fox.png"></div><div class="card-name">小狐狸</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/bear.png"></div><div class="card-name">小熊</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/elephant.png"></div><div class="card-name">大象</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/panda.png"></div><div class="card-name">熊猫</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/bird.png"></div><div class="card-name">小鸟</div></div>
+          </div>
+          <div class="panel-footer">
+            <p>已选择：小狗</p>
+            <button>清空选择</button>
+          </div>
+        </div>
+        <div class="canvas-area">
+          <div class="canvas-deco"></div>
+          <div class="canvas-placeholder">
+            <div class="big-icon">🎨</div>
+            <h3>你的画作将在这里诞生</h3>
+            <p>选择左侧小图标，点击开始生成</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-area">
+        <div class="bottom-left">
+          <button>📚 提示词库</button>
+          <button>🎮 技能玩法</button>
+          <button>📄 项目报告高清</button>
+        </div>
+        <div class="bottom-input">
+          <div class="input-row">
+            <div class="ref-img">参考图</div>
+            <div class="input-box">提示词输入...</div>
+            <div class="input-actions">
+              <button>退格</button>
+              <button>🔊 语音</button>
+              <button class="send-btn">发送</button>
+            </div>
+          </div>
+          <div class="param-row">
+            <span class="param-tag">模型：OpenAI</span>
+            <span class="param-tag">生成数量：1张</span>
+            <span class="param-tag">画幅比例：智能</span>
+            <span class="param-tag">图像风格：不指定</span>
+            <span class="param-tag">清晰度：高清</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案2：清新活力风 -->
+<div class="page-wrapper scheme-fresh" id="page-fresh">
+  <div class="page-container">
+    <div class="paint-page">
+      <div class="top-bar">
+        <button class="back-btn">← 返回</button>
+        <h1>AI绘画创作页</h1>
+        <div class="top-right">
+          <button class="voice-btn">🔊 语音</button>
+          <div class="difficulty">入门版 ▾</div>
+        </div>
+      </div>
+      <div class="main-area">
+        <div class="side-panel">
+          <div class="panel-title">
+            <h2>提示词库</h2>
+            <p>点击图标组合画面</p>
+          </div>
+          <div class="cat-tabs">
+            <div class="cat-tab active"><img src="/ai-art-platform/assets/prompt-icons/cat-subject.png"><span>画什么</span></div>
+            <div class="cat-tab"><img src="/ai-art-platform/assets/prompt-icons/cat-scene.png"><span>在哪里</span></div>
+            <div class="cat-tab"><img src="/ai-art-platform/assets/prompt-icons/cat-background.png"><span>天空和背景</span></div>
+          </div>
+          <div class="group-label">画什么 <small>上下滑动选择</small></div>
+          <div class="icon-grid">
+            <div class="icon-card selected"><div class="check">✓</div><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/dog.png"></div><div class="card-name">小狗</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/cat.png"></div><div class="card-name">小猫</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/rabbit.png"></div><div class="card-name">小兔子</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/dinosaur.png"></div><div class="card-name">小恐龙</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/fox.png"></div><div class="card-name">小狐狸</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/bear.png"></div><div class="card-name">小熊</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/elephant.png"></div><div class="card-name">大象</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/panda.png"></div><div class="card-name">熊猫</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/bird.png"></div><div class="card-name">小鸟</div></div>
+          </div>
+          <div class="panel-footer">
+            <p>已选择：小狗</p>
+            <button>清空选择</button>
+          </div>
+        </div>
+        <div class="canvas-area">
+          <div class="canvas-deco"></div>
+          <div class="canvas-placeholder">
+            <div class="big-icon">🌿</div>
+            <h3>你的画作将在这里诞生</h3>
+            <p>选择左侧小图标，点击开始生成</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-area">
+        <div class="bottom-left">
+          <button>📚 提示词库</button>
+          <button>🎮 技能玩法</button>
+          <button>📄 项目报告高清</button>
+        </div>
+        <div class="bottom-input">
+          <div class="input-row">
+            <div class="ref-img">参考图</div>
+            <div class="input-box">提示词输入...</div>
+            <div class="input-actions">
+              <button>退格</button>
+              <button>🔊 语音</button>
+              <button class="send-btn">发送</button>
+            </div>
+          </div>
+          <div class="param-row">
+            <span class="param-tag">模型：OpenAI</span>
+            <span class="param-tag">生成数量：1张</span>
+            <span class="param-tag">画幅比例：智能</span>
+            <span class="param-tag">图像风格：不指定</span>
+            <span class="param-tag">清晰度：高清</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 方案3：梦幻创意风 -->
+<div class="page-wrapper scheme-dream" id="page-dream">
+  <div class="page-container">
+    <div class="paint-page">
+      <div class="top-bar">
+        <button class="back-btn">← 返回</button>
+        <h1>AI绘画创作页</h1>
+        <div class="top-right">
+          <button class="voice-btn">🔊 语音</button>
+          <div class="difficulty">入门版 ▾</div>
+        </div>
+      </div>
+      <div class="main-area">
+        <div class="side-panel">
+          <div class="panel-title">
+            <h2>提示词库</h2>
+            <p>点击图标组合画面</p>
+          </div>
+          <div class="cat-tabs">
+            <div class="cat-tab active"><img src="/ai-art-platform/assets/prompt-icons/cat-subject.png"><span>画什么</span></div>
+            <div class="cat-tab"><img src="/ai-art-platform/assets/prompt-icons/cat-scene.png"><span>在哪里</span></div>
+            <div class="cat-tab"><img src="/ai-art-platform/assets/prompt-icons/cat-background.png"><span>天空和背景</span></div>
+          </div>
+          <div class="group-label">画什么 <small>上下滑动选择</small></div>
+          <div class="icon-grid">
+            <div class="icon-card selected"><div class="check">✓</div><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/dog.png"></div><div class="card-name">小狗</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/cat.png"></div><div class="card-name">小猫</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/rabbit.png"></div><div class="card-name">小兔子</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/dinosaur.png"></div><div class="card-name">小恐龙</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/fox.png"></div><div class="card-name">小狐狸</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/bear.png"></div><div class="card-name">小熊</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/elephant.png"></div><div class="card-name">大象</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/panda.png"></div><div class="card-name">熊猫</div></div>
+            <div class="icon-card"><div class="card-img"><img src="/ai-art-platform/assets/prompt-icons/bird.png"></div><div class="card-name">小鸟</div></div>
+          </div>
+          <div class="panel-footer">
+            <p>已选择：小狗</p>
+            <button>清空选择</button>
+          </div>
+        </div>
+        <div class="canvas-area">
+          <div class="canvas-deco"></div>
+          <div class="canvas-placeholder">
+            <div class="big-icon">✨</div>
+            <h3>你的画作将在这里诞生</h3>
+            <p>选择左侧小图标，点击开始生成</p>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-area">
+        <div class="bottom-left">
+          <button>📚 提示词库</button>
+          <button>🎮 技能玩法</button>
+          <button>📄 项目报告高清</button>
+        </div>
+        <div class="bottom-input">
+          <div class="input-row">
+            <div class="ref-img">参考图</div>
+            <div class="input-box">提示词输入...</div>
+            <div class="input-actions">
+              <button>退格</button>
+              <button>🔊 语音</button>
+              <button class="send-btn">发送</button>
+            </div>
+          </div>
+          <div class="param-row">
+            <span class="param-tag">模型：OpenAI</span>
+            <span class="param-tag">生成数量：1张</span>
+            <span class="param-tag">画幅比例：智能</span>
+            <span class="param-tag">图像风格：不指定</span>
+            <span class="param-tag">清晰度：高清</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const descs = {
+  warm: '<strong>方案1：温暖童趣风（奶油美术教室）</strong> — 奶油黄+暖橙色渐变底色，像走进一间阳光明媚的美术教室。温暖、活泼、有创造力，最适合 6-12 岁低龄孩子。顶部导航用珊瑚橙，卡片用奶油白，整体充满手绘和颜料的温暖感。',
+  fresh: '<strong>方案2：清新活力风（薄荷创作空间）</strong> — 薄荷绿+天蓝色渐变底色，像清晨的花园一样清爽有活力。不幼稚、不沉闷，适合 8-16 岁全年龄段。顶部导航用青绿色，卡片用浅绿白，整体干净清爽，长时间使用也不累眼。',
+  dream: '<strong>方案3：梦幻创意风（紫梦工作室）</strong> — 粉紫+淡蓝紫渐变底色，像进入一个梦幻的创意星空。有想象力、有艺术感，适合 10-16 岁青少年。顶部导航用紫蓝色，卡片用浅紫白，整体梦幻高级，满足大孩子的审美需求。'
+};
+
+function switchScheme(name) {
+  // 切换按钮状态
+  document.querySelectorAll('.scheme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.scheme === name);
+  });
+  // 切换页面显示
+  document.querySelectorAll('.page-wrapper').forEach(page => {
+    page.classList.toggle('active', page.id === 'page-' + name);
+  });
+  // 切换描述
+  document.getElementById('scheme-desc').innerHTML = descs[name];
+}
+</script>
+
+</body>
+</html>
