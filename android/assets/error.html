@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>连不上电脑</title>
+<style>
+  :root { --brand:#7c3aed; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; margin:0; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f6f5fb; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .card {
+    width:100%; max-width:560px; background:#fff; border-radius:20px;
+    box-shadow:0 12px 40px rgba(76,29,149,.12); padding:28px 26px 24px;
+  }
+  .icon {
+    width:56px; height:56px; border-radius:16px; margin-bottom:14px;
+    background:#fef2f2; display:flex; align-items:center; justify-content:center;
+  }
+  h1 { font-size:20px; margin:0 0 8px; }
+  .sub { color:var(--muted); font-size:13px; line-height:1.8; margin:0 0 18px; }
+  .url { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px;
+    background:#f3f4f6; padding:10px 12px; border-radius:10px; word-break:break-all; margin-bottom:18px; }
+  ul { margin:0 0 20px; padding-left:20px; color:#4b5563; font-size:13px; line-height:1.95; }
+  .btns { display:flex; gap:10px; }
+  button {
+    flex:1 1 0; height:50px; border:0; border-radius:12px; cursor:pointer;
+    font-size:15px; font-weight:700;
+  }
+  .primary { background:linear-gradient(135deg,var(--brand),#a78bfa); color:#fff;
+    box-shadow:0 6px 16px rgba(124,58,237,.26); }
+  .ghost { background:#fff; color:var(--brand); border:1.5px solid var(--line); }
+  button:active { transform:translateY(1px); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round">
+        <path d="M12 8v5" /><circle cx="12" cy="16.5" r=".6" fill="#dc2626" /><circle cx="12" cy="12" r="9" />
+      </svg>
+    </div>
+    <h1>连不上电脑上的服务</h1>
+    <p class="sub">App 是个“显示器”，页面内容在电脑上。修好下面任意一条，再点「重新连接」。</p>
+
+    <div class="url" id="u"></div>
+
+    <ul>
+      <li>电脑上有没有开着那个黑窗口？（开着才叫“服务在跑”）</li>
+      <li>平板和电脑是不是连的<b>同一个 Wi-Fi</b>？</li>
+      <li>电脑 IP 是不是变了？在电脑 CMD 里输入 <b>ipconfig</b> 看「无线局域网适配器」那行</li>
+    </ul>
+
+    <div class="btns">
+      <button class="ghost" id="setup">修改地址</button>
+      <button class="primary" id="retry">重新连接</button>
+    </div>
+  </div>
+
+<script>
+  var api = window.AiClass;
+  document.getElementById('u').textContent = (api && api.currentUrl && api.currentUrl()) || '未设置地址';
+  document.getElementById('retry').addEventListener('click', function () {
+    if (api) api.reloadCurrent();
+  });
+  document.getElementById('setup').addEventListener('click', function () {
+    if (api) api.openSetup();
+  });
+</script>
+</body>
+</html>

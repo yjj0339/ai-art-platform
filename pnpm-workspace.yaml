@@ -1,0 +1,15 @@
+packages:
+  - .
+
+# 保持各平台与现有依赖目录一致，避免 pnpm 升级后路径长度规则冲突。
+virtualStoreDirMaxLength: 120
+
+# pnpm 11 requires an explicit decision for dependency install scripts.
+# Only cross-platform build steps required by the Vite/Vue toolchain are allowed.
+allowBuilds:
+  sharp: true
+  '@parcel/watcher': false
+  canvas: false
+  core-js: true
+  esbuild: true
+  vue-demi: true

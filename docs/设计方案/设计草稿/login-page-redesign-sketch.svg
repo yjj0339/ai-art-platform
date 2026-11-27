@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef7ff"/>
+      <stop offset="0.52" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#e9f3ff"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8a3d"/>
+      <stop offset="1" stop-color="#d9822b"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="26" stdDeviation="34" flood-color="#5b8fc8" flood-opacity=".18"/>
+    </filter>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#2f6fa8" flood-opacity=".13"/>
+    </filter>
+  </defs>
+
+  <rect width="1440" height="960" fill="url(#bg)"/>
+  <path d="M102 168C212 58 390 38 518 106C658 180 726 152 864 94C1028 25 1244 78 1320 220C1400 370 1326 540 1184 624C1068 692 1004 784 874 858C696 958 462 906 346 762C260 654 130 628 74 504C24 392 22 248 102 168Z" fill="#d8ecff" opacity=".55"/>
+
+  <g transform="translate(72 54)">
+    <rect x="0" y="0" width="1296" height="70" rx="26" fill="#ffffff" opacity=".72"/>
+    <g transform="translate(30 18)">
+      <rect x="0" y="0" width="38" height="38" rx="14" fill="url(#orange)"/>
+      <text x="19" y="26" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="17" font-weight="800" fill="#fff">AI</text>
+      <text x="54" y="25" font-family="Microsoft YaHei, Arial" font-size="20" font-weight="800" fill="#17355a">AI创意美术教学平台</text>
+    </g>
+    <text x="1028" y="43" font-family="Microsoft YaHei, Arial" font-size="16" fill="#5a7291">帮助中心</text>
+    <text x="1128" y="43" font-family="Microsoft YaHei, Arial" font-size="16" fill="#5a7291">课堂演示</text>
+    <rect x="1206" y="16" width="62" height="38" rx="19" fill="#17355a"/>
+    <text x="1237" y="40" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="15" font-weight="700" fill="#fff">登录</text>
+  </g>
+
+  <g transform="translate(94 166)">
+    <rect x="0" y="0" width="566" height="690" rx="36" fill="#ffffff" opacity=".78" filter="url(#softShadow)"/>
+    <text x="54" y="96" font-family="Microsoft YaHei, Arial" font-size="52" font-weight="900" fill="#17355a">AI创意美术</text>
+    <text x="54" y="154" font-family="Microsoft YaHei, Arial" font-size="52" font-weight="900" fill="#17355a">教学平台</text>
+    <text x="58" y="205" font-family="Microsoft YaHei, Arial" font-size="24" fill="#456584">美术设计 · AI创作 · 平板课堂</text>
+
+    <g transform="translate(54 270)">
+      <rect x="0" y="0" width="458" height="330" rx="30" fill="#f6fbff" stroke="#c9ddf0"/>
+      <rect x="58" y="178" width="334" height="58" rx="29" fill="#d7eefb"/>
+      <rect x="116" y="74" width="220" height="206" rx="34" fill="#ffffff" stroke="#d6e5f5"/>
+      <rect x="158" y="110" width="138" height="28" rx="6" fill="#d9822b"/>
+      <rect x="174" y="148" width="106" height="94" rx="14" fill="#30aee9"/>
+      <circle cx="118" cy="128" r="42" fill="#c664c9"/>
+      <circle cx="352" cy="120" r="32" fill="#d8792b"/>
+      <circle cx="202" cy="240" r="70" fill="#2daeff"/>
+      <circle cx="250" cy="260" r="58" fill="#32bda9"/>
+      <path d="M36 270C84 246 122 250 160 280" fill="none" stroke="#ffb84a" stroke-width="10" stroke-linecap="round"/>
+      <path d="M320 60C356 30 394 32 424 70" fill="none" stroke="#6e8fe6" stroke-width="9" stroke-linecap="round"/>
+    </g>
+
+    <g transform="translate(54 636)">
+      <rect x="0" y="0" width="118" height="34" rx="17" fill="#e7f3ff"/>
+      <text x="59" y="23" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" font-weight="700" fill="#335d86">今日课堂</text>
+      <rect x="134" y="0" width="118" height="34" rx="17" fill="#fff1df"/>
+      <text x="193" y="23" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" font-weight="700" fill="#9b5a19">作品广场</text>
+      <rect x="268" y="0" width="118" height="34" rx="17" fill="#e7f7ef"/>
+      <text x="327" y="23" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" font-weight="700" fill="#27634d">AI画室</text>
+    </g>
+  </g>
+
+  <g transform="translate(724 166)">
+    <rect x="0" y="0" width="622" height="690" rx="36" fill="#ffffff" filter="url(#softShadow)"/>
+    <text x="56" y="68" font-family="Microsoft YaHei, Arial" font-size="30" font-weight="900" fill="#17355a">选择身份并进入工作台</text>
+    <text x="58" y="104" font-family="Microsoft YaHei, Arial" font-size="16" fill="#7188a3">保持原有登录功能，只优化布局、层级和视觉体验</text>
+
+    <g transform="translate(56 142)">
+      <rect x="0" y="0" width="510" height="74" rx="24" fill="#eef6ff"/>
+      <rect x="10" y="10" width="118" height="54" rx="18" fill="#ffffff" filter="url(#cardShadow)"/>
+      <text x="46" y="44" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="18" font-weight="800" fill="#ff7a1a">画</text>
+      <text x="82" y="44" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="18" font-weight="800" fill="#ff7a1a">学生</text>
+      <text x="200" y="44" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="18" font-weight="800" fill="#3f5e80">老师</text>
+      <text x="318" y="44" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="18" font-weight="800" fill="#3f5e80">家长</text>
+      <text x="436" y="44" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="18" font-weight="800" fill="#3f5e80">管理员</text>
+    </g>
+
+    <g transform="translate(56 244)">
+      <rect x="0" y="0" width="113" height="112" rx="22" fill="#fff9f2" stroke="#ffb26f"/>
+      <text x="56" y="40" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="26" font-weight="800" fill="#d8792b">笔</text>
+      <text x="56" y="73" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="17" font-weight="800" fill="#17355a">初级版</text>
+      <text x="56" y="96" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" fill="#6d86a2">4-6岁</text>
+
+      <rect x="132" y="0" width="113" height="112" rx="22" fill="#f7fbff" stroke="#d4e3f2"/>
+      <text x="188" y="40" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="26" font-weight="800" fill="#30aee9">盘</text>
+      <text x="188" y="73" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="17" font-weight="800" fill="#17355a">入门版</text>
+      <text x="188" y="96" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" fill="#6d86a2">6-9岁</text>
+
+      <rect x="264" y="0" width="113" height="112" rx="22" fill="#f7fbff" stroke="#d4e3f2"/>
+      <text x="320" y="40" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="26" font-weight="800" fill="#32bda9">拼</text>
+      <text x="320" y="73" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="17" font-weight="800" fill="#17355a">进阶版</text>
+      <text x="320" y="96" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" fill="#6d86a2">10-12岁</text>
+
+      <rect x="396" y="0" width="113" height="112" rx="22" fill="#f7fbff" stroke="#d4e3f2"/>
+      <text x="452" y="40" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="26" font-weight="800" fill="#3f5e80">屏</text>
+      <text x="452" y="73" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="17" font-weight="800" fill="#17355a">高级版</text>
+      <text x="452" y="96" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="14" fill="#6d86a2">13岁+</text>
+    </g>
+
+    <g transform="translate(56 402)">
+      <text x="0" y="0" font-family="Microsoft YaHei, Arial" font-size="15" font-weight="700" fill="#46617f">学生账号</text>
+      <rect x="0" y="18" width="510" height="56" rx="16" fill="#f7fbff" stroke="#cddff0"/>
+      <text x="22" y="53" font-family="Microsoft YaHei, Arial" font-size="17" fill="#7690aa">小画家阿橙</text>
+
+      <text x="0" y="108" font-family="Microsoft YaHei, Arial" font-size="15" font-weight="700" fill="#46617f">登录密码</text>
+      <rect x="0" y="126" width="510" height="56" rx="16" fill="#f7fbff" stroke="#cddff0"/>
+      <text x="22" y="162" font-family="Microsoft YaHei, Arial" font-size="18" fill="#7690aa">••••••</text>
+
+      <rect x="0" y="216" width="18" height="18" rx="5" fill="#3c9df6"/>
+      <path d="M5 9.8L8.4 13L14 5.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="30" y="231" font-family="Microsoft YaHei, Arial" font-size="15" fill="#46617f">记住我</text>
+      <text x="430" y="231" font-family="Microsoft YaHei, Arial" font-size="15" font-weight="700" fill="#d8792b">忘记密码</text>
+
+      <rect x="0" y="270" width="510" height="64" rx="18" fill="url(#orange)"/>
+      <text x="255" y="310" text-anchor="middle" font-family="Microsoft YaHei, Arial" font-size="20" font-weight="900" fill="#fff">进入学生工作台</text>
+
+      <text x="164" y="382" font-family="Microsoft YaHei, Arial" font-size="16" font-weight="700" fill="#d8792b">头像快捷登录</text>
+      <text x="304" y="382" font-family="Microsoft YaHei, Arial" font-size="16" font-weight="700" fill="#d8792b">扫码登录占位</text>
+    </g>
+  </g>
+</svg>

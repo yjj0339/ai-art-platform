@@ -1,0 +1,611 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-19T13:21:35.753Z",
+  "templates": [
+    {
+      "id": "h5-product-design-story",
+      "name": "我的产品设计故事",
+      "layout": "product-design-story",
+      "description": "高级版学生第一人称讲述产品灵感、草图、AI方案、3D验证与真实使用场景。",
+      "status": "published",
+      "theme": {
+        "primary": "#1559d6",
+        "secondary": "#0bd0e8",
+        "accent": "#f59a23",
+        "background": "#eef5ff",
+        "surface": "#ffffff",
+        "text": "#163565"
+      },
+      "fontFamily": "Microsoft YaHei",
+      "contentDensity": "standard",
+      "coverImage": "/assets/h5-report/product-design-story.png",
+      "pageMode": "paged",
+      "storyPreset": "product-design-story",
+      "renderVersion": 2,
+      "pageDesigns": {
+        "cover": {
+          "enabled": true,
+          "variant": "cover-student-product-a",
+          "backgroundStyle": "blueprint-collage",
+          "characterPose": "presenting",
+          "characterPosition": "left-bottom",
+          "title": "这是我的设计",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [
+            "/api/h5-visual-template-assets/h5-product-design-story/cover/reference-1787145545949-943490b1ba3a.png"
+          ],
+          "referenceStrength": 0.7
+        },
+        "inspiration": {
+          "enabled": true,
+          "variant": "inspiration-board-a",
+          "backgroundStyle": "research-collage",
+          "characterPose": "thinking",
+          "title": "我的灵感从哪里来",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        },
+        "problem": {
+          "enabled": true,
+          "variant": "problem-cards-a",
+          "backgroundStyle": "sticky-notes",
+          "characterPose": "pointing",
+          "title": "我想解决的问题",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        },
+        "sketch": {
+          "enabled": true,
+          "variant": "sketch-compare-a",
+          "backgroundStyle": "blueprint-paper",
+          "characterPose": "drawing",
+          "title": "我画下第一版想法",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        },
+        "ai": {
+          "enabled": true,
+          "variant": "ai-compare-a",
+          "backgroundStyle": "ai-connection",
+          "characterPose": "comparing",
+          "title": "我和AI一起试方案",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        },
+        "model": {
+          "enabled": true,
+          "variant": "model-showcase-a",
+          "backgroundStyle": "model-grid",
+          "characterPose": "presenting-3d",
+          "title": "我把它做成立体的",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        },
+        "scene": {
+          "enabled": true,
+          "variant": "scene-immersive-a",
+          "backgroundStyle": "scene-extend",
+          "characterPose": "explaining",
+          "title": "我想象它真正被使用",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        },
+        "reflection": {
+          "enabled": true,
+          "variant": "reflection-timeline-a",
+          "backgroundStyle": "blueprint-paper",
+          "characterPose": "thumbs-up",
+          "title": "这是我的收获",
+          "allowedSourceTypes": [
+            "finalWork",
+            "sketch",
+            "aiImage",
+            "model3d",
+            "scene",
+            "video"
+          ],
+          "fallbackVariant": "friendly-empty",
+          "allowRegenerate": true,
+          "referenceImages": [],
+          "referenceStrength": 0.7
+        }
+      },
+      "minPages": 6,
+      "maxPages": 12,
+      "moduleOrder": [
+        "cover",
+        "inspiration",
+        "problem",
+        "sketch",
+        "ai",
+        "model",
+        "scene",
+        "reflection",
+        "course",
+        "idea",
+        "process",
+        "aiPrompt",
+        "aiProcess",
+        "finalWork",
+        "aiReview",
+        "teacherComment",
+        "backCover"
+      ],
+      "hiddenModules": [],
+      "officialButtonText": "进入官网",
+      "officialUrl": "",
+      "builtIn": true,
+      "displayOptions": {
+        "studentInfo": true,
+        "chapterNav": true,
+        "social": true,
+        "download": true,
+        "official": true
+      },
+      "decorImages": [],
+      "previewImages": [],
+      "posterConfig": {
+        "backgroundImage": "/assets/h5-report/product-design-story.png",
+        "titleAlign": "left",
+        "showStudentInfo": true,
+        "showBrand": true,
+        "qrPosition": "bottom-right"
+      },
+      "createdBy": "管理员",
+      "createdAt": "2026-08-19T12:13:01.901Z",
+      "updatedAt": "2026-08-19T13:19:26.693Z",
+      "visualGeneration": {
+        "enabled": false,
+        "mode": "full-page",
+        "storyOrder": [
+          "cover",
+          "inspiration",
+          "problem",
+          "sketch",
+          "ai",
+          "model",
+          "scene",
+          "reflection"
+        ]
+      }
+    },
+    {
+      "id": "h5-kids-classroom",
+      "name": "??????",
+      "layout": "kids-classroom",
+      "description": "????????????????????",
+      "status": "published",
+      "theme": {
+        "primary": "#1677ff",
+        "secondary": "#20c7d9",
+        "accent": "#ff7a00",
+        "background": "#f5f9ff",
+        "surface": "#ffffff",
+        "text": "#1f3150"
+      },
+      "fontFamily": "Microsoft YaHei",
+      "contentDensity": "relaxed",
+      "coverImage": "/assets/h5-report/kids-classroom.png",
+      "moduleOrder": [
+        "cover",
+        "course",
+        "idea",
+        "process",
+        "aiPrompt",
+        "aiProcess",
+        "finalWork",
+        "aiReview",
+        "teacherComment",
+        "backCover",
+        "inspiration",
+        "problem",
+        "sketch",
+        "ai",
+        "model",
+        "scene",
+        "reflection"
+      ],
+      "hiddenModules": [],
+      "officialButtonText": "????",
+      "officialUrl": "https://example.com",
+      "builtIn": true,
+      "pageMode": "paged",
+      "storyPreset": "",
+      "renderVersion": 1,
+      "pageDesigns": {},
+      "minPages": 6,
+      "maxPages": 12,
+      "displayOptions": {
+        "studentInfo": true,
+        "chapterNav": true,
+        "social": true,
+        "download": true,
+        "official": true
+      },
+      "decorImages": [],
+      "previewImages": [],
+      "posterConfig": {
+        "backgroundImage": "/assets/h5-report/kids-classroom.png",
+        "titleAlign": "left",
+        "showStudentInfo": true,
+        "showBrand": true,
+        "qrPosition": "bottom-right"
+      },
+      "createdBy": "???",
+      "createdAt": "2026-08-08T16:13:24.700Z",
+      "updatedAt": "2026-08-08T16:13:24.700Z",
+      "visualGeneration": {
+        "enabled": false,
+        "mode": "full-page",
+        "storyOrder": [
+          "cover",
+          "inspiration",
+          "problem",
+          "sketch",
+          "ai",
+          "model",
+          "scene",
+          "reflection"
+        ]
+      }
+    },
+    {
+      "id": "h5-art-gallery",
+      "name": "??????",
+      "layout": "art-gallery",
+      "description": "??????????????????",
+      "status": "published",
+      "theme": {
+        "primary": "#18233b",
+        "secondary": "#0f766e",
+        "accent": "#d6b16b",
+        "background": "#f7f9fc",
+        "surface": "#ffffff",
+        "text": "#27364f"
+      },
+      "fontFamily": "Microsoft YaHei",
+      "contentDensity": "relaxed",
+      "coverImage": "/assets/h5-report/art-gallery.png",
+      "moduleOrder": [
+        "cover",
+        "course",
+        "idea",
+        "process",
+        "aiPrompt",
+        "aiProcess",
+        "finalWork",
+        "aiReview",
+        "teacherComment",
+        "backCover",
+        "inspiration",
+        "problem",
+        "sketch",
+        "ai",
+        "model",
+        "scene",
+        "reflection"
+      ],
+      "hiddenModules": [],
+      "officialButtonText": "????",
+      "officialUrl": "https://example.com",
+      "builtIn": true,
+      "pageMode": "paged",
+      "storyPreset": "",
+      "renderVersion": 1,
+      "pageDesigns": {},
+      "minPages": 6,
+      "maxPages": 12,
+      "displayOptions": {
+        "studentInfo": true,
+        "chapterNav": true,
+        "social": true,
+        "download": true,
+        "official": true
+      },
+      "decorImages": [],
+      "previewImages": [],
+      "posterConfig": {
+        "backgroundImage": "/assets/h5-report/art-gallery.png",
+        "titleAlign": "left",
+        "showStudentInfo": true,
+        "showBrand": true,
+        "qrPosition": "bottom-right"
+      },
+      "createdBy": "???",
+      "createdAt": "2026-08-08T16:13:24.700Z",
+      "updatedAt": "2026-08-08T16:13:24.700Z",
+      "visualGeneration": {
+        "enabled": false,
+        "mode": "full-page",
+        "storyOrder": [
+          "cover",
+          "inspiration",
+          "problem",
+          "sketch",
+          "ai",
+          "model",
+          "scene",
+          "reflection"
+        ]
+      }
+    },
+    {
+      "id": "h5-growth-file",
+      "name": "??????",
+      "layout": "growth-file",
+      "description": "????????????????????",
+      "status": "published",
+      "theme": {
+        "primary": "#6d4aff",
+        "secondary": "#19b6a6",
+        "accent": "#f3b64a",
+        "background": "#f7f6ff",
+        "surface": "#ffffff",
+        "text": "#2f315d"
+      },
+      "fontFamily": "Microsoft YaHei",
+      "contentDensity": "relaxed",
+      "coverImage": "/assets/h5-report/growth-file.png",
+      "moduleOrder": [
+        "cover",
+        "course",
+        "idea",
+        "process",
+        "aiPrompt",
+        "aiProcess",
+        "finalWork",
+        "aiReview",
+        "teacherComment",
+        "backCover",
+        "inspiration",
+        "problem",
+        "sketch",
+        "ai",
+        "model",
+        "scene",
+        "reflection"
+      ],
+      "hiddenModules": [],
+      "officialButtonText": "????",
+      "officialUrl": "https://example.com",
+      "builtIn": true,
+      "pageMode": "paged",
+      "storyPreset": "",
+      "renderVersion": 1,
+      "pageDesigns": {},
+      "minPages": 6,
+      "maxPages": 12,
+      "displayOptions": {
+        "studentInfo": true,
+        "chapterNav": true,
+        "social": true,
+        "download": true,
+        "official": true
+      },
+      "decorImages": [],
+      "previewImages": [],
+      "posterConfig": {
+        "backgroundImage": "/assets/h5-report/growth-file.png",
+        "titleAlign": "left",
+        "showStudentInfo": true,
+        "showBrand": true,
+        "qrPosition": "bottom-right"
+      },
+      "createdBy": "???",
+      "createdAt": "2026-08-08T16:13:24.700Z",
+      "updatedAt": "2026-08-08T16:13:24.700Z",
+      "visualGeneration": {
+        "enabled": false,
+        "mode": "full-page",
+        "storyOrder": [
+          "cover",
+          "inspiration",
+          "problem",
+          "sketch",
+          "ai",
+          "model",
+          "scene",
+          "reflection"
+        ]
+      }
+    },
+    {
+      "id": "h5-ai-tech",
+      "name": "AI????",
+      "layout": "ai-tech",
+      "description": "?????AI????????3D??????",
+      "status": "published",
+      "theme": {
+        "primary": "#1368ff",
+        "secondary": "#17c7e5",
+        "accent": "#8b5cf6",
+        "background": "#eef7ff",
+        "surface": "#ffffff",
+        "text": "#10254c"
+      },
+      "fontFamily": "Microsoft YaHei",
+      "contentDensity": "relaxed",
+      "coverImage": "/assets/h5-report/ai-tech.png",
+      "moduleOrder": [
+        "cover",
+        "course",
+        "idea",
+        "process",
+        "aiPrompt",
+        "aiProcess",
+        "finalWork",
+        "aiReview",
+        "teacherComment",
+        "backCover",
+        "inspiration",
+        "problem",
+        "sketch",
+        "ai",
+        "model",
+        "scene",
+        "reflection"
+      ],
+      "hiddenModules": [],
+      "officialButtonText": "????",
+      "officialUrl": "https://example.com",
+      "builtIn": true,
+      "pageMode": "paged",
+      "storyPreset": "",
+      "renderVersion": 1,
+      "pageDesigns": {},
+      "minPages": 6,
+      "maxPages": 12,
+      "displayOptions": {
+        "studentInfo": true,
+        "chapterNav": true,
+        "social": true,
+        "download": true,
+        "official": true
+      },
+      "decorImages": [],
+      "previewImages": [],
+      "posterConfig": {
+        "backgroundImage": "/assets/h5-report/ai-tech.png",
+        "titleAlign": "left",
+        "showStudentInfo": true,
+        "showBrand": true,
+        "qrPosition": "bottom-right"
+      },
+      "createdBy": "???",
+      "createdAt": "2026-08-08T16:13:24.700Z",
+      "updatedAt": "2026-08-10T01:39:39.863Z",
+      "visualGeneration": {
+        "enabled": false,
+        "mode": "full-page",
+        "storyOrder": [
+          "cover",
+          "inspiration",
+          "problem",
+          "sketch",
+          "ai",
+          "model",
+          "scene",
+          "reflection"
+        ]
+      }
+    }
+  ],
+  "editions": {
+    "junior": {
+      "status": "unconfigured",
+      "rendererKey": "",
+      "defaultTemplateId": "",
+      "allowedTemplateIds": [],
+      "studentCanChoose": false,
+      "contentProfile": "starter-self-narration",
+      "agentId": "report-agent-h5-first-person",
+      "auditPolicy": "h5-default-auto"
+    },
+    "starter": {
+      "status": "enabled",
+      "rendererKey": "starter-simple",
+      "defaultTemplateId": "h5-kids-classroom",
+      "allowedTemplateIds": [
+        "h5-kids-classroom"
+      ],
+      "studentCanChoose": false,
+      "contentProfile": "starter-self-narration",
+      "agentId": "report-agent-h5-first-person",
+      "auditPolicy": "h5-default-auto"
+    },
+    "advanced": {
+      "status": "unconfigured",
+      "rendererKey": "",
+      "defaultTemplateId": "",
+      "allowedTemplateIds": [],
+      "studentCanChoose": false,
+      "contentProfile": "advanced-portfolio",
+      "agentId": "report-agent-h5-first-person",
+      "auditPolicy": "h5-default-auto"
+    },
+    "pro": {
+      "status": "enabled",
+      "rendererKey": "pro-workbench",
+      "defaultTemplateId": "h5-ai-tech",
+      "allowedTemplateIds": [
+        "h5-product-design-story",
+        "h5-ai-tech",
+        "h5-art-gallery",
+        "h5-growth-file"
+      ],
+      "studentCanChoose": true,
+      "contentProfile": "pro-designer-story",
+      "agentId": "report-agent-h5-first-person",
+      "auditPolicy": "h5-default-auto"
+    }
+  }
+}

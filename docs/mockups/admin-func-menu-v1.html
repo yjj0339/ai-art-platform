@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>后台左侧栏 · 功能管理折叠分组效果图 v1</title>
+<style>
+  :root{
+    --primary:#FF7A00;
+    --sidebar:#111827;
+    --page:#eef2f7;
+    --line:rgba(17,24,39,.1);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:26px 30px 40px;
+    background:var(--page);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    color:#111827;
+  }
+  h1{font-size:20px;margin:0 0 6px;font-weight:800}
+  .sub{font-size:13px;color:#6b7280;margin:0 0 20px;line-height:1.75;max-width:980px}
+  .sub b{color:#111827}
+
+  .stage{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+
+  .frame-wrap{display:flex;flex-direction:column;gap:9px}
+  .frame-cap{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#374151}
+  .frame-cap i{width:20px;height:20px;border-radius:6px;background:#111827;color:#fff;font-style:normal;font-size:11px;display:grid;place-items:center;flex:0 0 auto}
+  .frame-cap span{font-weight:500;color:#6b7280;font-size:12px}
+
+  .frame{
+    position:relative;width:430px;height:600px;
+    display:grid;grid-template-columns:248px minmax(0,1fr);
+    border-radius:16px;overflow:hidden;
+    background:var(--page);
+    border:1px solid rgba(17,24,39,.13);
+  }
+
+  /* ---------- 左侧栏 ---------- */
+  .admin-sidebar{
+    height:100%;background:var(--sidebar);color:#fff;
+    display:flex;flex-direction:column;
+    padding:16px 14px 0;position:relative;
+  }
+  .admin-brand{display:flex;align-items:center;gap:11px;padding:2px 0 14px;flex:0 0 auto}
+  .admin-brand>b{
+    width:44px;height:44px;border-radius:13px;background:var(--primary);
+    display:grid;place-items:center;font-size:15px;font-weight:900;
+  }
+  .admin-brand section{display:grid;gap:3px}
+  .admin-brand strong{font-size:16px;font-weight:800;letter-spacing:.2px}
+  .admin-brand small{color:#cbd5e1;font-size:11px}
+
+  .admin-nav{
+    flex:1 1 auto;min-height:0;
+    overflow-y:auto;overflow-x:hidden;
+    display:grid;gap:6px;align-content:start;
+    padding:2px 5px 14px 0;
+  }
+  .admin-nav::-webkit-scrollbar{width:6px}
+  .admin-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:3px}
+  .admin-nav::-webkit-scrollbar-track{background:transparent}
+
+  .nav-item{
+    min-height:48px;border:0;border-radius:12px;padding:0 12px;
+    background:transparent;color:#d1d5db;
+    display:flex;align-items:center;gap:10px;
+    font-family:inherit;font-size:14px;font-weight:700;text-align:left;
+    cursor:pointer;width:100%;
+  }
+  .nav-item>.ico{
+    width:28px;height:28px;border-radius:9px;flex:0 0 auto;
+    background:rgba(255,255,255,.09);
+    display:grid;place-items:center;
+    font-size:11px;font-weight:800;color:#e5e7eb;
+  }
+  .nav-item:hover,.nav-item.active{background:rgba(255,122,0,.16);color:#fff}
+  .nav-item.active>.ico,.nav-item:hover>.ico{background:rgba(255,122,0,.3);color:#fff}
+
+  .nav-item.is-group .caret{
+    margin-left:auto;width:16px;height:16px;flex:0 0 auto;
+    color:#9ca3af;transition:transform .18s ease;
+  }
+  .nav-item.is-group.open{background:rgba(255,122,0,.16);color:#fff}
+  .nav-item.is-group.open .caret{transform:rotate(180deg);color:#fff}
+  .nav-item.is-group.open>.ico{background:rgba(255,122,0,.3);color:#fff}
+
+  .nav-children{
+    display:grid;gap:3px;
+    margin:3px 0 5px 20px;padding-left:11px;
+    border-left:1px solid rgba(255,255,255,.14);
+  }
+  .nav-children[hidden]{display:none}
+  .nav-child{
+    position:relative;
+    min-height:38px;border:0;border-radius:9px;
+    padding:0 10px;background:transparent;color:#9ca3af;
+    font-family:inherit;font-size:13px;font-weight:600;text-align:left;
+    cursor:pointer;display:flex;align-items:center;
+  }
+  .nav-child::before{
+    content:"";position:absolute;left:-15px;top:50%;width:9px;height:1px;
+    background:rgba(255,255,255,.16);
+  }
+  .nav-child:hover{background:rgba(255,255,255,.06);color:#e5e7eb}
+  .nav-child.active{background:rgba(255,122,0,.14);color:var(--primary)}
+  .nav-child.active::after{
+    content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--primary);
+  }
+
+  .sidebar-footer{
+    flex:0 0 auto;
+    padding:10px 0 14px;
+    border-top:1px solid rgba(255,255,255,.09);
+    background:var(--sidebar);
+  }
+  .sidebar-footer button{
+    width:100%;min-height:40px;border:0;border-radius:10px;
+    background:rgba(255,255,255,.06);color:#cbd5e1;
+    font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  }
+
+  .scroll-hint{
+    position:absolute;left:0;right:0;bottom:64px;height:34px;pointer-events:none;
+    background:linear-gradient(to top,rgba(17,24,39,.97),rgba(17,24,39,0));
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:1px;
+    z-index:3;
+  }
+  .scroll-hint span{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.3px}
+
+  /* ---------- 右侧内容区（示意） ---------- */
+  .admin-main{padding:16px;display:flex;flex-direction:column;gap:11px;min-width:0;background:var(--page)}
+  .m-topbar{background:#fff;border-radius:14px;padding:14px 15px}
+  .m-topbar h2{margin:0 0 4px;font-size:16px;font-weight:800}
+  .m-topbar p{margin:0;font-size:11px;color:#6b7280;line-height:1.5}
+  .m-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .m-card{background:#fff;border-radius:12px;padding:11px}
+  .m-card span{display:block;font-size:10px;color:#6b7280;margin-bottom:5px}
+  .m-card b{font-size:19px;color:var(--primary);font-weight:800}
+  .m-panel{background:#fff;border-radius:12px;padding:12px;flex:1 1 auto}
+  .m-panel h3{margin:0 0 9px;font-size:12px;font-weight:800}
+  .m-row{height:28px;border-radius:8px;background:#f5f7fa;margin-bottom:7px}
+  .m-row:nth-child(3){width:76%}
+
+  /* 标注 */
+  .pin{
+    position:absolute;width:19px;height:19px;border-radius:50%;
+    background:var(--primary);color:#fff;font-size:11px;font-weight:800;
+    display:grid;place-items:center;border:2px solid #fff;z-index:6;
+  }
+
+  /* 说明 */
+  .notes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:24px}
+  .note{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .note h4{margin:0 0 6px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:7px}
+  .note h4 i{
+    width:17px;height:17px;border-radius:50%;background:var(--primary);color:#fff;
+    font-style:normal;font-size:10px;display:grid;place-items:center;flex:0 0 auto;
+  }
+  .note p{margin:0;font-size:12px;color:#4b5563;line-height:1.7}
+
+  .compare{
+    margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;
+    padding:16px 20px;display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start;
+  }
+  .compare h4{margin:0 0 8px;font-size:12px;font-weight:800;color:#6b7280;letter-spacing:.3px}
+  .compare ul{margin:0;padding-left:15px;font-size:12.5px;color:#374151;line-height:1.95}
+  .compare .before{color:#9ca3af}
+  .compare .after li{font-weight:600}
+  .compare .after li.plain{font-weight:500;color:#6b7280}
+
+  .tip{margin:14px 0 0;font-size:12px;color:#6b7280}
+  .tip b{color:var(--primary)}
+</style>
+</head>
+<body>
+
+<h1>后台左侧栏改造 · 「功能管理」折叠分组</h1>
+<p class="sub">
+  把 <b>API 配置 / AI 玩法中心 / 提示词库管理 / 智能体配置</b> 四项收进一个「功能管理」里，点一下展开、再点一下收起；
+  同时左侧栏改成<b>可以独立上下滚动</b>，底部「退出登录」永远钉在屏幕底部，不会被菜单挤走。<br>
+  下面是两帧对照：①默认收起　②点开后展开。可以直接点「功能管理」自己试。
+</p>
+
+<div class="stage">
+
+  <div class="frame-wrap">
+    <div class="frame-cap"><i>1</i>默认状态（收起）<span>菜单更短，一屏基本放得下</span></div>
+    <div class="frame" id="frame1">
+      <aside class="admin-sidebar">
+        <div class="admin-brand">
+          <b>AI</b>
+          <section><strong>管理后台</strong><small>AI创意美术教学平台</small></section>
+        </div>
+        <nav class="admin-nav" id="nav1"></nav>
+        <div class="sidebar-footer"><button type="button">退出登录</button></div>
+      </aside>
+      <section class="admin-main">
+        <div class="m-topbar"><h2>数据大盘</h2><p>查看校区、账号、AI 调用和成本概览。</p></div>
+        <div class="m-cards">
+          <div class="m-card"><span>校区数</span><b>2</b></div>
+          <div class="m-card"><span>学生账号</span><b>186</b></div>
+        </div>
+        <div class="m-panel"><h3>上线监控</h3><div class="m-row"></div><div class="m-row"></div><div class="m-row"></div></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="frame-wrap">
+    <div class="frame-cap"><i>2</i>点开「功能管理」<span>四个子项竖排展开</span></div>
+    <div class="frame" id="frame2">
+      <aside class="admin-sidebar">
+        <div class="admin-brand">
+          <b>AI</b>
+          <section><strong>管理后台</strong><small>AI创意美术教学平台</small></section>
+        </div>
+        <nav class="admin-nav" id="nav2"></nav>
+        <div class="scroll-hint" id="hint2"><span>菜单可继续向下滚动</span></div>
+        <div class="sidebar-footer"><button type="button">退出登录</button></div>
+      </aside>
+      <section class="admin-main">
+        <div class="m-topbar"><h2>AI玩法中心</h2><p>配置、发布并管理学生端可用的图像与视频玩法。</p></div>
+        <div class="m-cards">
+          <div class="m-card"><span>已发布玩法</span><b>10</b></div>
+          <div class="m-card"><span>草稿</span><b>3</b></div>
+        </div>
+        <div class="m-panel"><h3>玩法列表</h3><div class="m-row"></div><div class="m-row"></div><div class="m-row"></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <div class="note">
+    <h4><i>1</i>一个入口管四件事</h4>
+    <p>原来 4 个独立菜单，合并成 1 个「功能管理」，一级菜单从 10 项变 7 项。</p>
+  </div>
+  <div class="note">
+    <h4><i>2</i>展开时父项保持高亮</h4>
+    <p>点开后「功能管理」底色变橙、箭头翻转朝上，一眼看出这四个子项是从它来的。</p>
+  </div>
+  <div class="note">
+    <h4><i>3</i>子项缩进 + 竖线</h4>
+    <p>子项往右缩、左边带细竖线；选中项橙色高亮加小圆点，层级关系和父项区分清楚。</p>
+  </div>
+  <div class="note">
+    <h4><i>4</i>左侧栏自己滚动</h4>
+    <p>菜单超高时导航区上下滚，「退出登录」始终钉在底部，不会被滚走。</p>
+  </div>
+</div>
+
+<div class="compare">
+  <div>
+    <h4>现在（10 项）</h4>
+    <ul class="before">
+      <li>数据大盘</li>
+      <li>账号权限</li>
+      <li>课程库管理</li>
+      <li>H5报告中心</li>
+      <li>报告工作流库</li>
+      <li>API 配置</li>
+      <li>AI玩法中心</li>
+      <li>提示词库管理</li>
+      <li>智能体配置</li>
+      <li>内容审核</li>
+      <li>系统设置</li>
+    </ul>
+  </div>
+  <div>
+    <h4>改后（7 项）</h4>
+    <ul class="after">
+      <li>数据大盘</li>
+      <li>账号权限</li>
+      <li>课程库管理</li>
+      <li>H5报告中心</li>
+      <li>报告工作流库</li>
+      <li>功能管理 ▾</li>
+      <li class="plain" style="list-style:none;margin-left:-4px">└ API 配置<br>└ AI玩法中心<br>└ 提示词库管理<br>└ 智能体配置</li>
+      <li>内容审核</li>
+      <li>系统设置</li>
+    </ul>
+  </div>
+  <div style="flex:1 1 280px;min-width:250px">
+    <h4>折叠规则</h4>
+    <ul class="after">
+      <li>默认收起，只显示「功能管理」</li>
+      <li>点一下展开，再点一下收起</li>
+      <li>停在子页面时分组保持展开</li>
+      <li>页面、权限、原有功能都不变</li>
+    </ul>
+  </div>
+</div>
+
+<p class="tip">这是<b>效果图</b>（模拟界面），不是真实后台。方向你点头后我再动代码。</p>
+
+<script>
+  const TOP = [
+    { id:'dashboard', label:'数据大盘', icon:'数' },
+    { id:'accounts',  label:'账号权限', icon:'权' },
+    { id:'courses',   label:'课程库管理', icon:'课' },
+    { id:'h5',        label:'H5报告中心', icon:'H5' },
+    { id:'flow',      label:'报告工作流库', icon:'流' },
+    { id:'func',      label:'功能管理', icon:'功', group:[
+        { id:'api',     label:'API 配置' },
+        { id:'feature', label:'AI玩法中心' },
+        { id:'prompt',  label:'提示词库管理' },
+        { id:'agents',  label:'智能体配置' }
+      ] },
+    { id:'audit',    label:'内容审核', icon:'审' },
+    { id:'settings', label:'系统设置', icon:'设' }
+  ];
+  const CARET = '<svg class="caret" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+    '<path d="M4 6.5L8 10.5L12 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function build(el, opt){
+    el.innerHTML = '';
+    let groupBtn = null, groupBox = null;
+    TOP.forEach(function(item){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'nav-item' + (item.group ? ' is-group' : '') + (item.group ? ' open' : '');
+      btn.innerHTML = '<span class="ico">' + item.icon + '</span><span>' + item.label + '</span>' +
+        (item.group ? CARET : '');
+      el.appendChild(btn);
+
+      if (!item.group) return;
+      groupBtn = btn;
+
+      const box = document.createElement('div');
+      box.className = 'nav-children';
+      item.group.forEach(function(sub){
+        const sb = document.createElement('button');
+        sb.type = 'button';
+        sb.className = 'nav-child' + (opt.openChild === sub.id ? ' active' : '');
+        sb.textContent = sub.label;
+        box.appendChild(sb);
+      });
+      el.appendChild(box);
+      groupBox = box;
+
+      let open = !!opt.open;
+      box.hidden = !open;
+      btn.classList.toggle('open', open);
+
+      btn.addEventListener('click', function(){
+        open = !open;
+        box.hidden = !open;
+        btn.classList.toggle('open', open);
+        if (open) el.scrollTop = Math.max(0, btn.offsetTop - 24);
+      });
+    });
+    return { groupBtn, groupBox };
+  }
+
+  const a = build(document.getElementById('nav1'), { open:false });
+
+  function pin(frame, anchor, num){
+    if (!anchor) return;
+    const fr = frame.getBoundingClientRect();
+    const r = anchor.getBoundingClientRect();
+    const d = document.createElement('div');
+    d.className = 'pin';
+    d.textContent = num;
+    d.style.left = '250px';
+    d.style.top = Math.round(r.top - fr.top + r.height / 2 - 9.5) + 'px';
+    frame.appendChild(d);
+  }
+
+  const f1 = document.getElementById('frame1');
+  const f2 = document.getElementById('frame2');
+  const b = build(document.getElementById('nav2'), { open:true, openChild:'feature' });
+
+  pin(f1, a.groupBtn, '1');
+  pin(f2, b.groupBtn, '2');
+  pin(f2, b.groupBox.firstChild, '3');
+  pin(f2, document.getElementById('hint2'), '4');
+</script>
+</body>
+</html>

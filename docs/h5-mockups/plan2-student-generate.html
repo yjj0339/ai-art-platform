@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学生端 · 生成我的 H5 创作报告（效果图）</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #f5f7fb; color: #1b2740;
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px; -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  button:disabled { cursor: not-allowed; }
+
+  /* ================= 顶栏 ================= */
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    height: 66px; display: flex; align-items: center; gap: 16px;
+    padding: 0 24px; background: #fff; border-bottom: 1px solid #e6ecf5;
+  }
+  .back {
+    width: 38px; height: 38px; border-radius: 11px; border: 1px solid #e6ecf5;
+    display: grid; place-items: center; font-size: 19px; color: #4a6484; flex: 0 0 38px;
+  }
+  .back:hover { background: #f4f7fd; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 9px; flex: 0 0 30px;
+    background: linear-gradient(140deg, #285df0, #f66d4e);
+  }
+  .brand h1 { margin: 0; font-size: 16px; letter-spacing: -.2px; white-space: nowrap; }
+  .brand small { display: block; margin-top: 2px; color: #8494ac; font-size: 11.5px; font-weight: 400; }
+
+  .steps { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .steps li { display: flex; align-items: center; gap: 7px; list-style: none; font-size: 12.5px; color: #97a5bb; }
+  .steps li b {
+    width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center;
+    background: #eef1f7; color: #97a5bb; font-size: 11.5px; font-weight: 700;
+  }
+  .steps li.done { color: #285df0; }
+  .steps li.done b { background: #e8efff; color: #285df0; }
+  .steps li.on { color: #1b2740; font-weight: 700; }
+  .steps li.on b { background: #285df0; color: #fff; }
+  .steps i { width: 22px; height: 1px; background: #dde4ef; }
+  .who {
+    display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px;
+    border: 1px solid #e6ecf5; border-radius: 999px; background: #fff;
+  }
+  .who span { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(145deg, #f9a273, #2963ee); }
+  .who em { font-style: normal; font-size: 13px; }
+
+  /* ================= 主体 ================= */
+  .wrap {
+    display: grid; grid-template-columns: 512px minmax(0, 1fr);
+    gap: 18px; padding: 18px 24px 28px; max-width: 1600px; margin: 0 auto;
+    align-items: start;
+  }
+  .card { background: #fff; border: 1px solid #e6ecf5; border-radius: 16px; }
+
+  /* ---------- 左：表单 ---------- */
+  .form { overflow: hidden; }
+  .sec { padding: 17px 20px; border-bottom: 1px solid #eef2f8; }
+  .sec:last-of-type { border-bottom: 0; }
+  .sec-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .sec-h strong { font-size: 13.5px; }
+  .sec-h i {
+    font-style: normal; width: 16px; height: 16px; border-radius: 50%;
+    background: #eef3ff; color: #285df0; font-size: 10.5px; font-weight: 700;
+    display: grid; place-items: center; flex: 0 0 16px; transform: translateY(1px);
+  }
+  .sec-h small { margin-left: auto; color: #93a1b7; font-size: 11.5px; }
+  .sec-h .link { margin-left: auto; color: #285df0; font-size: 11.5px; font-weight: 700; }
+
+  /* 素材 */
+  .assets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .asset {
+    position: relative; aspect-ratio: 1/1; border-radius: 10px; overflow: hidden;
+    border: 1px solid #e6ecf5; background-size: cover; background-position: center;
+  }
+  .asset em {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 5px;
+    font-style: normal; font-size: 10px; color: #fff; text-align: center;
+    background: linear-gradient(0deg, rgba(8,18,44,.72), transparent);
+  }
+  .asset.add {
+    display: grid; place-items: center; border-style: dashed; border-color: #c9d6ea;
+    background: #fbfcfe; color: #7d8ea6; font-size: 11px; gap: 2px; text-align: center;
+  }
+  .asset.add b { font-size: 17px; font-weight: 400; color: #9fb0c6; }
+  .asset-tip {
+    margin-top: 9px; display: flex; align-items: center; gap: 7px;
+    padding: 7px 10px; border-radius: 8px; background: #f6f9ff;
+    color: #5d7597; font-size: 11.5px;
+  }
+  .asset-tip b { color: #285df0; font-weight: 700; }
+
+  /* 风格卡 */
+  .styles { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .style {
+    position: relative; text-align: left; padding: 8px; border-radius: 11px;
+    border: 1.5px solid #e6ecf5; background: #fff; transition: .16s;
+  }
+  .style:hover { border-color: #b9cdf2; background: #fbfcff; }
+  .style.on { border-color: #285df0; background: #f5f9ff; box-shadow: 0 3px 12px rgba(40,93,240,.1); }
+  .style .mini {
+    position: relative; height: 62px; border-radius: 7px; overflow: hidden;
+    background: #eef2f8; display: flex; gap: 3px; padding: 5px 6px 0;
+  }
+  .style .mini i {
+    flex: 1; border-radius: 3px 3px 0 0; background: #fff;
+    box-shadow: 0 1px 4px rgba(20,40,80,.1); position: relative; overflow: hidden;
+  }
+  .style .mini i::before {
+    content: ""; position: absolute; left: 4px; right: 4px; top: 5px; height: 4px;
+    border-radius: 2px; background: currentColor; opacity: .55;
+  }
+  .style .mini i::after {
+    content: ""; position: absolute; left: 4px; right: 4px; top: 13px; bottom: 5px;
+    border-radius: 2px; background: currentColor; opacity: .18;
+  }
+  .style strong { display: block; margin: 7px 0 2px; font-size: 12.5px; letter-spacing: -.1px; }
+  .style small { display: block; color: #8fa0b6; font-size: 10.5px; line-height: 1.45; }
+  .style .tick {
+    position: absolute; right: 7px; top: 7px; width: 17px; height: 17px; border-radius: 50%;
+    background: #285df0; color: #fff; font-size: 10px; display: none; place-items: center;
+  }
+  .style.on .tick { display: grid; }
+
+  .flowline {
+    margin-top: 10px; padding: 9px 11px; border-radius: 9px; background: #f7f9fd;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    font-size: 11px; color: #5d7597;
+  }
+  .flowline b {
+    padding: 2px 7px; border-radius: 5px; background: #fff; border: 1px solid #e2e9f4;
+    color: #34507a; font-weight: 700; font-size: 10.5px;
+  }
+  .flowline i { color: #b4c1d4; font-style: normal; }
+
+  /* 设置行 */
+  .rows { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 74px 1fr; align-items: center; gap: 10px; }
+  .row > label { font-size: 12px; color: #5d7597; }
+  .seg { display: flex; gap: 5px; }
+  .seg button {
+    flex: 1; padding: 7px 4px; border-radius: 8px; border: 1.5px solid #e6ecf5;
+    background: #fff; font-size: 12px; color: #4a6484;
+  }
+  .seg button.on { border-color: #285df0; background: #f5f9ff; color: #285df0; font-weight: 700; }
+  .seg.hint button small { display: block; font-size: 9.5px; color: #9fadc1; margin-top: 1px; }
+  .seg.hint button.on small { color: #6f92d8; }
+
+  /* 说明 */
+  .idea { position: relative; }
+  .idea textarea {
+    width: 100%; min-height: 78px; resize: vertical; padding: 10px 11px;
+    border: 1.5px solid #e6ecf5; border-radius: 10px; outline: 0;
+    font-family: inherit; font-size: 12.5px; line-height: 1.6; color: #1b2740;
+    background: #fff;
+  }
+  .idea textarea:focus { border-color: #a9c3f5; box-shadow: 0 0 0 3px rgba(40,93,240,.08); }
+  .idea textarea::placeholder { color: #a9b6c8; }
+  .idea .count { position: absolute; right: 10px; bottom: 8px; font-size: 10.5px; color: #a9b6c8; }
+  .idea .help {
+    position: absolute; right: 8px; top: 8px;
+    padding: 4px 9px; border-radius: 7px; background: #eef3ff; color: #285df0;
+    font-size: 11px; font-weight: 700; border: 1px solid #dbe6ff;
+  }
+
+  /* 提交条 */
+  .submit {
+    position: sticky; bottom: 0; padding: 13px 20px 15px;
+    background: #fff; border-top: 1px solid #eef2f8;
+    box-shadow: 0 -6px 18px rgba(27,39,64,.05);
+  }
+  .submit .meta {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 9px;
+    font-size: 11.5px; color: #7d8ea6; flex-wrap: wrap;
+  }
+  .submit .meta b { color: #34507a; }
+  .submit .meta i { color: #ccd7e6; font-style: normal; }
+  .go {
+    width: 100%; height: 46px; border-radius: 11px; color: #fff; font-size: 15px; font-weight: 800;
+    background: linear-gradient(100deg, #2259e9, #3471f5);
+    box-shadow: 0 8px 20px rgba(31,85,225,.26); display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .go:disabled { background: #d7dfeb; box-shadow: none; color: #fff; }
+  .go span { font-size: 12px; font-weight: 400; opacity: .8; }
+
+  /* ---------- 右：预览台 ---------- */
+  .stage { display: flex; flex-direction: column; min-height: 660px; overflow: hidden; }
+  .stage-h {
+    display: flex; align-items: center; gap: 4px; padding: 11px 14px;
+    border-bottom: 1px solid #eef2f8; background: #fbfcfe;
+  }
+  .tab { padding: 7px 14px; border-radius: 8px; font-size: 12.5px; color: #6b7c96; font-weight: 700; }
+  .tab.on { background: #fff; color: #1b2740; box-shadow: 0 1px 4px rgba(27,39,64,.08); }
+  .tab .dot {
+    display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 4px;
+    margin-left: 5px; border-radius: 8px; background: #285df0; color: #fff; font-size: 9.5px;
+  }
+  .stage-h .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .stage-h .right span { font-size: 11.5px; color: #93a1b7; }
+
+  .pane { flex: 1; padding: 20px; display: none; flex-direction: column; }
+  .pane.on { display: flex; }
+
+  /* 空态 */
+  .empty { flex: 1; display: grid; place-items: center; text-align: center; padding: 30px; }
+  .empty .box { max-width: 300px; }
+  .empty .art {
+    width: 96px; height: 96px; margin: 0 auto 16px; border-radius: 24px;
+    background: linear-gradient(150deg, #eef3ff, #fdf1ec); display: grid; place-items: center;
+    font-size: 38px;
+  }
+  .empty h3 { margin: 0 0 7px; font-size: 15px; }
+  .empty p { margin: 0; color: #8494ac; font-size: 12.5px; line-height: 1.7; }
+
+  /* 生成中 */
+  .running { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 430px; margin: 0 auto; width: 100%; }
+  .running .bar {
+    height: 7px; border-radius: 4px; background: #e9eef7; overflow: hidden; margin: 14px 0 8px;
+  }
+  .running .bar i { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, #285df0, #63a4ff); transition: width .5s; }
+  .running .top { display: flex; align-items: baseline; gap: 8px; }
+  .running .top strong { font-size: 15px; }
+  .running .top em { font-style: normal; margin-left: auto; font-size: 12px; color: #7d8ea6; }
+  .running .queue {
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 9px;
+    background: #f6f9ff; border: 1px solid #e3ecff; color: #4a6ea8; font-size: 12px; margin-top: 14px;
+  }
+  .running .queue b { color: #285df0; }
+  .steps-run { margin-top: 18px; display: grid; gap: 2px; }
+  .step-run {
+    display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px;
+    padding: 9px 2px; border-bottom: 1px dashed #edf1f7; font-size: 12.5px; color: #a4b1c4;
+  }
+  .step-run:last-child { border-bottom: 0; }
+  .step-run b {
+    width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+    border: 1.5px solid #dde4ef; font-size: 10px; color: #b6c2d3;
+  }
+  .step-run em { font-style: normal; font-size: 11px; }
+  .step-run.on { color: #1b2740; font-weight: 700; }
+  .step-run.on b { border-color: #285df0; color: #285df0; border-style: dashed; }
+  .step-run.on em { color: #285df0; }
+  .step-run.done { color: #4a6484; }
+  .step-run.done b { background: #e8efff; border-color: #e8efff; color: #285df0; }
+  .step-run.done em { color: #9fadc1; }
+  .running .note { margin-top: 16px; font-size: 11.5px; color: #9fadc1; line-height: 1.6; }
+
+  /* 结果 */
+  .result { flex: 1; display: flex; gap: 20px; align-items: flex-start; }
+  .phone {
+    width: 262px; flex: 0 0 262px; border-radius: 26px; padding: 9px;
+    background: #1b2740; box-shadow: 0 16px 40px rgba(27,39,64,.22);
+  }
+  .phone .screen {
+    position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 9/16;
+    background: #fff; display: flex; flex-direction: column;
+  }
+  .phone .screen .pg { position: absolute; inset: 0; opacity: 0; transition: opacity .3s; }
+  .phone .screen .pg.on { opacity: 1; }
+  .phone .dots { display: flex; justify-content: center; gap: 5px; padding: 8px 0 3px; }
+  .phone .dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.28); }
+  .phone .dots i.on { background: #fff; width: 14px; border-radius: 3px; }
+
+  .pages-strip { flex: 1; min-width: 0; }
+  .pages-strip h4 { margin: 0 0 4px; font-size: 13px; }
+  .pages-strip > p { margin: 0 0 12px; color: #8fa0b6; font-size: 11.5px; }
+  .thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+  .thumb {
+    position: relative; border-radius: 9px; overflow: hidden; aspect-ratio: 9/16;
+    border: 1.5px solid #e6ecf5; background: #fff; padding: 0;
+  }
+  .thumb.on { border-color: #285df0; box-shadow: 0 4px 12px rgba(40,93,240,.16); }
+  .thumb span {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 4px;
+    font-size: 9.5px; color: #fff; text-align: center;
+    background: linear-gradient(0deg, rgba(8,18,44,.75), transparent);
+  }
+  .thumb b {
+    position: absolute; left: 4px; top: 4px; width: 14px; height: 14px; border-radius: 4px;
+    background: rgba(8,18,44,.55); color: #fff; font-size: 9px; display: grid; place-items: center;
+  }
+  .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .actions button {
+    height: 36px; padding: 0 15px; border-radius: 9px; font-size: 12.5px; font-weight: 700;
+    border: 1px solid #e0e7f2; background: #fff; color: #34507a;
+  }
+  .actions button.pri { background: #285df0; border-color: #285df0; color: #fff; }
+  .actions button:hover { background: #f6f9ff; }
+  .actions button.pri:hover { background: #1f4fd6; }
+
+  /* 生成记录 */
+  .recs { display: grid; gap: 9px; }
+  .rec {
+    display: grid; grid-template-columns: 46px minmax(0,1fr) auto; gap: 12px; align-items: center;
+    padding: 11px 13px; border: 1px solid #e9eef7; border-radius: 11px; background: #fff;
+  }
+  .rec .ic { width: 46px; height: 46px; border-radius: 9px; background-size: cover; background-position: center; }
+  .rec strong { display: block; font-size: 12.5px; margin-bottom: 3px; }
+  .rec small { color: #8fa0b6; font-size: 11px; }
+  .rec .st {
+    padding: 4px 9px; border-radius: 7px; font-size: 11px; font-weight: 700; white-space: nowrap;
+  }
+  .rec .st.ok { background: #e9f7ef; color: #1f9d55; }
+  .rec .st.run { background: #eef3ff; color: #285df0; }
+  .rec .st.wait { background: #f4f6fa; color: #7d8ea6; }
+
+  @media (max-width: 1180px) {
+    .wrap { grid-template-columns: 1fr; }
+    .stage { min-height: 520px; }
+  }
+  @media (max-width: 700px) {
+    .topbar { padding: 0 14px; gap: 10px; }
+    .steps, .who em { display: none; }
+    .wrap { padding: 12px; }
+    .result { flex-direction: column; }
+    .phone { width: 100%; flex: none; max-width: 262px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="back" aria-label="返回">‹</button>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <h1>生成我的 H5 创作报告</h1>
+      <small>森林之子 · IP 形象设计</small>
+    </div>
+  </div>
+  <ol class="steps">
+    <li class="done"><b>✓</b>选素材</li><i></i>
+    <li class="on"><b>2</b>选风格</li><i></i>
+    <li><b>3</b>生成</li>
+  </ol>
+  <div class="who"><span></span><em>林小雨</em></div>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= 左：配置表单 ================= -->
+  <aside class="card form">
+
+    <section class="sec">
+      <div class="sec-h"><i>1</i><strong>创作素材</strong><button class="link">重新选择</button></div>
+      <div class="assets">
+        <div class="asset" style="background-image:linear-gradient(160deg,#dfe9d5,#a9c39a)"><em>手稿 1</em></div>
+        <div class="asset" style="background-image:linear-gradient(160deg,#e8dccb,#c3a98a)"><em>手稿 2</em></div>
+        <div class="asset" style="background-image:linear-gradient(160deg,#cfe0ea,#8fb4c9)"><em>定稿</em></div>
+        <div class="asset" style="background-image:linear-gradient(160deg,#e6d9ef,#b79ccb)"><em>3D 模型</em></div>
+      </div>
+      <div class="asset-tip"><b>✓</b>已从「森林之子」项目自动带入 4 项素材，可继续添加</div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-h"><i>2</i><strong>报告风格</strong><small>选一种，老师已配好工作流</small></div>
+      <div class="styles" id="styles">
+        <button class="style on" data-id="industrial" style="color:#2f6fb0">
+          <span class="tick">✓</span>
+          <div class="mini"><i></i><i></i><i></i></div>
+          <strong>工业设计风格</strong>
+          <small>结构推演 · 材质质感</small>
+        </button>
+        <button class="style" data-id="anime" style="color:#c0547e">
+          <span class="tick">✓</span>
+          <div class="mini"><i></i><i></i><i></i></div>
+          <strong>动漫角色风格</strong>
+          <small>线稿强化 · 上色定稿</small>
+        </button>
+        <button class="style" data-id="fashion" style="color:#9a6b3f">
+          <span class="tick">✓</span>
+          <div class="mini"><i></i><i></i><i></i></div>
+          <strong>服装设计风格</strong>
+          <small>版型推演 · 面料替换</small>
+        </button>
+        <button class="style" data-id="picture" style="color:#3f8a6d">
+          <span class="tick">✓</span>
+          <div class="mini"><i></i><i></i><i></i></div>
+          <strong>绘本故事风格</strong>
+          <small>分镜叙事 · 场景铺色</small>
+        </button>
+      </div>
+      <div class="flowline" id="flowline">
+        <b>手稿</b><i>→</i><b>结构线稿</b><i>→</i><b>材质渲染</b><i>→</i><b>成品效果图</b>
+        <span style="margin-left:auto;color:#9fadc1">4 个节点</span>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-h"><i>3</i><strong>生成设置</strong></div>
+      <div class="rows">
+        <div class="row">
+          <label>报告页数</label>
+          <div class="seg" data-seg="pages">
+            <button data-v="6">6 页</button>
+            <button data-v="8" class="on">8 页</button>
+            <button data-v="10">10 页</button>
+          </div>
+        </div>
+        <div class="row">
+          <label>观看设备</label>
+          <div class="seg" data-seg="device">
+            <button data-v="phone" class="on">手机竖屏<small>9:16</small></button>
+            <button data-v="pad">平板横屏<small>4:3</small></button>
+          </div>
+        </div>
+        <div class="row">
+          <label>出图质量</label>
+          <div class="seg hint" data-seg="quality">
+            <button data-v="std" class="on">标准<small>快，约 2 分钟</small></button>
+            <button data-v="hd">高清<small>细，约 5 分钟</small></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-h"><i>4</i><strong>创作说明</strong><small>可留空</small></div>
+      <div class="idea">
+        <button class="help">AI 帮我写</button>
+        <textarea maxlength="400" placeholder="用一两句话说说这次的想法，比如：我想让森林之子看起来勇敢一点，像会保护小动物的大哥哥。">我想让森林之子看起来勇敢一点，像会保护小动物的大哥哥。身上的叶子是他的披风。</textarea>
+        <span class="count">38 / 400</span>
+      </div>
+    </section>
+
+    <div class="submit">
+      <div class="meta">
+        <span>预计 <b>2-4 分钟</b></span><i>·</i>
+        <span>本班今日剩余 <b>12 份</b></span><i>·</i>
+        <span>生成后可继续微调</span>
+      </div>
+      <button class="go" id="go">生成我的 H5 报告</button>
+    </div>
+  </aside>
+
+  <!-- ================= 右：预览台 ================= -->
+  <main class="card stage">
+    <div class="stage-h">
+      <button class="tab on" data-tab="preview">报告预览</button>
+      <button class="tab" data-tab="records">生成记录<span class="dot">2</span></button>
+      <div class="right"><span id="stageHint">生成前可先看示意排版</span></div>
+    </div>
+
+    <!-- 预览 -->
+    <div class="pane on" id="pane-preview">
+      <!-- 空态 -->
+      <div class="empty" id="stateEmpty" style="display:none">
+        <div class="box">
+          <div class="art">🖼</div>
+          <h3>还没有可预览的报告</h3>
+          <p>先在左边选好素材和报告风格，点「生成我的 H5 报告」，这里会显示生成进度和成品。</p>
+        </div>
+      </div>
+
+      <!-- 生成中 -->
+      <div class="running" id="stateRunning" style="display:none">
+        <div class="top">
+          <strong id="runTitle">正在排队…</strong>
+          <em id="runPct">0%</em>
+        </div>
+        <div class="bar"><i id="runBar"></i></div>
+        <div class="queue" id="runQueue">
+          <span>⏳</span><span>前面还有 <b id="queueNum">1</b> 个任务，本班同时最多跑 3 个</span>
+        </div>
+        <div class="steps-run" id="runSteps">
+          <div class="step-run" data-i="0"><b>1</b><span>整理素材与文案</span><em>等待</em></div>
+          <div class="step-run" data-i="1"><b>2</b><span>生成报告配图</span><em>等待</em></div>
+          <div class="step-run" data-i="2"><b>3</b><span>排版成 8 页</span><em>等待</em></div>
+          <div class="step-run" data-i="3"><b>4</b><span>检查错字与图片</span><em>等待</em></div>
+        </div>
+        <p class="note">可以先关掉这个页面，生成完会在「生成记录」里出现，也会提醒你回来看。</p>
+      </div>
+
+      <!-- 结果 -->
+      <div class="result" id="stateResult" style="display:none">
+        <div>
+          <div class="phone">
+            <div class="screen" id="phoneScreen"></div>
+            <div class="dots" id="phoneDots"></div>
+          </div>
+        </div>
+        <div class="pages-strip">
+          <h4>森林之子 · 工业设计风格</h4>
+          <p>8 页 · 手机竖屏 · 高清 · 刚刚生成</p>
+          <div class="thumbs" id="thumbs"></div>
+          <div class="actions">
+            <button class="pri" id="shareBtn">分享给家长</button>
+            <button>继续编辑</button>
+            <button id="againBtn">换一种风格重做</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 生成记录 -->
+    <div class="pane" id="pane-records">
+      <div class="recs">
+        <div class="rec">
+          <div class="ic" style="background-image:linear-gradient(150deg,#dfe9d5,#8fb4c9)"></div>
+          <div>
+            <strong>森林之子 · 工业设计风格</strong>
+            <small>今天 14:32 · 8 页 · 高清</small>
+          </div>
+          <span class="st ok">已完成</span>
+        </div>
+        <div class="rec">
+          <div class="ic" style="background-image:linear-gradient(150deg,#e6d9ef,#c0547e)"></div>
+          <div>
+            <strong>森林之子 · 动漫角色风格</strong>
+            <small>今天 14:20 · 8 页 · 标准</small>
+          </div>
+          <span class="st ok">已完成</span>
+        </div>
+        <div class="rec">
+          <div class="ic" style="background-image:linear-gradient(150deg,#e8dccb,#c3a98a)"></div>
+          <div>
+            <strong>森林之子 · 绘本故事风格</strong>
+            <small>昨天 16:05 · 6 页 · 标准</small>
+          </div>
+          <span class="st ok">已完成</span>
+        </div>
+        <div class="rec">
+          <div class="ic" style="background-image:linear-gradient(150deg,#d7e3f5,#9ab4d8)"></div>
+          <div>
+            <strong>森林之子 · 服装设计风格</strong>
+            <small>昨天 15:48 · 8 页 · 标准</small>
+          </div>
+          <span class="st ok">已完成</span>
+        </div>
+      </div>
+      <p style="margin:14px 0 0;color:#9fadc1;font-size:11.5px">只保留最近 30 天，过期会自动清理图片，报告链接仍然有效。</p>
+    </div>
+  </main>
+</div>
+
+<script>
+  /* ---------- 风格数据 ---------- */
+  const STYLES = {
+    industrial: { name: '工业设计风格', flow: ['手稿', '结构线稿', '材质渲染', '成品效果图'], nodes: 4, pages: 8, mins: '2-4' },
+    anime:      { name: '动漫角色风格', flow: ['手稿', '线稿强化', '上色', '三视图'], nodes: 4, pages: 8, mins: '2-4' },
+    fashion:    { name: '服装设计风格', flow: ['手稿', '版型推演', '面料替换', '上身效果'], nodes: 5, pages: 8, mins: '3-5' },
+    picture:    { name: '绘本故事风格', flow: ['草稿', '分镜拆分', '场景上色', '成书排版'], nodes: 4, pages: 6, mins: '2-3' }
+  };
+
+  const PAGES = [
+    { t: '封面', bg: 'linear-gradient(165deg,#2f4a3c,#7f9a6f)', fg: '#f4efe2' },
+    { t: '我的想法', bg: 'linear-gradient(165deg,#f6f1e4,#e7dcc6)', fg: '#3c4a34' },
+    { t: '手稿', bg: 'linear-gradient(165deg,#efe9db,#d8cdb6)', fg: '#4a4536' },
+    { t: '方案 A', bg: 'linear-gradient(165deg,#dfe9d5,#a9c39a)', fg: '#2c4232' },
+    { t: '方案 B', bg: 'linear-gradient(165deg,#e3dfef,#b9aed0)', fg: '#3a3050' },
+    { t: '定稿', bg: 'linear-gradient(165deg,#d9e7ea,#94b6bd)', fg: '#22383c' },
+    { t: '改了什么', bg: 'linear-gradient(165deg,#f6efe2,#e3d3bb)', fg: '#4a3d2a' },
+    { t: '结尾', bg: 'linear-gradient(165deg,#2f4a3c,#5d7a52)', fg: '#f4efe2' }
+  ];
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  let picked = 'industrial';
+
+  /* ---------- 风格切换 ---------- */
+  $$('#styles .style').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      $$('#styles .style').forEach((b) => b.classList.remove('on'));
+      btn.classList.add('on');
+      picked = btn.dataset.id;
+      const d = STYLES[picked];
+      $('#flowline').innerHTML =
+        d.flow.map((f) => `<b>${f}</b>`).join('<i>→</i>') +
+        `<span style="margin-left:auto;color:#9fadc1">${d.nodes} 个节点</span>`;
+      // 页数自动跟着风格走
+      $$('[data-seg="pages"] button').forEach((b) => b.classList.toggle('on', Number(b.dataset.v) === d.pages));
+      $('#go').disabled = false;
+      $('#go').innerHTML = '生成我的 H5 报告';
+    });
+  });
+
+  /* ---------- 分段按钮 ---------- */
+  $$('.seg').forEach((seg) => {
+    seg.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      $$('button', seg).forEach((x) => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  /* ---------- Tab ---------- */
+  $$('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      $$('.tab').forEach((t) => t.classList.remove('on'));
+      tab.classList.add('on');
+      $$('.pane').forEach((p) => p.classList.remove('on'));
+      $('#pane-' + tab.dataset.tab).classList.add('on');
+    });
+  });
+
+  /* ---------- 渲染报告页 ---------- */
+  function pageHtml(p, i) {
+    return `<div class="pg${i === 0 ? ' on' : ''}" data-i="${i}" style="background:${p.bg}">
+      <div style="flex:1;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;color:${p.fg}">
+        <div>
+          <div style="font-size:9px;letter-spacing:2px;opacity:.6">第 ${i + 1} 页 · ${p.t}</div>
+          <div style="margin-top:9px;font-size:${i === 0 ? 22 : 15}px;font-weight:800;line-height:1.35">${pageTitle(p.t)}</div>
+          <div style="margin-top:10px;font-size:9.5px;line-height:1.75;opacity:.78">${pageBody(i)}</div>
+        </div>
+        <div style="height:${i === 0 ? 150 : 110}px;border-radius:7px;background:rgba(255,255,255,.24);border:1px solid rgba(255,255,255,.3)"></div>
+        <div style="display:flex;justify-content:space-between;font-size:8px;opacity:.55">
+          <span>森林之子</span><span>${i + 1} / 8</span>
+        </div>
+      </div>
+    </div>`;
+  }
+  function pageTitle(t) {
+    return ({ 封面: '森林之子', 我的想法: '我想让它勇敢一点', 手稿: '一开始的样子', '方案 A': '圆一点，更亲切', '方案 B': '尖一点，更勇敢', 定稿: '最后选了 B', 改了什么: '改了三个地方', 结尾: '谢谢你看到这里' })[t] || t;
+  }
+  function pageBody(i) {
+    return [
+      '一个住在老森林里、会保护小动物的孩子。',
+      '它不怕黑，会先把小动物护在身后，自己站在最前面。',
+      '先画出轮廓，再想它身上的叶子该怎么长。',
+      '脸更圆，看起来温柔，但少了点力量感。',
+      '眼睛更亮、肩膀更宽，叶子像披风一样立起来。',
+      '保留了圆眼睛，把肩膀和披风做成了尖角。',
+      '眼睛放大、加了披风的厚度、腿变长了一点。',
+      '我的设计过程，就到这里。'
+    ][i];
+  }
+
+  let curPage = 0;
+  function showPage(i) {
+    curPage = i;
+    $$('#phoneScreen .pg').forEach((p, k) => p.classList.toggle('on', k === i));
+    $$('#thumbs .thumb').forEach((t, k) => t.classList.toggle('on', k === i));
+    $$('#phoneDots i').forEach((d, k) => d.classList.toggle('on', k === i));
+  }
+
+  function buildResult() {
+    $('#phoneScreen').innerHTML = PAGES.map((p, i) => pageHtml(p, i)).join('');
+    $('#phoneDots').innerHTML = PAGES.map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('');
+    $('#thumbs').innerHTML = PAGES.map((p, i) =>
+      `<button class="thumb${i === 0 ? ' on' : ''}" data-i="${i}" style="background:${p.bg}">
+        <b>${i + 1}</b><span>${p.t}</span>
+      </button>`).join('');
+    $$('#thumbs .thumb').forEach((t) => t.addEventListener('click', () => showPage(Number(t.dataset.i))));
+    $$('#phoneDots i').forEach((d, k) => d.addEventListener('click', () => showPage(k)));
+    showPage(0);
+  }
+
+  /* ---------- 生成流程模拟 ---------- */
+  let running = false;
+  function setState(name) {
+    $('#stateEmpty').style.display = name === 'empty' ? 'grid' : 'none';
+    $('#stateRunning').style.display = name === 'running' ? 'flex' : 'none';
+    $('#stateResult').style.display = name === 'result' ? 'flex' : 'none';
+  }
+
+  $('#go').addEventListener('click', () => {
+    if (running) return;
+    running = true;
+    $$('.tab').forEach((t) => t.classList.toggle('on', t.dataset.tab === 'preview'));
+    $$('.pane').forEach((p) => p.classList.toggle('on', p.id === 'pane-preview'));
+    setState('running');
+    $('#stageHint').textContent = '生成中，可以先去别的页面';
+
+    const go = $('#go');
+    go.disabled = true;
+    go.innerHTML = '正在生成… <span>约 2-4 分钟</span>';
+
+    const steps = $$('#runSteps .step-run');
+    steps.forEach((s) => { s.className = 'step-run'; s.querySelector('em').textContent = '等待'; });
+
+    const plan = [
+      { i: 0, t: '正在整理素材与文案', p: 18, wait: 700 },
+      { i: 1, t: '正在生成报告配图', p: 52, wait: 1600 },
+      { i: 2, t: '正在排版成 8 页', p: 82, wait: 1400 },
+      { i: 3, t: '正在检查错字与图片', p: 96, wait: 900 }
+    ];
+
+    $('#runTitle').textContent = '正在排队…';
+    $('#queueNum').textContent = '1';
+
+    setTimeout(() => {
+      $('#runQueue').style.display = 'none';
+      let idx = 0;
+      const tick = () => {
+        if (idx > 0) {
+          const prev = steps[idx - 1];
+          prev.className = 'step-run done';
+          prev.querySelector('b').textContent = '✓';
+          prev.querySelector('em').textContent = '完成';
+        }
+        if (idx >= plan.length) {
+          $('#runBar').style.width = '100%';
+          $('#runPct').textContent = '100%';
+          $('#runTitle').textContent = '排版完成，正在准备预览…';
+          setTimeout(() => {
+            buildResult();
+            setState('result');
+            $('#stageHint').textContent = '生成完成，点缩略图可翻页';
+            running = false;
+            go.disabled = false;
+            go.innerHTML = '再生成一份';
+          }, 600);
+          return;
+        }
+        const s = plan[idx];
+        steps[idx].className = 'step-run on';
+        steps[idx].querySelector('em').textContent = '进行中';
+        $('#runTitle').textContent = s.t;
+        $('#runBar').style.width = s.p + '%';
+        $('#runPct').textContent = s.p + '%';
+        idx += 1;
+        setTimeout(tick, s.wait);
+      };
+      tick();
+    }, 1300);
+  });
+
+  $('#againBtn').addEventListener('click', () => {
+    setState('running');
+    $$('#runSteps .step-run').forEach((s) => { s.className = 'step-run'; s.querySelector('b').textContent = s.dataset.i * 1 + 1; });
+    $('#go').click();
+  });
+
+  /* 初始：显示结果态（方便直接看成品） */
+  buildResult();
+  setState('result');
+</script>
+</body>
+</html>

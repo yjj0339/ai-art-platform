@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>色盘方案对比 · 手绘板取色器 v3</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 28px 56px;
+    background: #f6f7f9;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-hd { max-width: 1280px; margin: 0 auto 26px; }
+  .page-hd h1 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+  }
+  .page-hd p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #5b6472;
+    max-width: 860px;
+  }
+  .page-hd b { color: #d96600; }
+
+  .cards {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    align-items: stretch;
+  }
+  @media (max-width: 1080px) { .cards { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 720px) { .cards { grid-template-columns: minmax(0,1fr); } }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #e8ebf0;
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.10);
+  }
+  .card.is-rec { border-color: #f7cfa6; box-shadow: 0 1px 2px rgba(217,102,0,.08), 0 10px 28px -14px rgba(217,102,0,.32); }
+
+  .card-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .card-hd h2 { margin: 0; font-size: 15px; font-weight: 800; }
+  .tag {
+    margin-left: auto; flex: 0 0 auto;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
+    background: #f1f4f8; color: #6b7684;
+  }
+  .tag.rec { background: #fff3e6; color: #d96600; }
+  .card-sub {
+    margin: 0 0 14px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: #8a94a3;
+  }
+
+  /* ========== 通用：当前色与读数 ========== */
+  .readout {
+    display: flex; align-items: center; gap: 9px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #eef1f6;
+  }
+  .swatch {
+    flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9px;
+    box-shadow: inset 0 0 0 1px rgba(16,24,40,.10);
+  }
+  .hex-input {
+    flex: 1 1 auto; min-width: 0;
+    height: 30px; padding: 0 9px;
+    border: 1px solid #e3e8ef; border-radius: 8px;
+    background: #fbfcfd;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .03em;
+    color: #374151;
+    outline: none;
+    text-transform: uppercase;
+  }
+  .hex-input:focus { border-color: #f0b27a; background: #fff; }
+  .eyedrop {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 30px; padding: 0 9px;
+    border: 0; border-radius: 8px;
+    background: #f5f7fb; color: #4b5563;
+    font-size: 11px; font-weight: 700;
+    cursor: pointer;
+    transition: .14s;
+  }
+  .eyedrop:hover { background: #fff3e6; color: #d96600; }
+  .eyedrop svg { width: 13px; height: 13px; }
+
+  .recent-label {
+    margin: 12px 0 6px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+    color: #a2abba; text-transform: uppercase;
+  }
+  .recent { display: flex; gap: 6px; margin-bottom: 16px; }
+  .recent i {
+    width: 22px; height: 22px; border-radius: 6px;
+    box-shadow: inset 0 0 0 1px rgba(16,24,40,.08);
+    cursor: pointer;
+    transition: transform .12s;
+  }
+  .recent i:hover { transform: scale(1.12); }
+
+  /* ========== 方案 A：色环 + 环心方块 ========== */
+  .pA-wrap {
+    position: relative;
+    width: 232px; height: 232px;
+    margin: 2px auto 0;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .pA-ring { position: absolute; inset: 0; }
+  .pA-ring canvas { display: block; }
+  .pA-sv {
+    position: absolute; left: 50%; top: 50%;
+    width: 100px; height: 100px;
+    margin: -50px 0 0 -50px;
+    border-radius: 9px;
+    touch-action: none;
+    box-shadow: 0 0 0 1px rgba(16,24,40,.07), 0 2px 8px rgba(16,24,40,.10);
+  }
+  .dot {
+    position: absolute; width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .dot-sm { width: 13px; height: 13px; border-width: 2px; }
+
+  /* ========== 方案 B：色条 + 大方块 ========== */
+  .pB-box {
+    position: relative;
+    width: 100%; height: 158px;
+    border-radius: 10px;
+    touch-action: none;
+    cursor: crosshair;
+    box-shadow: 0 0 0 1px rgba(16,24,40,.07);
+  }
+  .pB-hue {
+    position: relative;
+    height: 22px; margin-top: 11px;
+    border-radius: 7px;
+    touch-action: none;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(16,24,40,.07);
+  }
+  .pB-hue canvas { display: block; border-radius: 7px; }
+
+  /* ========== 方案 C：实心圆盘 + 三角 ========== */
+  .pC-wrap {
+    position: relative;
+    width: 214px; height: 214px;
+    margin: 2px auto 0;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .pC-wrap canvas { display: block; }
+
+  /* ========== 说明区 ========== */
+  .why {
+    margin-top: auto;
+    padding: 10px 11px;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 11.5px;
+    line-height: 1.72;
+    color: #5b6472;
+  }
+  .why-top { margin-top: 14px; }
+  .why b { color: #374151; }
+  .why .good { color: #0f8a53; font-weight: 700; }
+  .why .bad { color: #c2410c; font-weight: 700; }
+  .why ul { margin: 6px 0 0; padding-left: 15px; }
+  .why li { margin: 2px 0; }
+
+  .foot-note {
+    max-width: 1280px;
+    margin: 30px auto 0;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #fff8f1;
+    border: 1px solid #fbe3c8;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: #8a5a20;
+  }
+  .foot-note b { color: #a9490a; }
+</style>
+</head>
+<body>
+
+<div class="page-hd">
+  <h1>色盘方案对比 · 手绘板取色器 v3</h1>
+  <p>
+    下面三个色盘都是<b>能真点的</b>：在色环／色条上按住拖能转色相，在色块里拖能调浓淡明暗，右下角可以直接粘十六进制色号。
+    你贴的那张截图这次没传上来，所以我按业内最主流的三种做法各做了一个，<b>你对照截图指一个</b>，或者说「A 的环 + B 的色域方块」这种组合也行。
+  </p>
+</div>
+
+<div class="cards">
+
+  <!-- ============ A ============ -->
+  <div class="card is-rec" data-mode="A">
+    <div class="card-hd">
+      <h2>方案 A · 色环 + 环心色域</h2>
+      <span class="tag rec">推荐</span>
+    </div>
+    <p class="card-sub">iPad 上 Procreate、画世界、概念画板都是这个长相</p>
+
+    <div class="pA-wrap">
+      <div class="pA-ring"><canvas></canvas></div>
+      <div class="pA-sv">
+        <div class="dot dot-sm" data-dot="sv"></div>
+      </div>
+      <div class="dot" data-dot="ring"></div>
+    </div>
+
+    <div class="readout">
+      <span class="swatch"></span>
+      <input class="hex-input" spellcheck="false" maxlength="7">
+      <button class="eyedrop" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>
+        吸管
+      </button>
+    </div>
+
+    <p class="recent-label">最近用过</p>
+    <div class="recent"></div>
+
+    <div class="why">
+      <b>为什么推荐给学生用</b>
+      <ul>
+        <li><span class="good">一眼就懂</span>——圈是颜色，中间是浓淡，不用教</li>
+        <li>占地方小，<span class="good">竖屏也放得下</span></li>
+        <li><span class="bad">短板</span>：中间色块只有 100px，挑极深的颜色不够准</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ B ============ -->
+  <div class="card" data-mode="B">
+    <div class="card-hd">
+      <h2>方案 B · 色条 + 色域方块</h2>
+      <span class="tag">美术老师更顺手</span>
+    </div>
+    <p class="card-sub">Photoshop 拾色器、Figma、Krita 的做法</p>
+
+    <div class="pB-box">
+      <div class="dot dot-sm" data-dot="sv"></div>
+    </div>
+    <div class="pB-hue">
+      <canvas></canvas>
+      <div class="dot dot-sm" data-dot="hue"></div>
+    </div>
+
+    <div class="readout">
+      <span class="swatch"></span>
+      <input class="hex-input" spellcheck="false" maxlength="7">
+      <button class="eyedrop" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>
+        吸管
+      </button>
+    </div>
+
+    <p class="recent-label">最近用过</p>
+    <div class="recent"></div>
+
+    <div class="why">
+      <b>为什么调色最准</b>
+      <ul>
+        <li><span class="good">色域给得最大</span>——158px 高，深浅层次分得开</li>
+        <li>色条横着放，<span class="good">拖的时候一根手指不会挡住</span></li>
+        <li><span class="bad">短板</span>：长得像办公软件，小孩子第一眼不知道咋玩</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ C ============ -->
+  <div class="card" data-mode="C">
+    <div class="card-hd">
+      <h2>方案 C · 圆盘 + 三角</h2>
+      <span class="tag">老派专业</span>
+    </div>
+    <p class="card-sub">老版 Photoshop、Corel Painter 的经典色轮</p>
+
+    <div class="pC-wrap">
+      <canvas></canvas>
+      <div class="dot dot-sm" data-dot="tri"></div>
+    </div>
+
+    <div class="readout">
+      <span class="swatch"></span>
+      <input class="hex-input" spellcheck="false" maxlength="7">
+      <button class="eyedrop" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>
+        吸管
+      </button>
+    </div>
+
+    <p class="recent-label">最近用过</p>
+    <div class="recent"></div>
+
+    <div class="why">
+      <b>好看，但不建议用</b>
+      <ul>
+        <li><span class="good">最有"专业软件"的样子</span>，老师看着有感觉</li>
+        <li><span class="bad">三角里三个角是纯色/白/黑</span>，中间区域手指很难戳准</li>
+        <li><span class="bad">小学生基本不会用</span>，会一直问老师</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot-note">
+  <b>下一步怎么定：</b>你看完告诉我选哪个（比如「用 A」，或「A 的环 + B 的大色块」），我就把它替换到手绘板里现有的颜色面板上。
+  另外你原来那张截图可以再发一次——如果它跟我做的都不一样，我照它重做一版。
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  /* ---------- 颜色换算 ---------- */
+  function hsvToRgb(h, s, v) {
+    h = ((h % 360) + 360) % 360;
+    var c = v * s;
+    var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    var m = v - c;
+    var r = 0, g = 0, b = 0;
+    if (h < 60) { r = c; g = x; }
+    else if (h < 120) { r = x; g = c; }
+    else if (h < 180) { g = c; b = x; }
+    else if (h < 240) { g = x; b = c; }
+    else if (h < 300) { r = x; b = c; }
+    else { r = c; b = x; }
+    return [
+      Math.round((r + m) * 255),
+      Math.round((g + m) * 255),
+      Math.round((b + m) * 255)
+    ];
+  }
+  function hsvToHex(h, s, v) {
+    return '#' + hsvToRgb(h, s, v).map(function (n) {
+      return n.toString(16).padStart(2, '0');
+    }).join('');
+  }
+  function hexToHsv(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+    if (!m) return null;
+    var n = parseInt(m[1], 16);
+    var r = ((n >> 16) & 255) / 255;
+    var g = ((n >> 8) & 255) / 255;
+    var b = (n & 255) / 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var d = max - min;
+    var h = 0;
+    if (d) {
+      if (max === r) h = 60 * (((g - b) / d) % 6);
+      else if (max === g) h = 60 * ((b - r) / d + 2);
+      else h = 60 * ((r - g) / d + 4);
+    }
+    if (h < 0) h += 360;
+    return { h: h, s: max ? d / max : 0, v: max };
+  }
+
+  function fitCanvas(cv, w, h) {
+    cv.width = Math.round(w * DPR);
+    cv.height = Math.round(h * DPR);
+    cv.style.width = w + 'px';
+    cv.style.height = h + 'px';
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    return ctx;
+  }
+
+  function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
+
+  /* ---------- 预设最近色 ---------- */
+  var PRESET_RECENT = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#0a5af5', '#8b5cf6'];
+
+  /* ---------- 单个色盘实例 ---------- */
+  function Picker(root) {
+    var mode = root.dataset.mode;
+    var self = this;
+    this.root = root;
+    this.h = mode === 'B' ? 210 : 0;
+    this.s = 0.82;
+    this.v = 0.94;
+    this.recent = PRESET_RECENT.slice();
+
+    this.ringCanvas = root.querySelector('.pA-ring canvas');
+    this.hueCanvas = root.querySelector('.pB-hue canvas');
+    this.triCanvas = mode === 'C' ? root.querySelector('.pC-wrap canvas') : null;
+    this.svBox = root.querySelector('.pA-sv') || root.querySelector('.pB-box');
+    this.dotRing = root.querySelector('[data-dot="ring"]');
+    this.dotSv = root.querySelector('[data-dot="sv"]');
+    this.dotHue = root.querySelector('[data-dot="hue"]');
+    this.dotTri = root.querySelector('[data-dot="tri"]');
+    this.swatch = root.querySelector('.swatch');
+    this.hexInput = root.querySelector('.hex-input');
+    this.recentBox = root.querySelector('.recent');
+
+    if (mode === 'A') this.drawRing();
+    if (mode === 'B') this.drawHueBar();
+    if (mode === 'C') this.drawWheelTriangle();
+
+    this.bindDrag();
+    this.bindHex();
+    this.renderRecent();
+    this.sync();
+  }
+
+  Picker.prototype.hex = function () {
+    return hsvToHex(this.h, this.s, this.v);
+  };
+
+  /* ---- 色环（方案 A） ---- */
+  Picker.prototype.drawRing = function () {
+    var SIZE = 232, RING_W = 26;
+    var ctx = fitCanvas(this.ringCanvas, SIZE, SIZE);
+    var c = SIZE / 2, mid = (SIZE - RING_W) / 2;
+    for (var deg = 0; deg < 360; deg++) {
+      var a0 = (deg - 0.8 - 90) * Math.PI / 180;
+      var a1 = (deg + 0.8 - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.arc(c, c, mid, a0, a1);
+      ctx.lineWidth = RING_W;
+      ctx.strokeStyle = 'hsl(' + deg + ',100%,50%)';
+      ctx.stroke();
+    }
+  };
+
+  /* ---- 色条（方案 B） ---- */
+  Picker.prototype.drawHueBar = function () {
+    var el = this.hueCanvas.parentElement;
+    var W = el.clientWidth || 300, H = 22;
+    var ctx = fitCanvas(this.hueCanvas, W, H);
+    for (var x = 0; x < W; x++) {
+      ctx.fillStyle = 'hsl(' + ((x / W) * 360) + ',100%,50%)';
+      ctx.fillRect(x, 0, 1, H);
+    }
+  };
+
+  /* ---- 圆盘 + 三角（方案 C） ---- */
+  Picker.prototype.drawWheelTriangle = function () {
+    var SIZE = 214, R = SIZE / 2;
+    var ctx = fitCanvas(this.triCanvas, SIZE, SIZE);
+
+    // 外圈实心色轮：逐度扇形
+    for (var deg = 0; deg < 360; deg++) {
+      var a0 = (deg - 0.6 - 90) * Math.PI / 180;
+      var a1 = (deg + 0.6 - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(R, R);
+      ctx.arc(R, R, R - 1, a0, a1);
+      ctx.closePath();
+      ctx.fillStyle = 'hsl(' + deg + ',100%,50%)';
+      ctx.fill();
+    }
+
+    // 内嵌三角：顶点=纯色、左下=白、右下=黑
+    var tr = R * 0.70;
+    var top = { x: R, y: R - tr };
+    var bl = { x: R - tr * Math.cos(Math.PI / 6), y: R + tr * Math.sin(Math.PI / 6) };
+    var br = { x: R + tr * Math.cos(Math.PI / 6), y: R + tr * Math.sin(Math.PI / 6) };
+
+    var box = Math.ceil(tr * 2 + 4);
+    var ox = Math.floor(R - tr - 2), oy = Math.floor(R - tr - 2);
+    var img = ctx.createImageData(box, box);
+
+    function bary(px, py) {
+      var d = (bl.y - br.y) * (top.x - br.x) + (br.x - bl.x) * (top.y - br.y);
+      var w1 = ((bl.y - br.y) * (px - br.x) + (br.x - bl.x) * (py - br.y)) / d;
+      var w2 = ((br.y - top.y) * (px - br.x) + (top.x - br.x) * (py - br.y)) / d;
+      var w3 = 1 - w1 - w2;
+      return [w1, w2, w3];
+    }
+
+    var pure = hsvToRgb(this.h, 1, 1);
+    for (var y = 0; y < box; y++) {
+      for (var x = 0; x < box; x++) {
+        var w = bary(ox + x + 0.5, oy + y + 0.5);
+        if (w[0] < -0.002 || w[1] < -0.002 || w[2] < -0.002) continue;
+        var i = (y * box + x) * 4;
+        img.data[i] = Math.round(w[0] * pure[0] + w[1] * 255);
+        img.data[i + 1] = Math.round(w[0] * pure[1] + w[1] * 255);
+        img.data[i + 2] = Math.round(w[0] * pure[2] + w[1] * 255);
+        img.data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, ox, oy);
+
+    this.triGeom = { R: R, tr: tr, top: top, bl: bl, br: br };
+  };
+
+  /* ---- 同步渲染 ---- */
+  Picker.prototype.sync = function () {
+    var hex = this.hex();
+    var mode = this.root.dataset.mode;
+
+    if (this.swatch) this.swatch.style.background = hex;
+    if (this.hexInput && this.hexInput.value.toUpperCase() !== hex.toUpperCase()) {
+      this.hexInput.value = hex.toUpperCase();
+    }
+
+    // SV 渐变
+    if (this.svBox) {
+      this.svBox.style.background =
+        'linear-gradient(to top, #000, rgba(0,0,0,0)), ' +
+        'linear-gradient(to right, #fff, hsl(' + this.h + ',100%,50%))';
+    }
+
+    // 色环指针
+    if (this.dotRing) {
+      var SIZE = 232, RING_W = 26, mid = (SIZE - RING_W) / 2;
+      var rad = (this.h - 90) * Math.PI / 180;
+      this.dotRing.style.left = (SIZE / 2 + Math.cos(rad) * mid) + 'px';
+      this.dotRing.style.top = (SIZE / 2 + Math.sin(rad) * mid) + 'px';
+    }
+
+    // 色条指针
+    if (this.dotHue && this.hueCanvas) {
+      var w = this.hueCanvas.clientWidth || 300;
+      this.dotHue.style.left = (this.h / 360 * w) + 'px';
+      this.dotHue.style.top = '11px';
+    }
+
+    // SV 方块指针
+    if (this.dotSv && this.svBox) {
+      var r = this.svBox.getBoundingClientRect();
+      this.dotSv.style.left = (this.s * r.width) + 'px';
+      this.dotSv.style.top = ((1 - this.v) * r.height) + 'px';
+    }
+
+    // 三角指针
+    if (this.dotTri && this.triGeom) {
+      var g = this.triGeom;
+      var pure = this.s * this.v;
+      var white = (1 - this.s) * this.v;
+      var black = 1 - this.v;
+      var sum = pure + white + black || 1;
+      pure /= sum; white /= sum; black /= sum;
+      var px = pure * g.top.x + white * g.bl.x + black * g.br.x;
+      var py = pure * g.top.y + white * g.bl.y + black * g.br.y;
+      this.dotTri.style.left = px + 'px';
+      this.dotTri.style.top = py + 'px';
+    }
+
+    // 方案 C 换色相要重画三角
+    if (mode === 'C' && this._needRedrawTri) {
+      this.drawWheelTriangle();
+      this._needRedrawTri = false;
+      this.sync();
+    }
+  };
+
+  /* ---- 拖拽交互 ---- */
+  Picker.prototype.bindDrag = function () {
+    var self = this;
+
+    function drag(el, onMove, onDown) {
+      if (!el) return;
+      var active = false;
+      function handle(e) {
+        if (onMove(e) && onDown) onDown();
+      }
+      el.addEventListener('pointerdown', function (e) {
+        active = true;
+        el.setPointerCapture(e.pointerId);
+        handle(e);
+        e.preventDefault();
+      });
+      el.addEventListener('pointermove', function (e) {
+        if (!active) return;
+        handle(e);
+        e.preventDefault();
+      });
+      function end(e) {
+        if (!active) return;
+        active = false;
+        try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+        self.pushRecent(self.hex());
+      }
+      el.addEventListener('pointerup', end);
+      el.addEventListener('pointercancel', end);
+    }
+
+    // 色环
+    if (this.root.dataset.mode === 'A') {
+      var wrap = this.root.querySelector('.pA-wrap');
+      var SIZE = 232, RING_W = 26;
+      var inner = (SIZE - RING_W) / 2 - RING_W / 2 - 5;
+      var outer = (SIZE - RING_W) / 2 + RING_W / 2 + 7;
+      drag(wrap, function (e) {
+        var r = wrap.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2);
+        var dy = e.clientY - (r.top + r.height / 2);
+        var dist = Math.hypot(dx, dy);
+        if (dist < inner || dist > outer) return false;
+        self.h = (((Math.atan2(dy, dx) * 180 / Math.PI) + 90) % 360 + 360) % 360;
+        self.sync();
+        return true;
+      });
+    }
+
+    // SV 方块（A / B 共用）
+    drag(this.svBox, function (e) {
+      var r = self.svBox.getBoundingClientRect();
+      if (!r.width || !r.height) return false;
+      var x = Math.min(Math.max(e.clientX - r.left, 0), r.width);
+      var y = Math.min(Math.max(e.clientY - r.top, 0), r.height);
+      self.s = x / r.width;
+      self.v = 1 - y / r.height;
+      self.sync();
+      return true;
+    });
+
+    // 色条
+    var hueWrap = this.root.querySelector('.pB-hue');
+    drag(hueWrap, function (e) {
+      var r = hueWrap.getBoundingClientRect();
+      var x = Math.min(Math.max(e.clientX - r.left, 0), r.width);
+      self.h = x / r.width * 360;
+      self._needRedrawTri = true;
+      self.sync();
+      return true;
+    });
+
+    // 圆盘 + 三角
+    if (this.root.dataset.mode === 'C') {
+      var cw = this.root.querySelector('.pC-wrap');
+      drag(cw, function (e) {
+        var r = cw.getBoundingClientRect();
+        var px = e.clientX - r.left, py = e.clientY - r.top;
+        var g = self.triGeom;
+        if (!g) return false;
+        var cx = px - g.R, cy = py - g.R;
+        var dist = Math.hypot(cx, cy);
+
+        // 落在三角里？用重心坐标判定
+        var d = (g.bl.y - g.br.y) * (g.top.x - g.br.x) + (g.br.x - g.bl.x) * (g.top.y - g.br.y);
+        var w1 = ((g.bl.y - g.br.y) * (px - g.br.x) + (g.br.x - g.bl.x) * (py - g.br.y)) / d;
+        var w2 = ((g.br.y - g.top.y) * (px - g.br.x) + (g.top.x - g.br.x) * (py - g.br.y)) / d;
+        var w3 = 1 - w1 - w2;
+
+        if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
+          // 三角内：w1=纯色，w2=白，w3=黑
+          var total = w1 + w2 + w3;
+          w1 /= total; w2 /= total; w3 /= total;
+          // 纯色权重 -> s*v，白色权重 -> (1-s)*v，黑色 -> 1-v
+          self.v = clamp01(w1 + w2);
+          self.s = self.v > 0.002 ? clamp01(w1 / self.v) : 0;
+          self.triIn = true;
+        } else {
+          // 三角外：转色相
+          self.h = (((Math.atan2(cy, cx) * 180 / Math.PI) + 90) % 360 + 360) % 360;
+          self._needRedrawTri = true;
+          self.triIn = false;
+        }
+        self.sync();
+        return true;
+      });
+    }
+  };
+
+  /* ---- 手输色号 ---- */
+  Picker.prototype.bindHex = function () {
+    var self = this;
+    if (!this.hexInput) return;
+    this.hexInput.addEventListener('input', function () {
+      var v = self.hexInput.value.trim();
+      if (v && v[0] !== '#') v = '#' + v;
+      var next = hexToHsv(v);
+      if (!next) return;
+      if (next.s > 0.004 && next.v > 0.004) self.h = next.h;
+      self.s = next.s;
+      self.v = next.v;
+      self._needRedrawTri = true;
+      self.sync();
+    });
+    this.hexInput.addEventListener('blur', function () {
+      self.hexInput.value = self.hex().toUpperCase();
+    });
+  };
+
+  /* ---- 最近色 ---- */
+  Picker.prototype.pushRecent = function (hex) {
+    hex = String(hex).toUpperCase();
+    this.recent = [hex].concat(this.recent.filter(function (c) { return c.toUpperCase() !== hex; })).slice(0, 10);
+    this.renderRecent();
+  };
+  Picker.prototype.renderRecent = function () {
+    var self = this;
+    if (!this.recentBox) return;
+    this.recentBox.innerHTML = '';
+    this.recent.slice(0, 10).forEach(function (c) {
+      var i = document.createElement('i');
+      i.style.background = c;
+      i.title = c;
+      i.addEventListener('click', function () {
+        var next = hexToHsv(c);
+        if (!next) return;
+        if (next.s > 0.004 && next.v > 0.004) self.h = next.h;
+        self.s = next.s;
+        self.v = next.v;
+        self._needRedrawTri = true;
+        self.sync();
+      });
+      self.recentBox.appendChild(i);
+    });
+  };
+
+  /* ---- 启动 ---- */
+  var pickers = [];
+  document.querySelectorAll('.card').forEach(function (card) {
+    pickers.push(new Picker(card));
+  });
+
+  window.addEventListener('resize', function () {
+    pickers.forEach(function (p) {
+      if (p.hueCanvas) p.drawHueBar();
+      if (p.root.dataset.mode === 'C') p.drawWheelTriangle();
+      p.sync();
+    });
+  });
+})();
+</script>
+</body>
+</html>

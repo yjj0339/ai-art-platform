@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SLOT 落在已有素材池上 · 效果图 v1</title>
+<style>
+  :root{
+    --blue:#1768d4; --blue-soft:#eef4fd; --line:#dbe8fb; --ink:#10243e;
+    --muted:#7b91ad; --faint:#93a3b8; --orange:#ff6a00; --purple:#7a4ddb;
+    --green:#12a05c; --gray:#94a2b6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:28px 20px 60px;
+    background:#eef3fa;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  .doc-h{max-width:1180px;margin:0 auto 22px;}
+  .doc-h h1{margin:0 0 6px;font-size:20px;letter-spacing:-.2px;}
+  .doc-h p{margin:0;color:#5c7392;font-size:13px;line-height:1.7;}
+  .sec-tag{
+    display:inline-flex;align-items:center;gap:7px;
+    margin:34px 0 12px;padding:5px 12px 5px 9px;border-radius:99px;
+    background:#fff;border:1px solid var(--line);
+    font-size:12.5px;font-weight:700;color:var(--blue);
+  }
+  .sec-tag i{
+    width:19px;height:19px;border-radius:50%;background:var(--blue);color:#fff;
+    font-style:normal;font-size:11px;display:flex;align-items:center;justify-content:center;
+  }
+  .note{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:12.5px;line-height:1.75;color:#4a6487;margin:12px 0 0;}
+
+  /* ============ 页面外框 ============ */
+  .app{
+    background:#fff;border-radius:14px;border:1px solid #d5e3f6;
+    box-shadow:0 12px 34px rgba(23,72,140,.10);overflow:hidden;
+  }
+  .app-top{
+    display:flex;align-items:center;gap:14px;
+    padding:9px 16px;border-bottom:1px solid #edf2fa;background:#fff;
+  }
+  .logo{
+    width:26px;height:26px;border-radius:8px;flex:0 0 auto;
+    background:linear-gradient(135deg,#ff8a3d,#ff5c00);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .logo svg{width:14px;height:14px;}
+  .app-title{font-size:13.5px;font-weight:800;white-space:nowrap;}
+  .app-title s{text-decoration:none;color:#c3d0e2;font-weight:500;margin:0 7px;}
+  .app-title b{color:#5c7392;font-weight:600;font-size:12.5px;}
+  .saved{display:flex;align-items:center;gap:5px;color:#39a06a;font-size:11.5px;white-space:nowrap;}
+  .saved i{width:13px;height:13px;border-radius:50%;background:#e6f7ee;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:8px;color:#39a06a;}
+  .steps{display:flex;align-items:center;gap:6px;margin-left:auto;}
+  .step{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;}
+  .step u{
+    width:19px;height:19px;border-radius:50%;background:#eef3fa;color:#9fb0c6;
+    font-size:11px;font-weight:700;text-decoration:none;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .step span{font-size:10.5px;color:#9fb0c6;white-space:nowrap;}
+  .step.on u{background:var(--blue);color:#fff;}
+  .step.on span{color:var(--blue);font-weight:700;}
+  .step.done u{background:#e8f1fe;color:var(--blue);}
+  .step.done span{color:var(--blue);}
+  .step-line{width:16px;height:1px;background:#e2eaf5;margin-bottom:13px;}
+  .btn-out{
+    margin-left:10px;height:29px;padding:0 15px;border-radius:8px;border:1px solid #dbe5f2;
+    background:#fff;color:var(--ink);font-size:12px;font-weight:700;
+  }
+
+  /* ============ 三栏 ============ */
+  .grid{
+    display:grid;grid-template-columns:206px 1fr 224px;
+    gap:11px;padding:11px;background:#f7fafe;height:466px;
+  }
+  .panel{background:#fff;border:1px solid var(--line);border-radius:11px;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* 左栏 */
+  .l-h{display:flex;align-items:baseline;gap:6px;padding:12px 12px 0;}
+  .l-h h2{margin:0;font-size:13.5px;font-weight:800;}
+  .l-h em{font-style:normal;color:var(--muted);font-size:10.5px;}
+  .l-h .pick{
+    margin-left:auto;height:20px;padding:0 8px;border-radius:99px;
+    border:1px solid #dbe5f2;background:#f6f9fe;color:var(--blue);
+    font-size:10.5px;font-weight:700;
+  }
+  .l-src{padding:2px 12px 0;color:var(--faint);font-size:10px;}
+  .l-body{flex:1;min-height:0;overflow:auto;padding:10px 12px 12px;display:flex;flex-direction:column;gap:11px;}
+  .grp-h{display:flex;align-items:center;gap:4px;margin-bottom:6px;}
+  .grp-h span{font-size:12px;font-weight:700;}
+  .grp-h i{font-style:normal;color:var(--faint);font-size:10.5px;}
+  .thumbs{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .th{
+    position:relative;aspect-ratio:1/1;border-radius:8px;overflow:hidden;
+    background-size:cover;background-position:center;
+    box-shadow:inset 0 0 0 1px rgba(16,32,64,.07);
+  }
+  .th::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.42),transparent 55%);}
+  .th em{
+    position:absolute;z-index:2;left:5px;bottom:4px;color:#fff;font-size:9px;font-style:normal;
+    text-shadow:0 1px 3px rgba(0,0,0,.5);
+  }
+  .chk{
+    position:absolute;z-index:3;right:4px;top:4px;width:15px;height:15px;border-radius:50%;
+    background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 4px rgba(23,104,212,.4);
+  }
+  .chk svg{width:9px;height:9px;}
+
+  /* ★ 新增：页角标 */
+  .slot{
+    position:absolute;z-index:4;left:4px;top:4px;
+    height:16px;padding:0 5px;border-radius:5px;
+    background:rgba(255,255,255,.94);
+    border:1px solid rgba(23,104,212,.35);
+    color:var(--blue);font-size:9px;font-weight:800;line-height:14px;
+    letter-spacing:.2px;cursor:pointer;
+    box-shadow:0 1px 3px rgba(16,32,64,.14);
+    display:flex;align-items:center;gap:3px;
+  }
+  .slot.is-auto{background:rgba(255,255,255,.82);border-color:rgba(148,162,182,.5);color:#7b8ea6;font-weight:700;}
+  .slot b{font-weight:800;}
+
+  .tips{background:#f8fbff;border:1px solid #e6eefa;border-radius:8px;padding:8px 9px;}
+  .tips b{display:block;font-size:10.5px;color:var(--ink);margin-bottom:3px;}
+  .tips p{margin:0;font-size:9.5px;line-height:1.65;color:#7b91ad;}
+
+  /* 中栏 */
+  .m-in{display:flex;flex-direction:column;height:100%;padding:12px 15px;}
+  .m-h{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .m-h h2{margin:0;font-size:13.5px;font-weight:800;}
+  .m-badge{font-size:10.5px;color:var(--blue);}
+  .ed{border:1px solid #dbe8fb;border-radius:10px;margin-top:9px;flex:1;min-height:0;display:flex;flex-direction:column;background:#fff;}
+  .ed-h{display:flex;align-items:center;gap:8px;padding:9px 11px 6px;}
+  .ed-h strong{font-size:12px;font-weight:800;}
+  .ed-h span{margin-left:auto;font-size:10px;color:#b3c1d3;}
+  .ed textarea{
+    flex:1;border:0;resize:none;outline:none;padding:0 11px;
+    font-size:11.5px;line-height:1.85;color:#2b3f57;font-family:inherit;background:transparent;
+  }
+  .ed-f{display:flex;align-items:center;justify-content:flex-end;padding:4px 11px 9px;color:#b3c1d3;font-size:10px;}
+  .m-foot{display:flex;align-items:center;gap:8px;padding-top:8px;}
+  .m-foot b{font-size:11px;font-weight:700;}
+  .m-foot p{margin:0;font-size:9.5px;color:#9fb0c6;}
+  .m-foot .gen{
+    margin-left:auto;height:26px;padding:0 11px;border-radius:8px;
+    border:1px solid #dbe5f2;background:#f6f9fe;color:#4a6487;
+    font-size:10.5px;font-weight:700;display:flex;align-items:center;gap:5px;
+  }
+
+  /* 右栏 */
+  .r-h{display:flex;align-items:baseline;justify-content:space-between;padding:12px 12px 0;}
+  .r-h h2{margin:0;font-size:13.5px;font-weight:800;}
+  .r-h em{font-style:normal;font-size:10.5px;color:var(--muted);}
+  .r-body{padding:9px 12px 12px;flex:1;display:flex;flex-direction:column;gap:9px;min-height:0;}
+  .tabs{display:flex;background:#f2f6fc;border-radius:99px;padding:2px;}
+  .tabs span{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:#8fa2b9;padding:4px 0;border-radius:99px;}
+  .tabs span.on{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(16,32,64,.1);}
+  .cover{aspect-ratio:3/4;border-radius:10px;overflow:hidden;position:relative;background:#eef3fa;}
+  .cover img{width:100%;height:100%;object-fit:cover;display:block;}
+  .r-foot{display:flex;gap:7px;margin-top:auto;}
+  .r-foot span{flex:1;height:27px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .r-foot .p{border:1px solid #dbe5f2;background:#fff;color:#4a6487;gap:5px;}
+  .r-foot .g{background:linear-gradient(135deg,#ff8a3d,#ff5c00);color:#fff;gap:5px;}
+
+  /* ============ 放大特写 ============ */
+  .zoom-row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+  .zoom-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;}
+  .zoom-card h4{margin:0 0 10px;font-size:12.5px;font-weight:800;color:var(--ink);}
+  .zoom-card h4 s{text-decoration:none;color:var(--faint);font-weight:500;font-size:11px;margin-left:5px;}
+
+  .big{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:250px;}
+  .big .th{border-radius:11px;}
+  .big .slot{height:19px;font-size:10.5px;line-height:17px;padding:0 6px;border-radius:6px;}
+  .big .slot.blue{background:#1768d4;color:#fff;border-color:#1768d4;}
+  .big .slot.blank{background:#fff;color:#9fb0c6;border-color:#d6e2f1;border-style:dashed;}
+  .big .chk{width:18px;height:18px;}
+  .big em{font-size:10px;}
+
+  /* 选单 */
+  .menu{width:186px;background:#fff;border:1px solid #dbe8fb;border-radius:10px;box-shadow:0 10px 26px rgba(16,40,80,.16);overflow:hidden;font-size:11.5px;}
+  .menu-h{padding:8px 11px 6px;border-bottom:1px solid #eef3fa;font-size:10px;color:var(--faint);}
+  .menu-h b{display:block;font-size:11.5px;color:var(--ink);margin-bottom:1px;}
+  .menu ul{list-style:none;margin:0;padding:4px;}
+  .menu li{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:7px;color:#3d5673;font-weight:600;}
+  .menu li .dot{width:6px;height:6px;border-radius:50%;background:#c9d6e6;flex:0 0 auto;}
+  .menu li.on{background:var(--blue-soft);color:var(--blue);}
+  .menu li.on .dot{background:var(--blue);}
+  .menu li small{margin-left:auto;font-size:9.5px;color:#b3c1d3;font-weight:500;}
+  .menu li.sep{display:block;height:1px;padding:0;margin:4px 6px;background:#eef3fa;border-radius:0;}
+
+  /* 对照表 */
+  .map{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:11px;overflow:hidden;font-size:12px;}
+  .map th{background:#f6f9fe;color:#5c7392;font-size:11px;font-weight:700;text-align:left;padding:9px 12px;border-bottom:1px solid #e9f0fa;}
+  .map td{padding:9px 12px;border-bottom:1px solid #f1f6fc;vertical-align:middle;}
+  .map tr:last-child td{border-bottom:0;}
+  .pill{display:inline-flex;align-items:center;gap:5px;height:19px;padding:0 8px;border-radius:99px;font-size:10.5px;font-weight:700;}
+  .pill.blue{background:var(--blue-soft);color:var(--blue);}
+  .pill.purple{background:#f3edff;color:var(--purple);}
+  .pill.green{background:#e8f7ef;color:var(--green);}
+  .pill.gray{background:#f1f5fa;color:#8b9db3;}
+  .thumb-xs{width:26px;height:26px;border-radius:6px;background-size:cover;background-position:center;display:inline-block;vertical-align:middle;box-shadow:inset 0 0 0 1px rgba(16,32,64,.08);}
+  .muted{color:#93a3b8;font-size:11px;}
+</style>
+</head>
+<body>
+<div class="doc-h">
+  <h1>SLOT 应该长在「创作素材」的缩略图上，不另开界面</h1>
+  <p>你现在的页面已经能整理素材（勾选 / 取消）、能写自述。所以这里不再造格子，只给每张已勾选的图加一个「给第几页用」的角标。</p>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ 画面 1 ============ -->
+  <div class="sec-tag"><i>1</i>完整页面：角标就贴在缩略图左上角</div>
+  <div class="app">
+    <div class="app-top">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v18M3 12h18"/></svg></div>
+      <div class="app-title">高级创作报告 <s>|</s> <b>我的作品</b></div>
+      <div class="saved"><i>✓</i>已自动保存</div>
+      <div class="steps">
+        <div class="step done"><u>1</u><span>资料整理</span></div>
+        <div class="step-line"></div>
+        <div class="step on"><u>2</u><span>叙事编辑</span></div>
+        <div class="step-line"></div>
+        <div class="step"><u>3</u><span>选风格</span></div>
+        <div class="step-line"></div>
+        <div class="step"><u>4</u><span>提交审核</span></div>
+      </div>
+      <button class="btn-out">保存草稿</button>
+    </div>
+
+    <div class="grid">
+      <!-- 左栏 -->
+      <aside class="panel">
+        <div class="l-h">
+          <h2>创作素材</h2>
+          <em>已选 5 / 共 5 张</em>
+          <span class="pick">全不选</span>
+        </div>
+        <div class="l-src">来自「橙子汽车」· 点缩略图可取消参与</div>
+        <div class="l-body">
+          <section>
+            <div class="grp-h"><span>手绘草图</span><i>1</i></div>
+            <div class="thumbs">
+              <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22a%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23f5efe4%22/><stop offset=%221%22 stop-color=%22%23d9cdb9%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23a)%22/><circle cx=%22100%22 cy=%2286%22 r=%2242%22 fill=%22%23efe6d6%22 stroke=%22%23b9a68c%22 stroke-width=%222%22/><path d=%22M58 150h84l-10-34H68z%22 fill=%22%23e3d7c2%22 stroke=%22%23b9a68c%22 stroke-width=%222%22/><path d=%22M70 152h60%22 stroke=%22%23b9a68c%22 stroke-width=%222%22/></svg>')">
+                <span class="slot">P1</span>
+                <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+                <em>最初草图</em>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <div class="grp-h"><span>灵感参考</span><i>2</i></div>
+            <div class="thumbs">
+              <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22b%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23e8eef8%22/><stop offset=%221%22 stop-color=%22%23b9c9e2%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23b)%22/><ellipse cx=%22100%22 cy=%22128%22 rx=%2252%22 ry=%2226%22 fill=%22%23f0f4fb%22/><path d=%22M74 96c8-26 44-26 52 0z%22 fill=%22%23cfdcf0%22/></svg>')">
+                <span class="slot">P2</span>
+                <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+                <em>参考 2</em>
+              </div>
+              <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22c%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23e3eef7%22/><stop offset=%221%22 stop-color=%22%23a8c3d8%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23c)%22/><rect y=%22130%22 width=%22200%22 height=%2270%22 fill=%22%23dce8f2%22/><path d=%22M40 132l30-38 26 30 20-18 34 40z%22 fill=%22%23c2d5e4%22/></svg>')">
+                <span class="slot is-auto">自动</span>
+                <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+                <em>参考 3</em>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <div class="grp-h"><span>AI 版本</span><i>2</i></div>
+            <div class="thumbs">
+              <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22d%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23dbe7f5%22/><stop offset=%221%22 stop-color=%22%229db7d6%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23d)%22/><rect x=%2254%22 y=%22100%22 width=%2292%22 height=%2244%22 rx=%2214%22 fill=%22%23eef3fa%22/><circle cx=%2276%22 cy=%22148%22 r=%2210%22 fill=%22%23c3d3e6%22/><circle cx=%22124%22 cy=%22148%22 r=%2210%22 fill=%22%23c3d3e6%22/></svg>')">
+                <span class="slot is-auto">自动</span>
+                <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+                <em>AI 2</em>
+              </div>
+              <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22e%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23cfe0f2%22/><stop offset=%221%22 stop-color=%22%238aa8cc%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23e)%22/><rect x=%2246%22 y=%22104%22 width=%22108%22 height=%2240%22 rx=%2212%22 fill=%22%23f2f7fd%22/><circle cx=%2272%22 cy=%22148%22 r=%2212%22 fill=%22%23b7cade%22/><circle cx=%22128%22 cy=%22148%22 r=%2212%22 fill=%22%23b7cade%22/><rect x=%2298%22 y=%2282%22 width=%226%22 height=%2222%22 rx=%223%22 fill=%22%23b7cade%22/></svg>')">
+                <span class="slot is-auto">自动</span>
+                <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+                <em>最终作品</em>
+              </div>
+            </div>
+          </section>
+
+          <div class="tips">
+            <b>这些图会怎么用</b>
+            <p>勾选的图按角标标明的页序，作为那一页的参考图送进画布节点。没标的自动顺延。12 页里没图的那几页，AI 只按节点里老师写的提示词自己画。</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 中栏 -->
+      <section class="panel">
+        <div class="m-in">
+          <div class="m-h"><h2>创作叙事</h2><span class="m-badge">写多少都行，AI 负责整理成完整报告</span></div>
+          <div class="ed">
+            <div class="ed-h"><strong>这次创作，你是怎么想、怎么做的？</strong><span>想到什么写什么，不用讲究顺序</span></div>
+            <textarea readonly>我先想做的是把三张参考图放到一起：让两张图里的人物进到第三张图的画面里，三个人都出现在同一个画面当中。画草图的时候我就是照这个想法安排的，然后把这些图交给 AI 去生成。AI 出了 V1 初稿和 V2 候选图两个版本，都有图。我现在在比较这两版，看三个人是不是都在画面里、画面是不是我想要的样子；最后选哪一张，我还没定。</textarea>
+            <div class="ed-f">160 / 800</div>
+          </div>
+          <div class="m-foot">
+            <b>不知道怎么写？</b>
+            <p>点右边按钮，按你的草图、作品和画图时写的需求整理一版，你再改成自己的话。</p>
+            <span class="gen">✧ 整理创作构思</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右栏 -->
+      <aside class="panel">
+        <div class="r-h"><h2>选一个风格</h2><em>共 4 种</em></div>
+        <div class="r-body">
+          <div class="tabs"><span class="on">图文排版</span><span>画布预览</span></div>
+          <div class="cover">
+            <div style="position:absolute;inset:0;background:linear-gradient(160deg,#e9f1fb,#cfdcee);"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(to top,#f7fafd,rgba(247,250,253,0));"></div>
+            <div style="position:absolute;left:14px;bottom:12px;">
+              <div style="font-size:11px;font-weight:800;color:#22405f;">橙子汽车 · 创作报告</div>
+              <div style="font-size:8.5px;color:#7d94ad;margin-top:2px;">用三张参考图合成的同人画面</div>
+            </div>
+          </div>
+          <div class="r-foot">
+            <span class="p">▤ 预览</span>
+            <span class="g">✧ 生成 H5 报告</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <p class="note">
+    <b>和现在的差别只有一处：</b>每张缩略图左上角多了 <b>P1 / P2 / 自动</b> 这个小标签。蓝色 <b>P1</b> = 老师指定这张图给第 1 页用；灰色 <b>自动</b> = 学生没管它，系统按顺序往下排。<br>
+    原先右上角的勾选框（参与 / 不参与）保持不变——<b>勾选框管“用不用”，角标管“给第几页用”</b>，两件事分开，不会互相打乱。
+  </p>
+
+  <!-- ============ 画面 2 ============ -->
+  <div class="sec-tag"><i>2</i>点一下角标：只做“这张图给哪一页”</div>
+  <div class="zoom-row">
+    <div class="zoom-card">
+      <h4>三种角标状态<s>不点也能看懂</s></h4>
+      <div class="big">
+        <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22a%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23f5efe4%22/><stop offset=%221%22 stop-color=%22%23d9cdb9%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23a)%22/><circle cx=%22100%22 cy=%2286%22 r=%2242%22 fill=%22%23efe6d6%22 stroke=%22%23b9a68c%22 stroke-width=%222%22/><path d=%22M58 150h84l-10-34H68z%22 fill=%22%23e3d7c2%22 stroke=%22%23b9a68c%22 stroke-width=%222%22/></svg>')">
+          <span class="slot blue">P1</span>
+          <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+          <em>我自己指定的</em>
+        </div>
+        <div class="th" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><defs><linearGradient id=%22c%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23e3eef7%22/><stop offset=%221%22 stop-color=%22%23a8c3d8%22/></linearGradient></defs><rect width=%22200%22 height=%22200%22 fill=%22url(%23c)%22/><rect y=%22130%22 width=%22200%22 height=%2270%22 fill=%22%23dce8f2%22/><path d=%22M40 132l30-38 26 30 20-18 34 40z%22 fill=%22%23c2d5e4%22/></svg>')">
+          <span class="slot is-auto">P3</span>
+          <span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3.2 8.4 6.4 11.6 12.8 4.6"/></svg></span>
+          <em>系统自动排的</em>
+        </div>
+      </div>
+      <p style="margin:10px 0 0;font-size:11px;color:#7b91ad;line-height:1.7;">
+        实心蓝 = 学生手动指定过<br>空心灰 = 系统按顺序自动排
+      </p>
+    </div>
+
+    <div class="zoom-card">
+      <h4>点开后的选单<s>就这一件事</s></h4>
+      <div class="menu">
+        <div class="menu-h"><b>这张图给哪一页用？</b>第 3 页 · 教室的窗</div>
+        <ul>
+          <li><span class="dot"></span>按顺序自动排 <small>现在 P3</small></li>
+          <li class="sep"></li>
+          <li class="on"><span class="dot"></span>第 1 页 · 门口的树</li>
+          <li><span class="dot"></span>第 2 页 · 小溪边</li>
+          <li><span class="dot"></span>第 3 页 · 教室的窗</li>
+          <li><span class="dot"></span>第 4 页 · 操场</li>
+          <li><span class="dot"></span>… 后面还有 8 页</li>
+          <li class="sep"></li>
+          <li><span class="dot"></span>只当封面图 <small>不进节点</small></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="zoom-card" style="flex:1;min-width:280px;">
+      <h4>为什么不让学生“一页一页填”</h4>
+      <p style="margin:0;font-size:11.5px;line-height:1.85;color:#4a6487;">
+        你截图里这个学生只有 <b>5 张图</b>，但模板有 <b>12 页</b>。如果按“每页一个空格子”做，他会看到 7 个空框，然后以为是自己没拍够、卡在那里不敢点生成。<br><br>
+        现在的做法是反过来：<b>图是素材，不是填空。</b> 5 张图就标 5 页；剩下 7 页没图，AI 只按老师在节点里写的提示词自己画。学生不需要凑够 12 张。
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ 画面 3 ============ -->
+  <div class="sec-tag"><i>3</i>5 张图 → 12 个节点，实际怎么对上</div>
+  <table class="map">
+    <thead>
+      <tr>
+        <th style="width:96px;">学生这边</th>
+        <th style="width:190px;">后台画布节点</th>
+        <th style="width:130px;">这一页的参考图</th>
+        <th>会发生什么</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="thumb-xs" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23e6dbc7%22/><circle cx=%2230%22 cy=%2226%22 r=%2213%22 fill=%22%23cbbba2%22/></svg>')"></span> <b>P1</b></td>
+        <td>第 1 页 · 门口的树</td>
+        <td><span class="pill blue">草图 1 张</span></td>
+        <td class="muted">用学生草图当参考，按节点提示词重画</td>
+      </tr>
+      <tr>
+        <td><span class="thumb-xs" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23dbe8f5%22/><ellipse cx=%2230%22 cy=%2240%22 rx=%2216%22 ry=%228%22 fill=%22%23b7cade%22/></svg>')"></span> <b>P2</b></td>
+        <td>第 2 页 · 小溪边</td>
+        <td><span class="pill blue">参考 1 张</span></td>
+        <td class="muted">同上</td>
+      </tr>
+      <tr>
+        <td><span class="thumb-xs" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect width=%2260%22 height=%2260%22 fill=%22%23cfe0f2%22/><rect x=%2214%22 y=%2230%22 width=%2232%22 height=%2214%22 rx=%226%22 fill=%22%23eef3fa%22/></svg>')"></span> <b>自动</b></td>
+        <td>第 3 页 · 教室的窗</td>
+        <td><span class="pill blue">参考 2 张</span></td>
+        <td class="muted">学生没指定，系统顺延到这里</td>
+      </tr>
+      <tr>
+        <td class="muted">—</td>
+        <td>第 4 ~ 11 页</td>
+        <td><span class="pill gray">无</span></td>
+        <td class="muted"><b>纯靠文字提示词生成</b>，不带参考图</td>
+      </tr>
+      <tr>
+        <td><b style="color:#7a4ddb;">自述</b></td>
+        <td><span class="pill purple">文字节点</span></td>
+        <td><span class="pill purple">160 字</span></td>
+        <td class="muted">自述文字进节点，按老师配的模板整理成文案</td>
+      </tr>
+      <tr>
+        <td class="muted">—</td>
+        <td><span class="pill green">结果节点</span></td>
+        <td><span class="pill green">汇总</span></td>
+        <td class="muted">按画布从上到下排好序，回传到报告预览</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="note">
+    <b>这套做法的好处：</b>你截图里那个学生，5 张图，什么都不用管，直接点「生成 H5 报告」也能出完整 12 页报告——有图的页照着图画，没图的页按你写的提示词画。<br>
+    <b>代价：</b>学生如果想指定“这张图我要放第 8 页”，得自己点角标选一次。多数学生不会点，这时候靠“按顺序”兜底；所以<b>你搭模板时把页序排好，等于替学生做了默认分配</b>。
+  </p>
+
+</div>
+</body>
+</html>

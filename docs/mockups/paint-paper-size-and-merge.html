@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>AI 创作台 · 画纸尺寸 + 左右合卡 效果图</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #eef1f6;
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+    color: #1f2937;
+    -webkit-font-smoothing: antialiased;
+    padding: 22px 24px 30px;
+  }
+  .doc-head { max-width: 1180px; margin: 0 auto 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .doc-head h1 { margin: 0; font-size: 16px; letter-spacing: .2px; }
+  .doc-head p { margin: 4px 0 0; font-size: 11.5px; color: #7c8798; }
+  .doc-head p b { color: #ff7a00; }
+  .switch { display: flex; align-items: center; gap: 6px; }
+  .switch button {
+    height: 28px; min-height: 0; padding: 0 13px; border: 1px solid #dfe4ec; border-radius: 999px;
+    background: #fff; color: #5b6675; font-size: 11.5px; font-weight: 600; cursor: pointer;
+  }
+  .switch button.on { background: #ff7a00; border-color: #ff7a00; color: #fff; }
+
+  /* ================= 应用外框 ================= */
+  .app {
+    max-width: 1180px; margin: 0 auto; height: 566px;
+    background: #f5f7fb; border-radius: 18px; border: 1px solid #e3e7ee;
+    box-shadow: 0 18px 50px rgba(31, 41, 55, .12);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  /* ---------- 顶栏 ---------- */
+  .topbar { height: 52px; flex: 0 0 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+  .tb-left { display: flex; align-items: center; gap: 12px; }
+  .tb-back { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px 0 7px; border-radius: 999px; background: #fff; border: 1px solid #e4e8ef; font-size: 11.5px; color: #5b6675; }
+  .tb-back svg { width: 11px; height: 11px; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #ff9a3d, #ff7a00); display: grid; place-items: center; }
+  .brand-mark svg { width: 15px; height: 15px; }
+  .brand-text strong { display: block; font-size: 12.5px; line-height: 1.2; }
+  .brand-text span { display: block; font-size: 9.5px; color: #9aa4b3; margin-top: 2px; }
+  .tb-right { display: flex; align-items: center; gap: 10px; }
+  .save-state { font-size: 10.5px; color: #9aa4b3; display: inline-flex; align-items: center; gap: 5px; }
+  .save-state i { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; }
+  .ghost { height: 28px; min-height: 0; padding: 0 13px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; font-size: 11px; font-weight: 600; color: #4b5563; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #ffe6cc, #ffd0a1); color: #b45309; font-size: 11px; font-weight: 700; display: grid; place-items: center; border: 2px solid #fff; }
+
+  /* ---------- 工作区：★ 改后 = 一整张卡，中间只剩一条分割线 ---------- */
+  .workspace {
+    flex: 1; min-height: 0; display: grid;
+    grid-template-columns: minmax(0, 1fr) 496px;
+    gap: 0;
+    margin: 0 16px;
+    background: #fff;
+    border: 1px solid rgba(31, 41, 55, .07);
+    border-radius: 20px;
+    box-shadow: 0 12px 28px rgba(31, 41, 55, .08);
+    overflow: hidden;
+    position: relative;
+  }
+  .workspace::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 30;
+    background: linear-gradient(90deg, #ff7a00, #f472b6, #36bffa); pointer-events: none;
+  }
+  /* 改前：两张独立卡，14px 缝 */
+  .app.is-before .workspace { background: transparent; border: 0; box-shadow: none; gap: 14px; overflow: visible; }
+  .app.is-before .workspace::before { display: none; }
+  /* 改前：尺寸只是灰色小字，没有按钮框和小箭头 */
+  .app.is-before .size-chip { border-color: transparent; background: transparent; padding: 0; color: #9ca3af; font-weight: 500; }
+  .app.is-before .size-chip svg { display: none; }
+  .app.is-before .size-menu { display: none !important; }
+  .app.is-before .board,
+  .app.is-before .ai { background: #fff; border: 1px solid rgba(31, 41, 55, .07); border-radius: 20px; box-shadow: 0 12px 28px rgba(31, 41, 55, .08); }
+
+  /* ---------- 左：画板 ---------- */
+  .board { display: flex; flex-direction: column; min-width: 0; min-height: 0; position: relative; }
+  .board-head { height: 44px; flex: 0 0 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 12px 0 14px; border-bottom: 1px solid #eef1f5; position: relative; z-index: 20; }
+  .bh-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #ff7a00; box-shadow: 0 0 0 4px rgba(255, 122, 0, .12); flex: 0 0 7px; }
+  .bh-left strong { font-size: 12.5px; white-space: nowrap; }
+  .bh-tag { height: 20px; min-height: 0; padding: 0 7px; border: 0; border-radius: 6px; background: #fff3e6; color: #9a5b12; font-size: 10px; font-weight: 600; }
+
+  /* ★ 尺寸芯片（原来只是灰字，现在可点） */
+  .size-wrap { position: relative; }
+  .size-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 22px; min-height: 0; padding: 0 7px 0 8px;
+    border: 1px solid #e8ecf2; border-radius: 7px; background: #f7f9fc;
+    color: #6b7684; font-size: 10.5px; font-weight: 600; font-variant-numeric: tabular-nums;
+    white-space: nowrap; cursor: pointer; transition: .16s;
+  }
+  .size-chip svg { width: 9px; height: 9px; opacity: .7; }
+  .size-chip:hover { background: #fff3e6; border-color: rgba(255, 122, 0, .38); color: #ff7a00; }
+  .size-chip.is-open { background: #fff3e6; border-color: rgba(255, 122, 0, .55); color: #ea6a00; box-shadow: 0 0 0 3px rgba(255, 122, 0, .1); }
+
+  .size-menu {
+    position: absolute; left: -6px; top: 28px; width: 296px; z-index: 80;
+    background: #fff; border: 1px solid #e6eaf1; border-radius: 14px;
+    box-shadow: 0 18px 44px rgba(31, 41, 55, .18); padding: 11px;
+  }
+  .sm-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; padding: 0 2px; }
+  .sm-head b { font-size: 11.5px; }
+  .sm-head span { font-size: 9.5px; color: #a8b0ba; }
+  .sm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .sm-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 8px;
+    border: 1px solid #eceff4; border-radius: 10px; background: #fbfcfe; cursor: pointer; transition: .16s;
+  }
+  .sm-item:hover { border-color: rgba(255, 122, 0, .45); background: #fff8f1; }
+  .sm-item.on { border-color: #ff7a00; background: #fff3e6; box-shadow: inset 0 0 0 1px rgba(255, 122, 0, .25); }
+  .sm-ratio { width: 26px; height: 26px; flex: 0 0 26px; display: grid; place-items: center; }
+  .sm-ratio i { display: block; border: 1.6px solid #b9c2ce; border-radius: 2px; background: #fff; }
+  .sm-item.on .sm-ratio i { border-color: #ff7a00; background: #ffe6cc; }
+  .sm-txt { min-width: 0; }
+  .sm-txt b { display: block; font-size: 10.5px; line-height: 1.2; }
+  .sm-txt em { display: block; font-style: normal; font-size: 9px; color: #98a2b0; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .sm-item.on .sm-txt em { color: #d97706; }
+  .sm-custom { margin-top: 9px; padding-top: 9px; border-top: 1px dashed #e8ecf2; }
+  .sm-custom-row { display: flex; align-items: center; gap: 6px; }
+  .sm-custom label { font-size: 9.5px; color: #8b95a3; }
+  .sm-inp { width: 52px; height: 24px; min-height: 0; border: 1px solid #e2e7ef; border-radius: 7px; background: #fff; font-size: 10.5px; text-align: center; color: #3d4753; font-variant-numeric: tabular-nums; }
+  .sm-apply { margin-left: auto; height: 24px; min-height: 0; padding: 0 11px; border: 0; border-radius: 7px; background: #ff7a00; color: #fff; font-size: 10.5px; font-weight: 700; }
+  .sm-note { margin: 8px 2px 0; font-size: 9px; line-height: 1.5; color: #a8b0ba; }
+
+  .bh-right { display: flex; align-items: center; gap: 2px; }
+  .ibtn { width: 26px; height: 26px; min-height: 0; border: 0; border-radius: 8px; background: transparent; display: grid; place-items: center; color: #8b95a3; }
+  .ibtn svg { width: 13px; height: 13px; }
+  .ibtn.dim { opacity: .42; }
+
+  /* ---------- 画板主体 ---------- */
+  .board-body { flex: 1; min-height: 0; display: flex; position: relative; background: #fff; }
+  .tools { width: 44px; flex: 0 0 44px; border-right: 1px solid #f2f4f8; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 0; }
+  .tool { width: 28px; height: 28px; min-height: 0; border: 0; border-radius: 9px; background: transparent; display: grid; place-items: center; color: #7d8795; }
+  .tool svg { width: 14px; height: 14px; }
+  .tool:hover, .tool.on { background: #fff3e6; color: #ff7a00; }
+  .tool.dark { background: #2f3742; color: #fff; border-radius: 50%; width: 22px; height: 22px; }
+  .tool.red { background: #fbe0e0; }
+  .tool.red i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #d9534f; }
+
+  .paper-area { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; background: #dbe4f2; padding: 14px; }
+  .paper {
+    position: relative; height: 100%; aspect-ratio: 480 / 600; background: #fff;
+    box-shadow: 0 10px 28px rgba(31, 41, 55, .22), 0 0 0 1px rgba(31, 41, 55, .06); overflow: hidden;
+  }
+  .paper::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(60% 42% at 22% 26%, rgba(178, 214, 232, .85), rgba(178, 214, 232, 0) 72%),
+      radial-gradient(52% 38% at 74% 20%, rgba(246, 224, 206, .9), rgba(246, 224, 206, 0) 72%),
+      radial-gradient(48% 34% at 62% 62%, rgba(250, 226, 196, .95), rgba(250, 226, 196, 0) 70%),
+      radial-gradient(42% 30% at 28% 74%, rgba(200, 226, 208, .8), rgba(200, 226, 208, 0) 72%),
+      radial-gradient(34% 26% at 84% 82%, rgba(232, 208, 226, .7), rgba(232, 208, 226, 0) 72%),
+      radial-gradient(70% 55% at 50% 50%, rgba(255, 255, 255, .35), rgba(255, 255, 255, 0) 75%);
+  }
+  .paper svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .zoombar {
+    position: absolute; bottom: 10px; right: 12px; height: 26px; display: flex; align-items: center; gap: 1px;
+    background: #fff; border: 1px solid #e8ecf2; border-radius: 999px; padding: 0 4px; box-shadow: 0 4px 12px rgba(31, 41, 55, .1);
+    font-size: 10px; color: #6b7684; font-variant-numeric: tabular-nums;
+  }
+  .zoombar span { padding: 0 6px; }
+  .zoombar b { font-weight: 700; color: #3d4753; }
+
+  /* ---------- 图层栏 ---------- */
+  .layers { width: 168px; flex: 0 0 168px; border-left: 1px solid #f2f4f8; display: flex; flex-direction: column; padding: 8px 8px 9px; gap: 7px; }
+  .ly-head { display: flex; align-items: center; justify-content: space-between; padding: 0 1px; }
+  .ly-head b { font-size: 10.5px; color: #4b5563; display: inline-flex; align-items: center; gap: 4px; }
+  .ly-head b i { width: 6px; height: 6px; border-radius: 50%; background: #cbd3de; }
+  .ly-add { width: 20px; height: 20px; min-height: 0; border: 1px solid #e6eaf1; border-radius: 6px; background: #fff; color: #8b95a3; font-size: 12px; line-height: 1; }
+  .ly-item { display: flex; align-items: center; gap: 6px; padding: 5px 6px; border: 1px solid #e8ecf2; border-radius: 8px; background: #fff; }
+  .ly-item.on { border-color: #ff7a00; background: #fff8f1; }
+  .ly-eye { width: 11px; height: 11px; border: 1.4px solid #c2c9d2; border-radius: 50%; flex: 0 0 11px; }
+  .ly-thumb { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 4px; background: linear-gradient(135deg, #e7eef8, #f7e9dd); }
+  .ly-thumb.b { background: linear-gradient(135deg, #f6dfae, #efc98c); }
+  .ly-name { font-size: 8.5px; color: #6b7684; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ly-blend { margin-top: auto; border-top: 1px solid #f2f4f8; padding-top: 7px; }
+  .ly-row { display: flex; align-items: center; justify-content: space-between; font-size: 9px; color: #98a2b0; margin-bottom: 6px; }
+  .ly-select { height: 20px; min-height: 0; flex: 0 0 76px; border: 1px solid #e6eaf1; border-radius: 6px; background: #fff; font-size: 9px; color: #4b5563; }
+  .ly-slider { height: 3px; border-radius: 2px; background: #eceff4; position: relative; margin: 2px 0 4px; }
+  .ly-slider i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 2px; background: #ff7a00; }
+  .ly-slider u { position: absolute; right: 0; top: -3px; width: 9px; height: 9px; border-radius: 50%; background: #fff; border: 2px solid #ff7a00; }
+  .ly-tip { font-size: 8px; line-height: 1.5; color: #b3bcc7; background: #fbfcfe; border: 1px dashed #eef1f5; border-radius: 6px; padding: 5px 6px; }
+  .ly-tip b { color: #9aa4b3; }
+  .ly-actions { display: flex; gap: 5px; }
+  .ly-actions button { flex: 1 1 0; min-width: 0; height: 22px; min-height: 0; border: 1px solid #e6eaf1; border-radius: 6px; background: #fff; font-size: 9px; color: #5b6675; }
+  .ly-actions button.primary { background: #f5f7fb; }
+
+  /* ---------- 右：AI 面板 ---------- */
+  .ai { display: flex; flex-direction: column; min-height: 0; position: relative; border-left: 1px solid #e2e8f1; background: #fff; }
+  .app.is-before .ai { border-left: 0; }
+  .ai-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 13px 16px 12px; }
+  .styles { display: flex; gap: 5px; overflow: hidden; margin-bottom: 9px; }
+  .chip { flex: 0 0 auto; height: 25px; min-height: 0; padding: 0 9px; border: 1px solid transparent; border-radius: 8px; background: #f5f7fb; color: #5b6675; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .chip.on { background: #fff3e6; border-color: rgba(255, 122, 0, .45); color: #e2700a; }
+  .sec-label { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 7px; font-size: 10.5px; font-weight: 700; color: #4b5563; }
+  .sec-label em { font-style: normal; font-size: 9px; font-weight: 500; color: #a8b0ba; }
+  .results { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+  .res { position: relative; border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: #f4f6fa; box-shadow: 0 2px 10px rgba(31, 41, 55, .1); }
+  .res-main { flex: 1 1 0; min-height: 0; border-color: #ff7a00; box-shadow: 0 8px 22px rgba(255, 122, 0, .24); }
+  .res .art { position: absolute; inset: 0; }
+  .res .art-box { position: absolute; inset: 0; background: #fdfaf4; }
+  .badge { position: absolute; left: 9px; top: 9px; padding: 3px 7px; border-radius: 6px; background: #ff7a00; color: #fff; font-size: 9.5px; font-weight: 700; }
+  .idx { position: absolute; right: 8px; top: 8px; padding: 2px 5px; border-radius: 5px; background: rgba(255, 255, 255, .92); color: #3d4753; font-size: 8.5px; font-weight: 700; }
+  .rtools { position: absolute; left: 9px; right: 9px; bottom: 9px; display: flex; gap: 6px; }
+  .rtools span { height: 24px; min-height: 0; padding: 0 10px; border-radius: 999px; background: rgba(255, 255, 255, .94); color: #3d4753; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; box-shadow: 0 2px 8px rgba(31, 41, 55, .12); }
+  .thumbs { flex: 0 0 92px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  /* 改后：只要一张大图，缩略图整行不出现 */
+  .app:not(.is-before) .thumbs { display: none; }
+  .app:not(.is-before) .idx { display: none; }
+  /* 改后：单图铺满整个结果区，圆角与阴影按大图重给 */
+  .app:not(.is-before) .res-main { box-shadow: 0 10px 26px rgba(255, 122, 0, .22); }
+  .ai-foot { display: flex; align-items: center; gap: 9px; padding: 11px 0 3px; }
+  .import-btn { display: inline-flex; align-items: center; gap: 5px; height: 26px; min-height: 0; padding: 0 11px; border: 0; border-radius: 8px; background: #ff7a00; color: #fff; font-size: 10.5px; font-weight: 700; box-shadow: 0 4px 12px rgba(255, 122, 0, .3); }
+  .import-btn svg { width: 10px; height: 10px; }
+  .strength { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0; }
+  .strength label { font-size: 9.5px; color: #98a2b0; white-space: nowrap; }
+  .sbar { flex: 1; min-width: 60px; height: 3px; border-radius: 2px; background: #eceff4; position: relative; }
+  .sbar i { position: absolute; left: 0; top: 0; bottom: 0; width: 20%; border-radius: 2px; background: #ff7a00; }
+  .sbar u { position: absolute; left: 20%; top: -3px; margin-left: -4px; width: 9px; height: 9px; border-radius: 50%; background: #fff; border: 2px solid #ff7a00; }
+  .strength b { font-size: 9.5px; color: #6b7684; font-variant-numeric: tabular-nums; }
+  .ai-hint { font-size: 8.5px; color: #b3bcc7; margin: 3px 0 0; padding-left: 1px; }
+
+  /* ---------- 底部提示词条 ---------- */
+  .promptbar { flex: 0 0 auto; margin: 12px 16px 14px; height: 48px; background: #fff; border: 1px solid rgba(31, 41, 55, .07); border-radius: 14px; box-shadow: 0 6px 18px rgba(31, 41, 55, .06); display: flex; align-items: center; gap: 9px; padding: 0 10px; }
+  .ref-chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; min-height: 0; padding: 0 10px; border-radius: 8px; background: #fff3e6; color: #b06009; font-size: 10px; font-weight: 600; border: 1px solid rgba(255, 122, 0, .22); white-space: nowrap; }
+  .ref-chip svg { width: 10px; height: 10px; }
+  .model-chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; min-height: 0; padding: 0 10px; border: 1px solid #e8ecf2; border-radius: 8px; background: #f9fbfd; font-size: 10px; color: #5b6675; white-space: nowrap; }
+  .model-chip svg { width: 9px; height: 9px; opacity: .6; }
+  .ph { flex: 1; font-size: 10.5px; color: #b3bcc7; }
+  .count { font-size: 9.5px; color: #98a2b0; white-space: nowrap; }
+  .go { height: 32px; min-height: 0; padding: 0 15px; border: 0; border-radius: 9px; background: linear-gradient(135deg, #ff9a3d, #ff7a00); color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 6px 16px rgba(255, 122, 0, .32); white-space: nowrap; }
+
+  /* ---------- 标注 ---------- */
+  .anno { position: absolute; z-index: 90; display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 700; color: #d9534f; background: rgba(255, 255, 255, .96); border: 1px solid rgba(217, 83, 79, .45); border-radius: 999px; padding: 2px 8px 2px 4px; box-shadow: 0 4px 12px rgba(217, 83, 79, .16); pointer-events: none; }
+  .anno i { width: 13px; height: 13px; border-radius: 50%; background: #d9534f; color: #fff; font-style: normal; font-size: 8.5px; display: grid; place-items: center; }
+  .anno-line { position: absolute; z-index: 89; border-color: #d9534f; pointer-events: none; }
+
+  .legend { max-width: 1180px; margin: 14px auto 0; display: flex; gap: 10px; flex-wrap: wrap; }
+  .legend div { flex: 1 1 340px; background: #fff; border: 1px solid #e3e7ee; border-radius: 12px; padding: 10px 12px; font-size: 11px; line-height: 1.65; color: #55606f; }
+  .legend div b { color: #1f2937; display: block; margin-bottom: 3px; font-size: 11.5px; }
+  .legend div b em { font-style: normal; color: #d9534f; margin-right: 4px; }
+  .legend div b em.two { color: #ff7a00; }
+</style>
+</head>
+<body>
+
+<div class="doc-head">
+  <div>
+    <h1>AI 创作台 · 改版效果图（静态）</h1>
+    <p>① 画纸尺寸从灰字变成可点按钮　② 左侧画板与右侧 AI 卡片合成一整张卡，中间不留缝</p>
+  </div>
+  <div class="switch">
+    <button type="button" id="btnAfter" class="on">改后</button>
+    <button type="button" id="btnBefore">改前</button>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="tb-left">
+      <span class="tb-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/></svg>
+        返回
+      </span>
+      <div class="brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20c3.5.6 5-1.2 6.4-3.4 1.6-2.6 3.2-6.6 7.2-9.4"/><path d="M15.4 3.6a2.6 2.6 0 0 1 3.7 3.7l-3 3-3.7-3.7 3-3Z"/>
+          </svg>
+        </span>
+        <div class="brand-text"><strong>美佳美画 · AI 创作台</strong><span>试试看 · 未命名创作</span></div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <span class="save-state"><i></i>未保存</span>
+      <span class="ghost">保存作品</span>
+      <span class="avatar">言</span>
+    </div>
+  </header>
+
+  <!-- 工作区 -->
+  <div class="workspace" id="workspace">
+    <!-- 左：画板 -->
+    <section class="board">
+      <div class="board-head">
+        <div class="bh-left">
+          <span class="dot"></span>
+          <strong>我的画纸</strong>
+          <span class="bh-tag">未命名创作</span>
+
+          <!-- ★ 新增：尺寸芯片 + 弹层 -->
+          <div class="size-wrap">
+            <button type="button" class="size-chip is-open" id="sizeChip">
+              480 × 600
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+
+            <div class="size-menu" id="sizeMenu">
+              <div class="sm-head"><b>画纸尺寸</b><span>点一下就换</span></div>
+              <div class="sm-grid">
+                <div class="sm-item">
+                  <span class="sm-ratio"><i style="width:20px;height:20px"></i></span>
+                  <span class="sm-txt"><b>正方形</b><em>1:1 · 800 × 800</em></span>
+                </div>
+                <div class="sm-item on">
+                  <span class="sm-ratio"><i style="width:16px;height:20px"></i></span>
+                  <span class="sm-txt"><b>竖幅（当前）</b><em>4:5 · 480 × 600</em></span>
+                </div>
+                <div class="sm-item">
+                  <span class="sm-ratio"><i style="width:21px;height:16px"></i></span>
+                  <span class="sm-txt"><b>横幅</b><em>4:3 · 600 × 450</em></span>
+                </div>
+                <div class="sm-item">
+                  <span class="sm-ratio"><i style="width:24px;height:14px"></i></span>
+                  <span class="sm-txt"><b>宽幅</b><em>16:9 · 1280 × 720</em></span>
+                </div>
+              </div>
+              <div class="sm-custom">
+                <div class="sm-custom-row">
+                  <label>自定义</label>
+                  <input class="sm-inp" value="480" />
+                  <label>×</label>
+                  <input class="sm-inp" value="600" />
+                  <label>px</label>
+                  <button type="button" class="sm-apply">应用</button>
+                </div>
+                <p class="sm-note">换尺寸会按原画面居中放进新画纸，画的东西不会丢；点错可按「撤销」回来。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bh-right">
+          <button class="ibtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+          <button class="ibtn dim" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+          <button class="ibtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+          <button class="ibtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H4v5"/><path d="M15 20h5v-5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/></svg></button>
+        </div>
+      </div>
+
+      <div class="board-body">
+        <div class="tools">
+          <button class="tool" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3.5 20.5 7 8.5 19H5v-3.5L17 3.5Z"/></svg></button>
+          <button class="tool" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c4-1 6.5-3 8-6s2-7 4-9"/></svg></button>
+          <button class="tool" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16c3 0 4-6 8-6s4 5 8 4"/></svg></button>
+          <button class="tool" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/></svg></button>
+          <button class="tool on" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18c2.5-6 6-9 10-10"/><circle cx="17" cy="6.5" r="2"/></svg></button>
+          <button class="tool" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.2 5.4L20 10l-4.4 3.7L17 20l-5-2.7L7 20l1.4-6.3L4 10l5.8-1.6L12 3Z"/></svg></button>
+          <span style="height:6px"></span>
+          <span class="tool dark" style="margin-bottom:2px"></span>
+          <button class="tool red" type="button"><i></i></button>
+          <button class="tool" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg></button>
+        </div>
+
+        <div class="paper-area">
+          <div class="paper">
+            <svg viewBox="0 0 480 600" preserveAspectRatio="none">
+              <g fill="none" stroke="#f0b13c" stroke-linecap="round">
+                <path d="M150 200c40-30 70 10 110-14" stroke-width="9" opacity=".85"/>
+                <path d="M128 236c50 28 96-16 140 4" stroke-width="12" opacity=".9"/>
+                <path d="M158 268c36 20 70-8 96-2" stroke-width="8" opacity=".8"/>
+                <path d="M300 190c26 22 40 46 50 74" stroke-width="10" opacity=".85"/>
+                <path d="M204 300c24 26 26 50 20 76" stroke-width="11" opacity=".8"/>
+              </g>
+              <g fill="none" stroke="#33302b" stroke-linecap="round">
+                <path d="M118 168c46-26 66 22 108 2 20-9 30 8 42 4" stroke-width="6" opacity=".9"/>
+                <path d="M150 206c28-8 44 14 74 2" stroke-width="5" opacity=".82"/>
+              </g>
+              <g fill="none" stroke="#e8836f" stroke-linecap="round" opacity=".72">
+                <path d="M104 430c-24 34 34 66 78 40 30-18 26-64-8-72-24-6-56 8-70 32Z" stroke-width="5"/>
+                <path d="M120 452c-8 20 22 30 42 18 14-8 8-30-8-30-14 0-30 6-34 12Z" stroke-width="4"/>
+              </g>
+            </svg>
+          </div>
+          <div class="zoombar"><span>−</span><b>103%</b><span>+</span><span>适应</span></div>
+        </div>
+
+        <div class="layers">
+          <div class="ly-head"><b><i></i>图层 2</b><span class="ly-add">+</span></div>
+          <div class="ly-item on">
+            <span class="ly-eye"></span>
+            <span class="ly-thumb"></span>
+            <span class="ly-name">图层 2</span>
+          </div>
+          <div class="ly-item">
+            <span class="ly-eye"></span>
+            <span class="ly-thumb b"></span>
+            <span class="ly-name">AI · 水彩…</span>
+          </div>
+          <div class="ly-blend">
+            <div class="ly-row"><span>混合模式</span><span class="ly-select" style="display:inline-flex;align-items:center;justify-content:center">正常</span></div>
+            <div class="ly-row"><span>不透明度</span><b style="font-size:9px;color:#6b7684">100%</b></div>
+            <div class="ly-slider"><i></i><u></u></div>
+            <p class="ly-tip"><b>※</b> 点小眼睛可以单独隐藏一层，AI 生成的结果会插成最上面一层。</p>
+          </div>
+          <div class="ly-actions"><button type="button" class="primary">+ 新建</button><button type="button">删除</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右：AI -->
+    <aside class="ai">
+      <div class="ai-body">
+        <div class="styles">
+          <button class="chip on" type="button">水彩绘本</button>
+          <button class="chip" type="button">国风线描</button>
+          <button class="chip" type="button">厚涂油画</button>
+          <button class="chip" type="button">3D 卡通</button>
+          <button class="chip" type="button">黏土质感</button>
+          <button class="chip" type="button">布面拼贴</button>
+        </div>
+
+        <p class="sec-label">生成结果 <em>本次 1 张 · 直接变大图</em></p>
+
+        <div class="results">
+          <div class="res res-main">
+            <div class="art">
+              <div class="art-box" style="background:
+                radial-gradient(58% 44% at 30% 30%, rgba(178,214,232,.8), rgba(178,214,232,0) 72%),
+                radial-gradient(50% 40% at 74% 26%, rgba(250,226,196,.95), rgba(250,226,196,0) 72%),
+                radial-gradient(46% 36% at 62% 70%, rgba(246,224,206,.9), rgba(246,224,206,0) 72%), #fdfaf4;"></div>
+              <svg viewBox="0 0 464 260" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+                <g fill="none" stroke="#e9a93a" stroke-linecap="round">
+                  <path d="M120 86c34-26 60 8 94-12" stroke-width="7" opacity=".8"/>
+                  <path d="M104 114c44 24 84-14 122 4" stroke-width="9" opacity=".85"/>
+                  <path d="M262 78c22 18 34 40 42 64" stroke-width="8" opacity=".8"/>
+                </g>
+                <g fill="none" stroke="#33302b" stroke-linecap="round">
+                  <path d="M96 62c40-22 58 18 94 2" stroke-width="5" opacity=".85"/>
+                </g>
+              </svg>
+            </div>
+            <span class="badge">本次生成</span>
+            <span class="idx">2</span>
+            <span class="rtools"><span>插成图层</span><span>再生成</span></span>
+          </div>
+
+          <div class="thumbs">
+            <div class="res"><div class="art"><div class="art-box" style="background:
+              radial-gradient(60% 50% at 34% 34%, rgba(206,224,238,.9), rgba(206,224,238,0) 72%),
+              radial-gradient(50% 40% at 70% 66%, rgba(250,230,204,.9), rgba(250,230,204,0) 72%), #fdfbf6;"></div>
+              <svg viewBox="0 0 150 92" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+                <g fill="none" stroke="#e9a93a" stroke-linecap="round"><path d="M40 34c22-14 34 8 52-4" stroke-width="6"/><path d="M34 50c28 16 48-8 68 2" stroke-width="7"/></g>
+              </svg></div><span class="idx">1</span></div>
+            <div class="res"><div class="art"><div class="art-box" style="background:
+              radial-gradient(56% 46% at 60% 36%, rgba(244,226,208,.95), rgba(244,226,208,0) 72%),
+              radial-gradient(50% 40% at 36% 70%, rgba(198,222,206,.8), rgba(198,222,206,0) 72%), #fdfbf6;"></div>
+              <svg viewBox="0 0 150 92" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+                <g fill="none" stroke="#e9a93a" stroke-linecap="round"><path d="M42 30c20 12 30-6 50 2" stroke-width="6"/><path d="M46 52c22-10 38 12 56 0" stroke-width="7"/></g>
+              </svg></div><span class="idx">3</span></div>
+            <div class="res"><div class="art"><div class="art-box" style="background:
+              radial-gradient(58% 44% at 40% 30%, rgba(228,206,232,.8), rgba(228,206,232,0) 72%),
+              radial-gradient(52% 44% at 68% 68%, rgba(250,228,200,.9), rgba(250,228,200,0) 72%), #fdfbf6;"></div>
+              <svg viewBox="0 0 150 92" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+                <g fill="none" stroke="#e9a93a" stroke-linecap="round"><path d="M38 36c26-16 36 10 54-2" stroke-width="6"/><path d="M40 54c24 14 44-10 62 0" stroke-width="7"/></g>
+              </svg></div><span class="idx">4</span></div>
+          </div>
+        </div>
+
+        <div class="ai-foot">
+          <button class="import-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>
+            导入到新图层
+          </button>
+          <div class="strength">
+            <label>参考强度</label>
+            <div class="sbar"><i></i><u></u></div>
+            <b>20%</b>
+          </div>
+        </div>
+        <p class="ai-hint">只做图片，长度宽度都可以变大</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 底部提示词条 -->
+  <div class="promptbar">
+    <span class="ref-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.6"/><path d="M20 4v5h-5"/></svg>
+      已引用当前画布
+    </span>
+    <span class="model-chip">
+      agnes-image-2.1…
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </span>
+    <span class="ph">想让它画成什么样？比如：把小屋画成水彩绘本风格，暖色黄昏，加一点雾气</span>
+    <span class="count">本次生成 1 张</span>
+    <button class="go" type="button">开始生成</button>
+  </div>
+</div>
+
+<div class="legend">
+  <div>
+    <b><em>①</em>画纸尺寸：灰字 → 可点按钮</b>
+    位置就在「未命名创作」右边，显示当前尺寸（宽 × 高）+ 小箭头。点开是 4 个常用比例（正方形 / 竖幅 / 横幅 / 宽幅）+ 自定义宽高，点一下直接换，另一只手不用离开画布。
+  </div>
+  <div>
+    <b><em class="two">②</em>左右合成一整张卡</b>
+    原来是两张卡、中间 14px 空档，各有圆角和阴影，看着像两个软件并排。改后共用一个大圆角，中间只留一条 1px 浅灰分割线；三色线改到整张卡顶部横贯，画纸能多挤回一点宽度。
+  </div>
+  <div>
+    <b><em>③</em>出图只要一张大图</b>
+    去掉下面 1 / 2 / 3 / 4 那排小图，也不再一次出 4 张。AI 出完直接是一张大图，看得清细节；右下角只留「插成图层」和「再生成」，不满意就再点一次，省时间也省费用。点左上角「改前」能看原来的四宫格。
+  </div>
+</div>
+
+<script>
+  (function () {
+    var app = document.getElementById('app');
+    var btnAfter = document.getElementById('btnAfter');
+    var btnBefore = document.getElementById('btnBefore');
+    var menu = document.getElementById('sizeMenu');
+    var chip = document.getElementById('sizeChip');
+
+    function setMode(after) {
+      app.classList.toggle('is-before', !after);
+      btnAfter.classList.toggle('on', after);
+      btnBefore.classList.toggle('on', !after);
+      // 改前没有尺寸按钮，标注也一起藏掉
+      menu.style.display = after ? '' : 'none';
+      chip.classList.toggle('is-open', after);
+    }
+    btnAfter.onclick = function () { setMode(true); };
+    btnBefore.onclick = function () { setMode(false); };
+
+    chip.onclick = function () {
+      var open = menu.style.display !== 'none';
+      menu.style.display = open ? 'none' : '';
+      chip.classList.toggle('is-open', !open);
+    };
+  })();
+</script>
+</body>
+</html>

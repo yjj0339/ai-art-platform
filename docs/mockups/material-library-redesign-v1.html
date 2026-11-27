@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>我的素材库 · 改版效果图 v1</title>
+<style>
+/* ============ Design Tokens ============ */
+:root{
+  --bg:#FBF7F0;
+  --bg-grad-a:#FFF3E2;
+  --bg-grad-b:#EDF3FF;
+  --surface:#FFFFFF;
+  --surface-soft:#FFF9F2;
+  --border:#EADFCF;
+  --border-strong:#DAC9B2;
+  --text:#2A2418;
+  --text-muted:#7A6E5C;
+  --text-faint:#A79C8B;
+
+  --accent:#FF6B2C;
+  --accent-hover:#E8551A;
+  --accent-soft:#FFEDE3;
+  --ink:#17324D;
+  --ink-soft:#E7EEF7;
+  --magenta:#E8398C;
+  --teal:#12A594;
+  --amber:#F5A524;
+
+  --accent-shadow:#C94812;
+  --ink-shadow:#0C2136;
+  --track:#F0E6D8;
+  --glow-warm:#FFE8D6;
+  --photo-bg:#F4EEE5;
+  --canvas-bg:#F1F5FA;
+  --paper-1:#FFFDF8;
+  --paper-2:#FFF4E6;
+
+  --r-sm:12px;
+  --r-md:18px;
+  --r-lg:26px;
+  --r-pill:999px;
+
+  --sh-card:0 2px 0 var(--border), 0 10px 24px rgba(120,92,58,.08);
+  --sh-pop:0 18px 40px rgba(80,58,30,.16);
+  --sh-btn:0 6px 0 #C94812, 0 14px 24px rgba(255,107,44,.28);
+
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:24px; --sp-6:32px; --sp-7:44px;
+
+  --fs-micro:11px; --fs-meta:13px; --fs-body:15px;
+  --fs-title:17px; --fs-h2:22px; --fs-h1:34px;
+
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --dur:200ms;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",-apple-system,system-ui,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(900px 520px at 88% -8%, var(--bg-grad-b), transparent 62%),
+    radial-gradient(760px 460px at 4% -4%, var(--bg-grad-a), transparent 60%),
+    var(--bg);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;}
+button:focus-visible,.card:focus-visible,.nav-item:focus-visible{outline:3px solid var(--ink);outline-offset:3px;}
+svg{display:block;}
+.ico{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+.ico-sm{width:16px;height:16px;}
+
+/* ============ Layout shell ============ */
+.shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh;}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  position:relative;display:flex;flex-direction:column;gap:var(--sp-5);
+  padding:var(--sp-5) var(--sp-4);
+  background:rgba(255,255,255,.72);
+  border-right:1px solid var(--border);
+  backdrop-filter:blur(8px);
+}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 6px 0;}
+.brand-mark{
+  width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  background:var(--ink);color:#fff;box-shadow:0 4px 0 var(--ink-shadow);
+}
+.brand-mark .ico{width:21px;height:21px;stroke-width:2;}
+.brand-text strong{display:block;font-size:15px;letter-spacing:.01em;}
+.brand-text span{display:block;font-size:var(--fs-micro);color:var(--text-faint);letter-spacing:.14em;margin-top:2px;}
+
+.nav{display:flex;flex-direction:column;gap:4px;}
+.nav-label{
+  font-size:var(--fs-micro);font-weight:700;color:var(--text-faint);
+  letter-spacing:.14em;padding:0 8px 8px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;height:42px;padding:0 12px;
+  border-radius:var(--r-sm);font-size:14px;font-weight:600;color:var(--text-muted);
+  transition:background var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.nav-item:hover{background:var(--surface-soft);color:var(--text);}
+.nav-item.is-active{background:var(--ink);color:#fff;box-shadow:0 3px 0 var(--ink-shadow);}
+.nav-item .count{
+  margin-left:auto;font-size:var(--fs-micro);font-weight:700;
+  padding:2px 7px;border-radius:var(--r-pill);background:rgba(23,50,77,.08);color:var(--ink);
+}
+.nav-item.is-active .count{background:rgba(255,255,255,.18);color:#fff;}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+
+.side-foot{margin-top:auto;display:grid;gap:10px;}
+.quota{
+  border:1px solid var(--border);border-radius:var(--r-md);
+  padding:14px;background:var(--surface-soft);
+}
+.quota-top{display:flex;align-items:baseline;gap:6px;}
+.quota-top strong{font-size:var(--fs-h2);font-variant-numeric:tabular-nums;}
+.quota-top span{font-size:var(--fs-micro);color:var(--text-muted);}
+.quota-bar{height:8px;border-radius:var(--r-pill);background:var(--track);margin:10px 0 8px;overflow:hidden;}
+.quota-bar i{display:block;height:100%;width:42%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--amber));}
+.quota p{margin:0;font-size:var(--fs-micro);color:var(--text-faint);line-height:1.5;}
+
+.avatar-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--r-md);border:1px solid transparent;}
+.avatar-row:hover{background:var(--surface-soft);border-color:var(--border);}
+.avatar{
+  width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:13px;
+  border:2px solid #fff;box-shadow:0 0 0 1px var(--border);
+}
+.avatar-row b{display:block;font-size:13px;}
+.avatar-row small{display:block;font-size:var(--fs-micro);color:var(--text-faint);}
+
+/* ---- Main ---- */
+.main{padding:var(--sp-5) var(--sp-6) var(--sp-7);min-width:0;}
+.topbar{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-5);}
+.crumb{display:flex;align-items:center;gap:8px;font-size:var(--fs-meta);color:var(--text-muted);}
+.crumb b{color:var(--text);font-weight:700;}
+.back{
+  display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 10px;
+  border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--border);
+  font-size:var(--fs-meta);font-weight:700;color:var(--text-muted);
+  transition:border-color var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.back:hover{border-color:var(--border-strong);color:var(--text);}
+.search{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  height:40px;width:260px;padding:0 14px;border-radius:var(--r-pill);
+  background:var(--surface);border:1px solid var(--border);color:var(--text-faint);
+  font-size:var(--fs-meta);
+}
+.search kbd{margin-left:auto;font-family:inherit;font-size:var(--fs-micro);padding:2px 6px;border-radius:6px;background:var(--surface-soft);border:1px solid var(--border);}
+
+/* Hero */
+.hero{
+  position:relative;display:flex;align-items:flex-end;gap:var(--sp-5);
+  padding:var(--sp-6) var(--sp-6) var(--sp-5);
+  border-radius:var(--r-lg);
+  background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:var(--sh-card);
+  overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;inset:auto -60px -120px auto;width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, var(--glow-warm), transparent 66%);
+}
+.hero::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:5px;
+  background:linear-gradient(90deg,var(--accent),var(--amber) 42%,var(--teal) 100%);
+}
+.hero-copy{position:relative;z-index:1;min-width:0;}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--fs-micro);font-weight:800;letter-spacing:.14em;color:var(--accent);
+  background:var(--accent-soft);padding:5px 10px;border-radius:var(--r-pill);
+}
+.hero h1{margin:12px 0 6px;font-size:var(--fs-h1);line-height:1.15;letter-spacing:-.01em;}
+.hero h1 em{font-style:normal;color:var(--accent);}
+.hero p{margin:0;font-size:var(--fs-body);color:var(--text-muted);line-height:1.55;}
+.hero-stats{position:relative;z-index:1;display:flex;gap:var(--sp-2);margin-left:auto;}
+.stat{
+  min-width:88px;padding:12px 14px;border-radius:var(--r-md);
+  background:var(--surface-soft);border:1px solid var(--border);text-align:center;
+}
+.stat b{display:block;font-size:var(--fs-h2);font-variant-numeric:tabular-nums;line-height:1.1;}
+.stat span{display:block;font-size:var(--fs-micro);color:var(--text-muted);margin-top:4px;}
+.cta{
+  position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;
+  height:52px;padding:0 22px;border-radius:var(--r-pill);
+  background:var(--accent);color:#fff;font-size:var(--fs-body);font-weight:800;
+  box-shadow:var(--sh-btn);
+  transition:transform 140ms var(--ease),box-shadow 140ms var(--ease),background var(--dur) var(--ease);
+}
+.cta:hover{background:var(--accent-hover);transform:translateY(-1px);}
+.cta:active{transform:translateY(4px);box-shadow:0 2px 0 var(--accent-shadow),0 6px 12px rgba(255,107,44,.24);}
+
+/* Filter row */
+.filters{display:flex;align-items:center;gap:var(--sp-2);margin:var(--sp-5) 0 var(--sp-4);}
+.chip-scroll{
+  display:flex;align-items:center;gap:var(--sp-2);
+  flex:1 1 auto;min-width:0;overflow-x:auto;padding-bottom:2px;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.chip-scroll::-webkit-scrollbar{display:none;}
+.filters-end{display:flex;align-items:center;gap:var(--sp-2);flex:0 0 auto;}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;
+  flex:0 0 auto;white-space:nowrap;
+  border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--border);
+  font-size:var(--fs-meta);font-weight:700;color:var(--text-muted);
+  transition:all var(--dur) var(--ease);
+}
+.chip:hover{border-color:var(--border-strong);color:var(--text);}
+.chip b{
+  font-size:var(--fs-micro);font-weight:800;padding:1px 6px;border-radius:var(--r-pill);
+  background:var(--surface-soft);color:var(--text-faint);font-variant-numeric:tabular-nums;
+}
+.chip.is-active{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 3px 0 var(--ink-shadow);}
+.chip.is-active b{background:rgba(255,255,255,.2);color:#fff;}
+.filters .spacer{margin-left:auto;display:none;}
+.tool{
+  width:38px;height:38px;border-radius:var(--r-pill);display:grid;place-items:center;
+  background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+  transition:all var(--dur) var(--ease);
+}
+.tool:hover{border-color:var(--border-strong);color:var(--ink);}
+.sort{
+  display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;
+  border-radius:var(--r-pill);background:var(--surface);border:1px solid var(--border);
+  font-size:var(--fs-meta);font-weight:700;color:var(--text-muted);
+}
+.sort:hover{border-color:var(--border-strong);color:var(--text);}
+
+/* Gallery */
+.gallery{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--sp-4);align-items:start;}
+.card{
+  position:relative;grid-column:span 3;min-width:0;
+  border-radius:var(--r-md);background:var(--surface);
+  border:1px solid var(--border);box-shadow:var(--sh-card);
+  overflow:hidden;
+  transition:transform 220ms var(--ease),box-shadow 220ms var(--ease),border-color var(--dur) var(--ease);
+}
+.card:hover{transform:translateY(-5px);box-shadow:0 3px 0 var(--border),0 20px 34px rgba(120,92,58,.16);border-color:var(--border-strong);}
+.card--wide{grid-column:span 6;}
+.card--tall{grid-column:span 3;}
+
+.shot{position:relative;background:var(--photo-bg);overflow:hidden;}
+.shot img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 420ms var(--ease);}
+.card:hover .shot img{transform:scale(1.04);}
+.ratio-a{aspect-ratio:1/1;}
+.ratio-b{aspect-ratio:4/3;}
+.ratio-c{aspect-ratio:16/10;}
+.ratio-d{aspect-ratio:3/4;}
+
+.badge{
+  position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:5px;
+  height:26px;padding:0 9px;border-radius:var(--r-pill);
+  font-size:var(--fs-micro);font-weight:800;letter-spacing:.02em;
+  background:rgba(255,255,255,.94);color:var(--ink);
+  box-shadow:0 2px 8px rgba(40,30,15,.14);
+}
+.badge .dot{width:6px;height:6px;border-radius:50%;}
+.badge--video{color:#fff;background:var(--magenta);}
+.badge--canvas{color:#fff;background:var(--teal);}
+.badge--report{color:#fff;background:var(--ink);}
+.badge--3d{color:#fff;background:var(--amber);}
+.flag{
+  position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;gap:4px;
+  height:24px;padding:0 8px;border-radius:var(--r-pill);
+  font-size:var(--fs-micro);font-weight:800;
+  background:var(--ink);color:#fff;backdrop-filter:blur(4px);
+}
+.flag--star{background:#fff;color:var(--accent);box-shadow:0 2px 8px rgba(40,30,15,.16);}
+
+.play{
+  position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+}
+.play span{
+  width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.92);color:var(--ink);box-shadow:0 8px 20px rgba(30,20,10,.22);
+}
+.play span .ico{width:22px;height:22px;stroke-width:2.4;}
+
+.info{padding:12px 13px 13px;}
+.info h3{
+  margin:0;font-size:var(--fs-meta);font-weight:800;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.meta{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:var(--fs-micro);color:var(--text-faint);}
+.meta span{display:inline-flex;align-items:center;gap:4px;}
+.meta i{width:3px;height:3px;border-radius:50%;background:var(--border-strong);}
+
+.hover-actions{
+  position:absolute;inset:auto 10px 10px;display:flex;gap:6px;justify-content:flex-end;
+  opacity:0;transform:translateY(6px);transition:all 200ms var(--ease);
+}
+.card:hover .hover-actions,.card:focus-within .hover-actions{opacity:1;transform:none;}
+.act{
+  height:32px;padding:0 12px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.96);color:var(--ink);font-size:var(--fs-micro);font-weight:800;
+  box-shadow:0 4px 14px rgba(30,20,10,.2);backdrop-filter:blur(6px);
+}
+.act:hover{background:#fff;}
+.act--primary{background:var(--accent);color:#fff;}
+.act--primary:hover{background:var(--accent-hover);}
+
+/* canvas card body */
+.canvas-preview{position:relative;background:var(--canvas-bg);aspect-ratio:16/10;padding:14px;}
+.canvas-preview svg{width:100%;height:100%;}
+.node-chip{position:absolute;bottom:10px;right:10px;font-size:var(--fs-micro);font-weight:800;color:var(--teal);background:#fff;padding:4px 8px;border-radius:var(--r-pill);box-shadow:0 2px 8px rgba(20,60,60,.14);}
+
+/* text card body */
+.text-preview{
+  aspect-ratio:4/3;padding:16px;display:flex;flex-direction:column;gap:8px;
+  background:linear-gradient(160deg,var(--paper-1),var(--paper-2));
+}
+.text-preview strong{font-size:var(--fs-meta);line-height:1.5;}
+.text-preview p{margin:0;font-size:12px;line-height:1.7;color:var(--text-muted);overflow:hidden;}
+
+/* footer pager */
+.pager{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:var(--sp-6);}
+.pager button{width:36px;height:36px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border);font-size:var(--fs-meta);font-weight:700;color:var(--text-muted);}
+.pager button.is-on{background:var(--ink);border-color:var(--ink);color:#fff;}
+.pager .more{font-size:var(--fs-meta);color:var(--text-faint);padding:0 6px;}
+
+/* responsive */
+@media (max-width:1180px){
+  .shell{grid-template-columns:200px minmax(0,1fr);}
+  .card,.card--tall{grid-column:span 4;}
+  .card--wide{grid-column:span 8;}
+  .hero{flex-wrap:wrap;align-items:stretch;gap:var(--sp-4);}
+  .hero-copy{flex:1 1 100%;}
+  .hero-stats{order:2;margin-left:0;flex:1 1 auto;align-self:center;}
+  .hero-stats .stat{flex:1 1 0;min-width:0;padding:10px 8px;}
+  .cta{order:3;margin-left:auto;align-self:center;height:48px;flex:0 0 auto;}
+}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .main{padding:var(--sp-4);}
+  .card,.card--tall{grid-column:span 6;}
+  .card--wide{grid-column:span 12;}
+  .hero{padding:var(--sp-5) var(--sp-4);}
+  .hero h1{font-size:26px;}
+  .search{display:none;}
+  .filters-end .tool{display:none;}
+}
+@media (max-width:560px){
+  .gallery{gap:12px;}
+  .card,.card--tall,.card--wide{grid-column:span 12;}
+  .hero-stats{display:none;}
+  .cta{order:2;width:100%;justify-content:center;margin-left:0;}
+  .card .info{padding:var(--sp-3) var(--sp-3) var(--sp-4);}
+  .card h3{font-size:var(--fs-body);-webkit-line-clamp:2;}
+  .filters{margin:var(--sp-4) 0 var(--sp-3);}
+  .filters-end .sort{padding:0 10px;}
+  .pager{gap:6px;}
+  .pager button{width:34px;height:34px;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important;}
+  .card:hover{transform:none;}
+  .card:hover .shot img{transform:none;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.5-1.4-1.6-1.4-2.8 0-.9.7-1.4 1.9-1.4H17a4 4 0 0 0 4-4c0-4.4-4-7.8-9-7.8Z"/><circle cx="8" cy="9.5" r="1.2"/><circle cx="12" cy="7" r="1.2"/><circle cx="16" cy="9.5" r="1.2"/></svg>
+      </span>
+      <div class="brand-text">
+        <strong>美佳美画</strong>
+        <span>AI 创作中心</span>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="主导航">
+      <span class="nav-label">创作</span>
+      <button class="nav-item" type="button">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4Z"/><path d="M14 6l3 3"/></svg>
+        AI 绘画
+      </button>
+      <button class="nav-item" type="button">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2.5"/><path d="M15 10.5 21 7v10l-6-3.5Z"/></svg>
+        AI 视频
+      </button>
+      <button class="nav-item" type="button">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7.5 9h9M7.5 13h6"/></svg>
+        无限画布
+      </button>
+      <span class="nav-label" style="margin-top:10px;">我的空间</span>
+      <button class="nav-item is-active" type="button" aria-current="page">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>
+        我的素材库
+        <span class="count">66</span>
+      </button>
+      <button class="nav-item" type="button">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg>
+        学习报告
+      </button>
+      <button class="nav-item" type="button">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+        我的账号
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div class="quota">
+        <div class="quota-top"><strong>42</strong><span>/ 100 次生成额度</span></div>
+        <div class="quota-bar"><i></i></div>
+        <p>每周一重置，用完了可以找老师申请加额。</p>
+      </div>
+      <button class="avatar-row" type="button">
+        <span class="avatar">林</span>
+        <span style="text-align:left;">
+          <b>林小满</b>
+          <small>三年级 · 星火班</small>
+        </span>
+        <svg class="ico ico-sm" style="margin-left:auto;color:var(--text-faint);" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+    <div class="topbar">
+      <button class="back" type="button">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        返回工作台
+      </button>
+      <nav class="crumb" aria-label="面包屑">
+        <span>我的空间</span>
+        <span>/</span>
+        <b>素材库</b>
+      </nav>
+      <label class="search">
+        <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        搜索作品名称、提示词
+        <kbd>Ctrl K</kbd>
+      </label>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <span class="eyebrow">
+          <svg class="ico" style="width:13px;height:13px;stroke-width:2.4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>
+          PERSONAL MATERIALS
+        </span>
+        <h1 id="page-title">我的素材库，<em>66 件作品</em>都在这儿</h1>
+        <p>AI 绘画、动态视频、无限画布和创作报告，按你保存的顺序整整齐齐收着。</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>66</b><span>全部作品</span></div>
+        <div class="stat"><b>27</b><span>本周新作</span></div>
+        <div class="stat"><b>6</b><span>已上架</span></div>
+      </div>
+      <button class="cta" type="button">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        开始新创作
+      </button>
+    </section>
+
+    <!-- Filters -->
+    <div class="filters" role="toolbar" aria-label="素材分类筛选">
+      <div class="chip-scroll">
+        <button class="chip is-active" type="button">全部素材 <b>66</b></button>
+        <button class="chip" type="button">AI 绘画 <b>27</b></button>
+        <button class="chip" type="button">AI 视频 <b>3</b></button>
+        <button class="chip" type="button">文本 <b>2</b></button>
+        <button class="chip" type="button">3D 作品 <b>2</b></button>
+        <button class="chip" type="button">项目报告 <b>1</b></button>
+        <button class="chip" type="button">无限画布 <b>9</b></button>
+      </div>
+      <div class="filters-end">
+        <button class="sort" type="button">
+          <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/></svg>
+          最近保存
+          <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <button class="tool" type="button" aria-label="系统自动精选设置" title="系统自动精选设置">
+          <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg>
+        </button>
+        <button class="tool" type="button" aria-label="批量操作" title="批量操作">
+          <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M4 12h9M4 17h9"/><path d="M17.5 9.5l2 2 3.5-4"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Gallery -->
+    <section class="gallery" aria-label="个人素材列表">
+
+      <!-- 1 大卡 -->
+      <article class="card card--wide" tabindex="0">
+        <div class="shot ratio-c">
+          <img src="assets/gallery-sky-castle-v1.png" alt="云端城堡 AI 绘画作品" />
+          <span class="badge"><span class="dot" style="background:var(--accent)"></span>AI 绘画</span>
+          <span class="flag flag--star">
+            <svg class="ico" style="width:11px;height:11px" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.9 6.2.8-4.6 4.3 1.2 6.2L12 17.3 6.4 20.2l1.2-6.2L3 9.7l6.2-.8L12 3Z"/></svg>
+            最终稿
+          </span>
+          <div class="hover-actions">
+            <button class="act" type="button"><svg class="ico" style="width:13px;height:13px" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4Z"/></svg>继续修改</button>
+            <button class="act act--primary" type="button"><svg class="ico" style="width:13px;height:13px" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7h16v-7"/><path d="M12 16V4m0 0L7 9m5-5 5 5"/></svg>下载</button>
+          </div>
+        </div>
+        <div class="info">
+          <h3>云端上的浮空城堡 · V2 候选稿</h3>
+          <div class="meta">
+            <span>10 月 28 日</span><i></i>
+            <span>无限画布 5 个节点</span><i></i>
+            <span>4:3</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="card" tabindex="0">
+        <div class="shot ratio-a">
+          <img src="assets/gallery-future-car-v1.png" alt="未来概念车 AI 绘画作品" />
+          <span class="badge"><span class="dot" style="background:var(--accent)"></span>AI 绘画</span>
+          <div class="hover-actions">
+            <button class="act" type="button" aria-label="下载">下载</button>
+            <button class="act act--primary" type="button" aria-label="继续修改">修改</button>
+          </div>
+        </div>
+        <div class="info">
+          <h3>未来概念车 · V1 初稿</h3>
+          <div class="meta"><span>10 月 26 日</span><i></i><span>方图</span></div>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="card" tabindex="0">
+        <div class="shot ratio-a">
+          <img src="assets/gallery-hedgehog-v1.png" alt="小刺猬 AI 绘画作品" />
+          <span class="badge"><span class="dot" style="background:var(--accent)"></span>AI 绘画</span>
+          <div class="hover-actions">
+            <button class="act" type="button" aria-label="下载">下载</button>
+            <button class="act act--primary" type="button" aria-label="继续修改">修改</button>
+          </div>
+        </div>
+        <div class="info">
+          <h3>背着小果子的刺猬</h3>
+          <div class="meta"><span>10 月 25 日</span><i></i><span>方图</span></div>
+        </div>
+      </article>
+
+      <!-- 4 视频 -->
+      <article class="card" tabindex="0">
+        <div class="shot ratio-a">
+          <img src="assets/skill-character-v1.png" alt="角色动画视频封面" />
+          <span class="badge badge--video">
+            <svg class="ico" style="width:11px;height:11px;stroke-width:2.6" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7l8 5-8 5V7Z"/></svg>
+            AI 视频
+          </span>
+          <span class="flag">12 秒</span>
+          <div class="play"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7l8 5-8 5V7Z"/></svg></span></div>
+        </div>
+        <div class="info">
+          <h3>我设计的小角色动起来了</h3>
+          <div class="meta"><span>10 月 24 日</span><i></i><span>9:16</span></div>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="card" tabindex="0">
+        <div class="shot ratio-a">
+          <img src="assets/work-sneaker.png" alt="3D 球鞋作品" />
+          <span class="badge badge--3d">3D 作品</span>
+          <div class="hover-actions">
+            <button class="act act--primary" type="button">旋转查看</button>
+          </div>
+        </div>
+        <div class="info">
+          <h3>我的专属球鞋设计</h3>
+          <div class="meta"><span>10 月 22 日</span><i></i><span>3D 模型</span></div>
+        </div>
+      </article>
+
+      <!-- 6 无限画布 -->
+      <article class="card" tabindex="0">
+        <div class="canvas-preview">
+          <svg viewBox="0 0 300 170" aria-label="无限画布缩略预览">
+            <rect x="0" y="0" width="300" height="170" fill="var(--canvas-bg)"/>
+            <g stroke="var(--ink-soft)" stroke-width="1.6" fill="none">
+              <path d="M66 52h34"/><path d="M134 52h30"/><path d="M66 118h34"/><path d="M134 118h30"/>
+              <path d="M100 66v20"/><path d="M100 96v8"/>
+            </g>
+            <g>
+              <rect x="24" y="34" width="42" height="36" rx="6" fill="var(--surface)" stroke="var(--border)"/>
+              <rect x="100" y="34" width="34" height="36" rx="6" fill="var(--paper-2)" stroke="var(--track)"/>
+              <rect x="164" y="34" width="42" height="36" rx="6" fill="var(--accent-soft)" stroke="var(--accent-soft)"/>
+              <rect x="24" y="100" width="42" height="36" rx="6" fill="var(--surface)" stroke="var(--border)"/>
+              <rect x="100" y="100" width="34" height="36" rx="6" fill="var(--paper-2)" stroke="var(--track)"/>
+              <rect x="164" y="100" width="42" height="36" rx="6" fill="var(--ink-soft)" stroke="var(--ink-soft)"/>
+            </g>
+            <g fill="var(--text-faint)">
+              <rect x="31" y="44" width="26" height="4" rx="2"/><rect x="31" y="53" width="18" height="4" rx="2"/>
+              <rect x="106" y="44" width="20" height="4" rx="2"/><rect x="106" y="53" width="14" height="4" rx="2"/>
+              <rect x="171" y="44" width="26" height="4" rx="2"/><rect x="171" y="53" width="16" height="4" rx="2"/>
+              <rect x="31" y="110" width="26" height="4" rx="2"/><rect x="31" y="119" width="20" height="4" rx="2"/>
+              <rect x="106" y="110" width="20" height="4" rx="2"/>
+              <rect x="171" y="110" width="26" height="4" rx="2"/><rect x="171" y="119" width="12" height="4" rx="2"/>
+            </g>
+            <circle cx="193" cy="122" r="14" fill="var(--surface)" stroke="var(--teal)" stroke-width="2"/>
+            <path d="M187 122l4 4 8-8" stroke="var(--teal)" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="badge badge--canvas" style="position:absolute;top:10px;left:10px;">无限画布</span>
+          <span class="node-chip">6 个节点</span>
+        </div>
+        <div class="info">
+          <h3>秋天的森林探险作业</h3>
+          <div class="meta"><span>10 月 21 日</span><i></i><span>自动保存</span></div>
+        </div>
+      </article>
+
+      <!-- 7 文本 -->
+      <article class="card" tabindex="0">
+        <div class="text-preview">
+          <span class="badge" class="badge badge--report" style="position:absolute;top:10px;left:10px;">文本</span>
+          <strong style="margin-top:34px;">给《云端城堡》配的故事</strong>
+          <p>城堡浮在云上面，风一吹就会晃。小猫第一次爬上去的时候，把梯子踩歪了半边，所以它每天要多走三步才上得去……</p>
+        </div>
+        <div class="info">
+          <h3>云端城堡的小故事</h3>
+          <div class="meta"><span>10 月 21 日</span><i></i><span>约 380 字</span></div>
+        </div>
+      </article>
+
+      <!-- 8 报告 -->
+      <article class="card" tabindex="0">
+        <div class="shot ratio-a">
+          <img src="assets/art-gallery.png" alt="项目报告封面" />
+          <span class="badge badge--report">项目报告</span>
+          <span class="flag">H5</span>
+          <div class="hover-actions"><button class="act act--primary" type="button">打开阅读</button></div>
+        </div>
+        <div class="info">
+          <h3>十月创作成长报告</h3>
+          <div class="meta"><span>10 月 30 日</span><i></i><span>可分享</span></div>
+        </div>
+      </article>
+
+      <!-- 9 -->
+      <article class="card" tabindex="0">
+        <div class="shot ratio-a">
+          <img src="assets/login-aya-artist-v1.png" alt="插画作品" />
+          <span class="badge"><span class="dot" style="background:var(--accent)"></span>AI 绘画</span>
+          <div class="hover-actions"><button class="act act--primary" type="button">查看</button></div>
+        </div>
+        <div class="info">
+          <h3>会画画的女孩 · 局部重绘版</h3>
+          <div class="meta"><span>10 月 19 日</span><i></i><span>方图</span></div>
+        </div>
+      </article>
+    </section>
+
+    <div class="pager">
+      <button type="button" aria-label="上一页">
+        <svg class="ico ico-sm" style="margin:auto" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button class="is-on" type="button">1</button>
+      <button type="button">2</button>
+      <button type="button">3</button>
+      <span class="more">… 共 16 页</span>
+      <button type="button" aria-label="下一页">
+        <svg class="ico ico-sm" style="margin:auto" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </main>
+</div>
+</body>
+</html>

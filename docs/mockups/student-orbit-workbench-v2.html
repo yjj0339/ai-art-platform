@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>学生工作台 · CREATIVE ORBIT 精修效果图</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+    color:#232F63;
+    background:linear-gradient(135deg,#F8F5F4 0%,#F3F6FF 52%,#FBF8F5 100%);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+
+  /* ============ 页面骨架 ============ */
+  .page{
+    width:min(100%,1440px);
+    height:100vh;
+    margin:0 auto;
+    padding:16px 18px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  /* ============ 顶栏 ============ */
+  .topbar{
+    flex:0 0 62px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px 0 12px;
+    border-radius:20px;
+    border:1px solid rgba(122,136,214,.16);
+    background:
+      radial-gradient(ellipse at 52% -180%, rgba(160,174,252,.30), transparent 62%),
+      linear-gradient(100deg, rgba(255,255,255,.94), rgba(247,246,255,.80));
+    box-shadow:0 12px 28px rgba(70,82,157,.09), inset 0 1px rgba(255,255,255,.96);
+    backdrop-filter:blur(16px);
+  }
+  .who{display:flex;align-items:center;gap:13px}
+  .avatar{
+    width:44px;height:44px;border-radius:14px;
+    display:grid;place-items:center;
+    font-size:18px;font-weight:800;color:#fff;
+    background:linear-gradient(150deg,#FF9350,#FF6E33);
+    box-shadow:0 8px 18px rgba(250,121,50,.26);
+  }
+  .who-name{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:.01em;color:#232F63}
+  .badge-lv{
+    padding:3px 9px;border-radius:999px;
+    font-size:11px;font-weight:800;letter-spacing:.04em;
+    color:#7A63D8;
+    background:rgba(155,120,233,.12);
+    box-shadow:inset 0 0 0 1px rgba(155,120,233,.24);
+  }
+  .who-sub{margin-top:4px;font-size:12px;color:#8E97C2;letter-spacing:.02em}
+
+  .nav{display:flex;align-items:center;gap:4px}
+  .nav button{
+    appearance:none;border:0;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;
+    height:40px;padding:0 15px;border-radius:12px;
+    font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.01em;
+    color:#4A58A0;background:transparent;
+    transition:background 180ms ease,color 180ms ease,transform 180ms ease;
+  }
+  .nav button:hover{background:rgba(112,126,214,.10);color:#2F3C86}
+  .nav button:active{transform:scale(.97)}
+  .nav button svg{width:17px;height:17px;opacity:.72}
+  .nav .sep{width:1px;height:20px;margin:0 8px;background:rgba(122,136,214,.22)}
+  .nav .ghost{color:#8A92BC}
+  .nav .ghost:hover{background:rgba(240,120,90,.10);color:#C2543A}
+
+  /* ============ 舞台容器 ============ */
+  .orbit{
+    position:relative;
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    border-radius:26px;
+    border:1px solid rgba(123,136,211,.14);
+    overflow:hidden;
+    isolation:isolate;
+    background:
+      radial-gradient(ellipse 62% 46% at 50% 40%, rgba(255,255,255,.94) 0%, rgba(255,255,255,.52) 46%, rgba(255,255,255,0) 76%),
+      radial-gradient(ellipse 70% 50% at 50% 96%, rgba(129,143,240,.16), transparent 68%),
+      linear-gradient(155deg, rgba(252,251,254,.05), rgba(236,242,255,.05) 52%, rgba(255,250,247,.05)),
+      url('./student-theme/orbit-stage-bg-v2.png') center/cover no-repeat;
+    box-shadow:0 20px 54px rgba(63,76,156,.10), inset 0 1px rgba(255,255,255,.98);
+  }
+
+  /* ============ 标题区 ============ */
+  .head{
+    position:relative;
+    z-index:20;
+    padding:30px 24px 0;
+    text-align:center;
+    flex:0 0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:12px;
+    font-size:10px;font-weight:800;letter-spacing:.34em;
+    color:rgba(96,110,196,.68);
+  }
+  .eyebrow i{display:block;width:26px;height:1px;background:linear-gradient(90deg,transparent,rgba(96,110,196,.45))}
+  .eyebrow i:last-child{background:linear-gradient(90deg,rgba(96,110,196,.45),transparent)}
+  .head h1{
+    margin:11px 0 0;
+    font-size:clamp(26px,2.6vw,38px);
+    font-weight:800;
+    letter-spacing:.015em;
+    color:#2B3A7C;
+    text-wrap:balance;
+  }
+  .head h1 em{
+    font-style:normal;
+    background:linear-gradient(96deg,#FF9550,#FF7A45);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hairline{
+    width:230px;height:1px;margin:16px auto 0;
+    background:linear-gradient(90deg,transparent,rgba(120,135,226,.42) 22%,rgba(255,150,90,.75) 50%,rgba(120,135,226,.42) 78%,transparent);
+  }
+
+  /* ============ 舞台 ============ */
+  .stage{
+    position:relative;
+    flex:1 1 auto;
+    min-height:0;
+    margin-top:6px;
+    --x1:25vw; --x2:42.5vw; --x3:52vw;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
+    mask-image:linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
+  }
+
+  /* 轨道：椭圆环 + 环上承接光斑 */
+  .track{
+    position:absolute;left:6%;right:6%;bottom:9%;
+    height:36%;
+    border:1.5px solid rgba(126,141,231,.34);
+    border-radius:50%;
+    transform:perspective(900px) rotateX(72deg);
+    box-shadow:
+      0 0 0 26px rgba(139,155,238,.055),
+      0 0 0 62px rgba(139,155,238,.032),
+      0 0 46px rgba(112,131,234,.22);
+    pointer-events:none;
+  }
+  .track::after{
+    content:'';
+    position:absolute;inset:-1px;
+    border-radius:50%;
+    border:1px solid rgba(255,176,132,.22);
+    pointer-events:none;
+  }
+  .pool{
+    position:absolute;left:50%;bottom:13%;
+    width:44%;height:14%;
+    transform:translateX(-50%);
+    border-radius:50%;
+    background:radial-gradient(ellipse,rgba(126,142,240,.26),rgba(186,166,246,.10) 46%,transparent 72%);
+    filter:blur(14px);
+    pointer-events:none;
+  }
+  .beam{
+    position:absolute;left:50%;top:-6%;
+    width:64%;height:74%;
+    transform:translateX(-50%);
+    background:conic-gradient(from 180deg at 50% 0%,transparent 38%,rgba(255,255,255,.55) 50%,transparent 62%);
+    filter:blur(26px);
+    opacity:.55;
+    pointer-events:none;
+  }
+
+  /* ============ 卡片 ============ */
+  .card{
+    position:absolute;
+    top:50%;left:50%;
+    width:min(384px,27vw);
+    height:min(462px,80%);
+    margin:0;border:0;
+    transform:translate(-50%,-50%);
+    transform-origin:center center;
+    transition:transform 460ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease, filter 360ms ease;
+    will-change:transform;
+    cursor:pointer;
+    outline:none;
+    pointer-events:none;
+    opacity:0;
+  }
+  .surface{
+    width:100%;height:100%;
+    padding:17px;
+    display:flex;flex-direction:column;
+    border-radius:23px;
+    border:1px solid rgba(124,137,214,.20);
+    background:linear-gradient(168deg,rgba(255,255,255,.94),rgba(250,250,255,.86));
+    box-shadow:0 18px 38px rgba(70,81,158,.10), inset 0 1px rgba(255,255,255,.98);
+    backdrop-filter:blur(14px);
+    overflow:hidden;
+    transition:box-shadow 260ms ease,border-color 260ms ease;
+  }
+  .topline{display:flex;align-items:center;justify-content:space-between}
+  .ico{
+    width:42px;height:42px;border-radius:13px;
+    display:grid;place-items:center;
+    color:#fff;
+    background:linear-gradient(150deg,#7080F2,#9A78E7);
+    box-shadow:0 8px 16px rgba(104,116,226,.22), inset 0 1px rgba(255,255,255,.34);
+  }
+  .ico svg{width:21px;height:21px}
+  .now{
+    display:none;align-items:center;gap:6px;
+    height:26px;padding:0 10px 0 8px;
+    border-radius:999px;
+    font-size:11px;font-weight:800;letter-spacing:.04em;
+    color:#C25A2E;
+    background:rgba(255,241,234,.92);
+    box-shadow:inset 0 0 0 1px rgba(255,150,104,.34);
+  }
+  .now::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:#FF8049;box-shadow:0 0 0 3px rgba(255,128,73,.18);
+  }
+  .card h2{
+    margin:15px 0 5px;
+    font-size:21px;font-weight:800;letter-spacing:.01em;
+    color:#26336B;line-height:1.2;
+  }
+  .card .desc{
+    margin:0;
+    font-size:13px;line-height:1.5;
+    color:#7D87B4;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .art{
+    position:relative;
+    flex:1 1 auto;
+    min-height:0;
+    margin-top:14px;
+    border-radius:16px;
+    overflow:hidden;
+    background-position:center;
+    background-size:cover;
+    background-repeat:no-repeat;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.5), 0 8px 18px rgba(73,89,175,.07);
+  }
+  .art::after{
+    content:'';
+    position:absolute;inset:0;
+    border-radius:inherit;
+    background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 26%,transparent 74%,rgba(40,50,110,.10));
+    pointer-events:none;
+  }
+  .foot{margin-top:13px}
+  .meta{
+    display:flex;align-items:center;gap:6px;
+    margin-bottom:9px;
+    font-size:11px;letter-spacing:.02em;
+    color:#939BBD;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .meta::before{
+    content:'';flex:0 0 auto;
+    width:4px;height:4px;border-radius:50%;background:rgba(150,160,210,.75);
+  }
+  .cta{
+    position:relative;
+    width:100%;height:47px;
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    padding:0 12px 0 20px;
+    border:0;border-radius:999px;
+    font-family:inherit;font-size:16px;font-weight:800;letter-spacing:.03em;
+    color:#fff;cursor:pointer;
+    background:linear-gradient(100deg,#4E5FDF,#7B78EE 56%,#A87AEA);
+    box-shadow:0 12px 24px rgba(92,102,215,.26), inset 0 1px rgba(255,255,255,.30);
+    transition:transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+  }
+  .cta .arrow{
+    position:absolute;right:6px;
+    width:35px;height:35px;border-radius:50%;
+    display:grid;place-items:center;
+    background:rgba(255,255,255,.22);
+    transition:transform 220ms ease;
+  }
+  .cta .arrow svg{width:16px;height:16px}
+  .cta:hover{filter:brightness(1.05);box-shadow:0 16px 30px rgba(92,102,215,.32), inset 0 1px rgba(255,255,255,.34)}
+  .cta:hover .arrow{transform:translateX(2px)}
+  .cta:active{transform:scale(.986)}
+
+  /* --- 位置状态 --- */
+  .p0{z-index:14;opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .p0 .surface{
+    border-color:rgba(150,124,226,.38);
+    box-shadow:0 34px 66px rgba(64,76,164,.22), 0 0 0 6px rgba(255,255,255,.52), inset 0 1px rgba(255,255,255,.98);
+  }
+  .p0 .now{display:inline-flex}
+
+  .l1,.r1{z-index:9;opacity:.92;pointer-events:auto;filter:saturate(.9) brightness(.985)}
+  .l2,.r2{z-index:7;opacity:.70;pointer-events:auto;filter:saturate(.8) brightness(.975) blur(.4px)}
+  .l3,.r3{z-index:5;opacity:.42;pointer-events:auto;filter:saturate(.7) brightness(.97) blur(.9px)}
+  .l4,.r4{z-index:3;opacity:.20;pointer-events:none;filter:saturate(.6) brightness(.97) blur(1.4px)}
+
+  .l1{transform:translate(calc(-50% - var(--x1)),calc(-50% + 20px)) scale(.775) rotateY(9deg)}
+  .r1{transform:translate(calc(-50% + var(--x1)),calc(-50% + 20px)) scale(.775) rotateY(-9deg)}
+  .l2{transform:translate(calc(-50% - var(--x2)),calc(-50% + 34px)) scale(.605) rotateY(13deg)}
+  .r2{transform:translate(calc(-50% + var(--x2)),calc(-50% + 34px)) scale(.605) rotateY(-13deg)}
+  .l3{transform:translate(calc(-50% - var(--x3)),calc(-50% + 48px)) scale(.468) rotateY(17deg)}
+  .r3{transform:translate(calc(-50% + var(--x3)),calc(-50% + 48px)) scale(.468) rotateY(-17deg)}
+  .l4{transform:translate(calc(-50% - var(--x4)),calc(-50% + 60px)) scale(.365) rotateY(20deg)}
+  .r4{transform:translate(calc(-50% + var(--x4)),calc(-50% + 60px)) scale(.365) rotateY(-20deg)}
+
+  .l1 .ico,.r1 .ico{background:linear-gradient(150deg,rgba(112,128,242,.72),rgba(154,120,231,.72))}
+  .l2 .ico,.r2 .ico{background:linear-gradient(150deg,rgba(112,128,242,.5),rgba(154,120,231,.5))}
+  .l3 .ico,.r3 .ico,.l4 .ico,.r4 .ico{background:linear-gradient(150deg,rgba(112,128,242,.34),rgba(154,120,231,.34))}
+
+  /* ============ 左右切换按钮 ============ */
+  .navbtn{
+    position:absolute;z-index:30;top:50%;
+    width:48px;height:48px;margin-top:-24px;
+    display:grid;place-items:center;
+    padding:0;border:1px solid rgba(116,131,216,.20);
+    border-radius:50%;
+    color:#5A6BDA;cursor:pointer;
+    background:rgba(255,255,255,.80);
+    box-shadow:0 10px 24px rgba(67,80,163,.13), inset 0 1px rgba(255,255,255,.9);
+    backdrop-filter:blur(12px);
+    transition:transform 200ms ease, box-shadow 200ms ease, color 200ms ease, background 200ms ease;
+  }
+  .navbtn svg{width:20px;height:20px}
+  .navbtn:hover{transform:translateY(-1px) scale(1.04);color:#4152C8;background:#fff;box-shadow:0 16px 30px rgba(67,80,163,.20)}
+  .navbtn:active{transform:scale(.96)}
+  .navbtn.prev{left:26px}
+  .navbtn.next{right:26px}
+
+  /* ============ 底部控制条（独立安全区，不再压卡片） ============ */
+  .controls{
+    position:relative;
+    z-index:22;
+    flex:0 0 78px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+    padding-bottom:4px;
+  }
+  .dots{
+    display:flex;align-items:center;gap:7px;
+    padding:7px 12px;border-radius:999px;
+    background:rgba(255,255,255,.62);
+    box-shadow:inset 0 0 0 1px rgba(124,137,214,.14);
+    backdrop-filter:blur(10px);
+  }
+  .dots i{
+    display:block;width:7px;height:7px;border-radius:50%;
+    background:rgba(150,161,214,.55);
+    transition:width 240ms ease, background 240ms ease, box-shadow 240ms ease;
+    cursor:pointer;
+  }
+  .dots i:hover{background:rgba(120,133,206,.9)}
+  .dots i.on{
+    width:24px;border-radius:999px;
+    background:linear-gradient(90deg,#FFA059,#FF7F45);
+    box-shadow:0 4px 10px rgba(255,128,73,.34);
+  }
+  .hint{
+    margin:0;
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;letter-spacing:.03em;
+    color:#7C87B8;
+  }
+  .hint kbd{
+    display:inline-grid;place-items:center;
+    min-width:22px;height:20px;padding:0 5px;
+    border-radius:6px;
+    font-family:inherit;font-size:11px;font-weight:800;
+    color:#6C79C4;
+    background:rgba(255,255,255,.86);
+    box-shadow:inset 0 0 0 1px rgba(124,137,214,.22), 0 2px 4px rgba(90,104,180,.08);
+  }
+  .hint em{font-style:normal;opacity:.55;font-weight:600}
+
+  /* ============ 角标 ============ */
+  .tag{
+    position:fixed;right:16px;bottom:12px;z-index:99;
+    padding:5px 10px;border-radius:999px;
+    font-size:11px;font-weight:700;letter-spacing:.04em;
+    color:rgba(90,100,150,.62);
+    background:rgba(255,255,255,.72);
+    box-shadow:inset 0 0 0 1px rgba(124,137,214,.16);
+    backdrop-filter:blur(8px);
+    pointer-events:none;
+  }
+
+  /* ============ 自适应 ============ */
+  @media (max-width:1240px){
+    .card{width:min(340px,30vw);height:min(430px,80%)}
+  }
+  @media (max-width:1020px){
+    .card{width:min(300px,34vw);height:min(404px,80%)}
+    .card h2{font-size:19px}
+  }
+  @media (max-height:640px){
+    .head{padding-top:20px}
+    .head h1{font-size:26px}
+    .hairline{margin-top:11px}
+    .controls{flex-basis:64px;gap:8px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .card,.dots i,.cta,.navbtn{transition-duration:1ms}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="who">
+      <span class="avatar">艺</span>
+      <div>
+        <div class="who-name">测试3 <span class="badge-lv">高级版</span></div>
+        <div class="who-sub">艺美合一校区 · 进阶创作空间</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.8-.9L3 20.5l1.5-4.6a8.4 8.4 0 0 1-.9-3.9 8.4 8.4 0 0 1 8.4-8.4 8.4 8.4 0 0 1 9 8.4Z"/></svg>
+        消息中心
+      </button>
+      <button type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.2a7.8 7.8 0 0 1 15 0"/></svg>
+        个人中心
+      </button>
+      <button type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h11.5L20 8v11.5H5z"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>
+        提示词库
+      </button>
+      <span class="sep"></span>
+      <button type="button" class="ghost">退出登录</button>
+    </nav>
+  </header>
+
+  <!-- 舞台 -->
+  <section class="orbit">
+
+    <header class="head">
+      <span class="eyebrow"><i></i>CREATIVE ORBIT<i></i></span>
+      <h1>今天想创造什么<em>？</em></h1>
+      <div class="hairline"></div>
+    </header>
+
+    <div class="stage">
+      <div class="beam"></div>
+      <div class="track"></div>
+      <div class="pool"></div>
+
+      <!-- 9 张卡，当前为 AI 3D（第 6 张） -->
+      <article class="card r4" tabindex="-1">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg></span><span class="now">当前</span></div>
+          <h2>课程选择</h2>
+          <p class="desc">探索课程主题与课堂任务</p>
+          <div class="art" style="background-image:url('./student-theme/gallery-hedgehog-v1.png')"></div>
+        </div>
+      </article>
+
+      <article class="card l3" tabindex="-1">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.4-4.2L16 5.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 18.6Z"/><path d="M14.4 6.8 17.6 10"/></svg></span><span class="now">当前</span></div>
+          <h2>AI绘画</h2>
+          <p class="desc">开启生成式艺术创作</p>
+          <div class="art" style="background-image:url('./student-theme/login-aya-artist-v1.png');background-position:33% center"></div>
+        </div>
+      </article>
+
+      <article class="card l2" tabindex="0">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 8 18l11-11-3-3L5 15Z"/><path d="M5 15l4 4"/></svg></span><span class="now">当前</span></div>
+          <h2>手绘板</h2>
+          <p class="desc">随手画草图，存进素材库</p>
+          <div class="art" style="background-image:url('./student-theme/skill-character-v1.png');background-position:32% center"></div>
+        </div>
+      </article>
+
+      <article class="card l1" tabindex="0">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="12" height="12" rx="2.4"/><path d="M15 10.5l5.5-3v9l-5.5-3Z"/></svg></span><span class="now">当前</span></div>
+          <h2>AI视频</h2>
+          <p class="desc">让绘画作品生成动态内容</p>
+          <div class="art" style="background-image:url('./student-theme/gallery-future-car-v1.png');background-position:28% center"></div>
+        </div>
+      </article>
+
+      <article class="card p0" tabindex="0">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.4 7v10L12 21.2 3.6 17V7Z"/><path d="M3.6 7 12 11.4 20.4 7M12 11.4v9.8"/></svg></span><span class="now">当前</span></div>
+          <h2>AI 3D</h2>
+          <p class="desc">把平面作品转为可旋转模型</p>
+          <div class="art" style="background-image:url('./student-theme/gallery-sky-castle-v1.png')"></div>
+          <div class="foot">
+            <span class="meta">图像转3D · 模型查看 · 项目绑定</span>
+            <button class="cta" type="button">
+              进入3D世界
+              <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12.5 6l6 6-6 6"/></svg></span>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card r1" tabindex="0">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="4.5" width="17.6" height="15" rx="2.6"/><circle cx="8.6" cy="9.6" r="1.5"/><path d="M3.6 16.6l4.7-4.2 4 3.5 3-2.6 5 4.4"/></svg></span><span class="now">当前</span></div>
+          <h2>作品广场</h2>
+          <p class="desc">发现审核通过的优秀创作</p>
+          <div class="art" style="background-image:url('./student-theme/login-aya-artist-v1.png');background-position:22% center"></div>
+        </div>
+      </article>
+
+      <article class="card r2" tabindex="0">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 7.6a2.2 2.2 0 0 1 2.2-2.2h3.3l1.8 2.1h7.7a2.2 2.2 0 0 1 2.2 2.2v7.8a2.2 2.2 0 0 1-2.2 2.2H5.6a2.2 2.2 0 0 1-2.2-2.2Z"/></svg></span><span class="now">当前</span></div>
+          <h2>我的素材库</h2>
+          <p class="desc">管理个人绘画、视频和3D作品</p>
+          <div class="art" style="background-image:url('./student-theme/gallery-hedgehog-v1.png');background-position:62% center"></div>
+        </div>
+      </article>
+
+      <article class="card r3" tabindex="-1">
+        <div class="surface">
+          <div class="topline"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.2h7.6L18 7.6v13.2H6z"/><path d="M13.4 3.4v4.4h4.4M9 12h6M9 15.4h6M9 18.8h3.6"/></svg></span><span class="now">当前</span></div>
+          <h2>项目报告</h2>
+          <p class="desc">汇总创作过程与学习成果</p>
+          <div class="art" style="background-image:url('./student-theme/login-aya-artist-v1.png');background-position:76% center"></div>
+        </div>
+      </article>
+
+      <button class="navbtn prev" type="button" aria-label="上一项">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+      </button>
+      <button class="navbtn next" type="button" aria-label="下一项">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>
+      </button>
+    </div>
+
+    <!-- 控制条：与卡片彻底分离 -->
+    <footer class="controls">
+      <div class="dots">
+        <i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i>
+      </div>
+      <p class="hint">
+        <kbd>←</kbd><kbd>→</kbd>
+        <span>滑动或点击卡片，切换创作空间</span>
+        <em>·</em>
+        <span>6 / 9</span>
+      </p>
+    </footer>
+
+  </section>
+</div>
+
+<div class="tag">静态效果图 · 未改动正式页面</div>
+
+</body>
+</html>

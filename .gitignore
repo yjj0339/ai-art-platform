@@ -1,0 +1,162 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+dist-check-tmp
+test-results
+*.local
+.env
+server/.env
+server/data/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 临时文件与测试产物
+.pnpm-store
+.marking-verify
+.marking-verify-click
+.marking-verify-mode
+.chip-integrity
+.refchip-repro
+tmp_*.png
+vite.config.js.timestamp-*
+*.timestamp-*.mjs
+
+# 误产生的 Windows 保留设备名文件（cmd 解析错位时会生成，且系统不允许删除）
+nul
+
+# Playwright 实测截图产物（体积大，不入库）
+.canvas-p2-verify/
+.connection-verify/
+.mark-chip-repro/
+.repro-marking-at/
+.text-card-verify/
+.prompt-card-verify/
+.build-check-pcard/
+.model-chip-verify/
+
+# 「点生成后节点拖不动」诊断产物（脚本 scripts/diagnose-node-generate-lock.mjs）
+.diag-generate-lock/
+.diag-lock*.log
+
+# 一次性回归/对照临时产物（.regression 存脚本日志，其余是构建与 HEAD 对照目录）
+.regression/
+.build-check/
+.head-check/
+
+# 各验收脚本的截图/报告产物（脚本可随时重跑再生，无需入库）
+.canvas-empty-start-verify/
+.canvas-file-menu-verify/
+.canvas-name-verify/
+.canvas-name-server-verify/
+.element-loss-repro/
+.text-vision-ui-verify/
+.text-zoom-verify/
+.probe-*.png
+.verify-*.png
+
+# 本地版本备份（体积大，禁止提交进仓库）
+backups/
+
+# 临时脚本（.tmp-users.mjs 内含本地数据库口令，严禁入库）
+scripts/.tmp-*
+scripts/.tmp-*.mjs
+
+# 一次性只读勘查 / 尺寸探针脚本（用完即删，防止误提交）
+scripts/.readonly-*.mjs
+scripts/.probe-*
+scripts/.restore-*.mjs
+scripts/.check-*.mjs
+.tmp-crop/
+.tmp-pw/
+
+# 验收截图产物（体积大，不入库）
+.workbuddy/evidence/
+# 截图脚本生成的对照页面（scripts/shot-portfolio-batch.mjs 等每次重跑覆盖）
+.workbuddy/preview/
+# 手动排查时开的无头浏览器配置目录（--dump-dom 用，几十 MB，删不掉也不影响运行）
+.workbuddy/.probe-edge*/
+
+# 素材库批量操作下拉菜单层级验证产物（scripts/verify-portfolio-batch-menu-layer.mjs）
+.batch-menu-layer/
+
+# 玩法卡片图上传验收产物（scripts/verify-ai-skill-cover-upload.mjs）
+.ai-skill-cover-verify/
+
+# ===== 安全红线：以下含密钥 / 会话令牌 / 私钥，任何情况下不得入库 =====
+# 环境变量文件（含 .env.bak-* 之类的备份副本）
+server/.env*
+!.env.example
+!server/.env.example
+# APK 签名私钥
+android/release.keystore
+*.keystore
+*.jks
+# curl 抓取的 Cookie（含有效会话令牌）
+.workbuddy/*.txt
+.workbuddy/*.csv
+# 打包产物（build-apk.sh 可重新生成）
+public/*.apk
+android/build/
+android/*.apk
+android/*.dex
+android/*.zip
+android/**/*.class
+android/build/gen/
+
+# ===== 临时验证 / 构建目录（可随时重跑再生）=====
+.paint-board-verify/
+.tmp-chrome-gallery/
+.verify-build/
+.verify-build2/
+docs/tmp-out/
+docs/mockups/shots/
+logs-*.png
+.workbuddy/tmp-*.png
+.workbuddy/*.png
+
+# 一次性临时探查脚本（tmp- 前缀，用完即弃）
+scripts/tmp-*.mjs
+
+# ===== 构建产物：任何 dist* 变体（dist2 / dist-cc2 / dist-check …）共约 650MB =====
+# vite 每次构建都能重新生成，绝不入库
+dist*/
+dist-*/
+
+# ===== 截图 / 效果图 / 验收产物（体积大、可重跑，入库只会拖垮仓库）=====
+screenshots/
+docs/shots/
+docs/prototype/*.png
+docs/report-layout-preview/
+docs/mockups/agent-avatar/
+docs/mockups/ar-guide/
+docs/h5-mockups/shots/
+docs/h5-mockups/_*
+.workbuddy/shots/
+.admin-head/
+.canvas-material-library-verify/
+.portfolio-item-menu/
+.reference-import/
+.tmp-style-form/
+tmp-check/
+.tmp_ar_block.txt
+# 手动排查时截的临时对照图（tmp- 前缀；tmp_ 前缀见上方规则）
+tmp-*.png
+tmp_*.png

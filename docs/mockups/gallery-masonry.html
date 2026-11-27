@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>作品广场 · 排版对比稿</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    background: radial-gradient(circle at 20% 0, rgba(236,210,255,.34), transparent 28%),
+                linear-gradient(145deg, #fbf8f5, #f1f4ff 56%, #fbfaf8);
+    min-height: 100vh;
+    padding: 18px;
+    color: #25346e;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; }
+
+  /* ============ 顶部导航条（58px 版） ============ */
+  .hd {
+    height: 58px;
+    border: 1px solid rgba(117,130,205,.18);
+    border-radius: 16px;
+    background: rgba(255,255,255,.78);
+    box-shadow: 0 14px 34px rgba(64,77,154,.1), inset 0 1px rgba(255,255,255,.96);
+    backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px;
+  }
+  .btn {
+    height: 34px; border: 1px solid rgba(111,126,214,.2); border-radius: 999px;
+    padding: 0 14px; display: flex; align-items: center; gap: 7px;
+    background: #fff; color: #5262ba; font-weight: 900; font-size: 13px;
+    cursor: pointer; white-space: nowrap; font-family: inherit;
+  }
+  .btn.refresh { background: linear-gradient(100deg,#eef0ff,#f7efff); }
+  .btn i { font-size: 15px; font-style: normal; line-height: 1; }
+  .hd h1 { margin: 0; font-size: 20px; letter-spacing: .02em; }
+  .hd .spacer { flex: 1; }
+  /* 提示：小字已删，这里一个都不留 */
+
+  /* ============ 筛选条 ============ */
+  .tb {
+    margin-top: 12px; border: 1px solid rgba(117,130,205,.18); border-radius: 16px;
+    background: rgba(255,255,255,.78); box-shadow: 0 14px 34px rgba(64,77,154,.1);
+    backdrop-filter: blur(14px);
+    padding: 8px 10px; display: flex; gap: 8px; overflow-x: auto;
+  }
+  .tb button {
+    height: 34px; border: 1px solid transparent; border-radius: 999px; padding: 0 15px;
+    flex: 0 0 auto; background: transparent; color: #6873a5; font-weight: 800;
+    font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .tb button.active { border-color: rgba(112,126,219,.22); background: #eef0ff; color: #5263cb; }
+
+  /* ============ 卡片 ============ */
+  .card {
+    border: 1px solid rgba(117,130,205,.18); border-radius: 18px; overflow: hidden;
+    background: #fff; box-shadow: 0 14px 28px rgba(55,68,145,.11);
+    cursor: pointer; transition: transform 200ms ease, box-shadow 200ms ease;
+    break-inside: avoid;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 20px 38px rgba(55,68,145,.17); }
+  .cover { position: relative; overflow: hidden; width: 100%; }
+  .cover svg { display: block; width: 100%; height: 100%; }
+  .cover::after {
+    content: ''; position: absolute; inset: 42% 0 0;
+    background: linear-gradient(180deg, transparent, rgba(25,34,86,.78));
+  }
+  .ov {
+    position: absolute; z-index: 2; left: 13px; right: 13px; bottom: 12px;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; color: #fff;
+  }
+  .ov h2 {
+    margin: 0; max-width: 230px; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-size: 15px;
+  }
+  .ov p {
+    margin: 5px 0 0; max-width: 230px; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; color: rgba(255,255,255,.78); font-size: 11px;
+  }
+  .like {
+    min-height: 30px; border: 0; border-radius: 999px; padding: 0 10px;
+    display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.88);
+    color: #ec713a; font-weight: 900; font-size: 12px; cursor: pointer; flex: 0 0 auto;
+  }
+  .pin {
+    position: absolute; z-index: 3; top: 11px; left: 11px; height: 26px; border-radius: 999px;
+    padding: 0 10px; display: inline-flex; align-items: center;
+    background: rgba(255,247,225,.92); color: #d66c31; font-size: 11px; font-weight: 900;
+  }
+
+  /* ============ 现状：4 列等高（图被裁成 260px） ============ */
+  body.mode-before .grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-top: 16px;
+  }
+  body.mode-before .cover { height: 260px; aspect-ratio: auto !important; }
+  body.mode-before .cover svg { height: 100%; }
+
+  /* ============ 改后：瀑布流（竖图完整显示，不被裁，按顺序横向铺） ============ */
+  body.mode-after .grid {
+    margin-top: 16px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  body.mode-after .col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  body.mode-after .cover { height: auto; }
+  body.mode-after .cover::after { inset: 55% 0 0; }
+
+  @media (max-width: 1100px) {
+    body.mode-before .grid { grid-template-columns: repeat(3,1fr); }
+    body.mode-after .col.hide-3 { display: none; }
+  }
+  @media (max-width: 800px) {
+    body.mode-before .grid { grid-template-columns: repeat(2,1fr); }
+    body.mode-after .col.hide-2, body.mode-after .col.hide-3 { display: none; }
+  }
+
+  /* ============ 对比控制条（仅方案稿有，不属于产品） ============ */
+  .ctrl {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 99;
+    display: flex; gap: 8px; padding: 8px; border-radius: 999px;
+    background: rgba(37,52,110,.92); box-shadow: 0 18px 40px rgba(20,28,70,.32);
+    backdrop-filter: blur(10px);
+  }
+  .ctrl button {
+    height: 36px; border: 0; border-radius: 999px; padding: 0 18px;
+    background: transparent; color: rgba(255,255,255,.72); font-weight: 900; font-size: 13px;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+  .ctrl button.on { background: #fff; color: #25346e; }
+  .note {
+    margin: 12px 4px 0; font-size: 13px; font-weight: 700; color: #6c76a4;
+  }
+  .note b { color: #5263cb; }
+</style>
+</head>
+<body class="mode-after">
+<div class="wrap">
+  <!-- 导航条：只留标题，两行小字已删 -->
+  <header class="hd">
+    <button class="btn"><i>←</i>返回工作台</button>
+    <div class="spacer"></div>
+    <h1>作品广场</h1>
+    <div class="spacer"></div>
+    <button class="btn refresh"><i>⟳</i>刷新作品</button>
+  </header>
+
+  <section class="tb">
+    <button class="active">全部</button>
+    <button>非遗扎染冰箱贴</button>
+    <button>水彩城市</button>
+    <button>春日花瓶</button>
+    <button>星空下的猫</button>
+  </section>
+
+  <div class="grid" id="grid"></div>
+  <p class="note" id="note"></p>
+</div>
+
+<div class="ctrl">
+  <button data-mode="before">现状：4 列等高</button>
+  <button data-mode="after" class="on">改后：瀑布流</button>
+</div>
+
+<script>
+// 示意作品：不同画幅（1:1 / 9:16 / 4:3 / 3:4 / 16:9），配色模仿学生作品
+const WORKS = [
+  { t: '非遗扎染冰箱贴', a: '小画家 · 非遗扎染 · 8-10岁', n: 12, r: 9/16, pin: true,
+    g: ['#1f4e79','#3f9fd4','#f2f7fb'], m: 'dye' },
+  { t: '城市夜晚的水彩画', a: '朵朵 · 水彩城市 · 9-12岁', n: 8, r: 4/3,
+    g: ['#2b3d6b','#f4a15c','#fdf0d5'], m: 'city' },
+  { t: '春日花瓶', a: '乐乐 · 静物写生 · 6-8岁', n: 21, r: 3/4,
+    g: ['#f6e7d8','#e88f7a','#7aa871'], m: 'vase' },
+  { t: '星空下的猫', a: '小满 · 想象创作 · 7-9岁', n: 34, r: 1,
+    g: ['#12173d','#4b5bb8','#f4d06f'], m: 'cat' },
+  { t: '秋天的树林', a: '阿宝 · 综合材料 · 5-7岁', n: 15, r: 3/4,
+    g: ['#f7efe0','#e3913e','#8e5d3c','#6d8f4f'], m: 'forest' },
+  { t: '海边的房子', a: '图图 · 水粉风景 · 8-11岁', n: 9, r: 16/9,
+    g: ['#bfe3f5','#4a90c4','#f7e6c4'], m: 'house' },
+  { t: '我的宇航员朋友', a: '豆豆 · 想象创作 · 9-12岁', n: 27, r: 9/16,
+    g: ['#0d1b3e','#3b4a94','#e8ecf9'], m: 'space' },
+  { t: '向日葵', a: '虫虫 · 色彩练习 · 4-6岁', n: 18, r: 1,
+    g: ['#fff6e0','#f2b705','#8a5c1e'], m: 'sun' },
+  { t: '墨色山水', a: '小舟 · 国画启蒙 · 10-14岁', n: 41, r: 3/4,
+    g: ['#f6f4ef','#5d6b73','#25313a'], m: 'ink' },
+  { t: '糖果色的梦', a: '米粒 · 综合材料 · 5-7岁', n: 6, r: 1,
+    g: ['#ffe1f0','#b7a4f0','#8fd6e8'], m: 'candy' },
+  { t: '森林里的小木屋', a: '果果 · 水彩风景 · 7-10岁', n: 13, r: 4/3,
+    g: ['#e8f0e2','#7ba05b','#a4613c','#f9f6ee'], m: 'hut' },
+  { t: '云上的秋千', a: '一一 · 想象创作 · 6-8岁', n: 22, r: 9/16,
+    g: ['#cfe7fb','#ffffff','#f6c9d8'], m: 'cloud' },
+]
+
+function svg(w, h, m, g) {
+  const W = 480, H = Math.round(W / h)
+  const grad = `<defs><linearGradient id="bg${m}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="${g[0]}"/><stop offset="1" stop-color="${g[1]}"/></linearGradient></defs>
+    <rect width="${W}" height="${H}" fill="url(#bg${m})"/>`
+  const c2 = g[2] || '#fff', c3 = g[3] || c2
+  let art = ''
+  if (m === 'dye') art = `<circle cx="${W*.3}" cy="${H*.35}" r="${W*.22}" fill="${c2}" opacity=".55"/><circle cx="${W*.62}" cy="${H*.6}" r="${W*.26}" fill="${c2}" opacity=".35"/><circle cx="${W*.5}" cy="${H*.85}" r="${W*.3}" fill="#fff" opacity=".18"/>`
+  if (m === 'city') art = `<rect y="${H*.62}" width="${W}" height="${H*.38}" fill="#1b2447" opacity=".75"/>${[0,1,2,3,4].map(i=>`<rect x="${40+i*85}" y="${H*.42-i*22}" width="56" height="${H*.6}" fill="#2b3d6b"/>`).join('')}<circle cx="${W*.74}" cy="${H*.2}" r="34" fill="${c2}" opacity=".9"/>`
+  if (m === 'vase') art = `<rect x="${W*.36}" y="${H*.45}" width="${W*.28}" height="${H*.38}" rx="26" fill="${c2}"/><path d="M${W*.5} ${H*.45} L${W*.42} ${H*.18} M${W*.5} ${H*.45} L${W*.58} ${H*.15} M${W*.5} ${H*.45} L${W*.5} ${H*.12}" stroke="${c3}" stroke-width="7" fill="none"/><circle cx="${W*.42}" cy="${H*.16}" r="26" fill="${c3}"/><circle cx="${W*.58}" cy="${H*.13}" r="22" fill="#e8a0a0"/><circle cx="${W*.5}" cy="${H*.1}" r="18" fill="#f0c24b"/>`
+  if (m === 'cat') art = `<circle cx="${W*.72}" cy="${H*.22}" r="46" fill="${c2}" opacity=".85"/><path d="M${W*.3} ${H*.72} q60 -70 120 0 q-60 34 -120 0z" fill="#1b2350"/><circle cx="${W*.42}" cy="${H*.6}" r="30" fill="#1b2350"/><path d="M${W*.36} ${H*.55} l-8 -26 l22 12z" fill="#1b2350"/><path d="M${W*.48} ${H*.55} l8 -26 l-22 12z" fill="#1b2350"/><circle cx="${W*.38}" cy="${H*.6}" r="5" fill="${c3}"/><circle cx="${W*.46}" cy="${H*.6}" r="5" fill="${c3}"/>`
+  if (m === 'forest') art = `${[0,1,2,3,4,5].map(i=>`<rect x="${i*88-30}" y="${H*.35+((i%3)*30)}" width="26" height="${H*.7}" fill="${c3}"/><circle cx="${i*88-17}" cy="${H*.38+((i%3)*30)}" r="${50+(i%3)*12}" fill="${i%2?c2:'#d97a2e'}" opacity=".82"/>`).join('')}`
+  if (m === 'house') art = `<rect y="${H*.6}" width="${W}" height="${H*.2}" fill="#5ba0cf"/><rect x="${W*.3}" y="${H*.36}" width="${W*.34}" height="${H*.26}" fill="${c2}"/><path d="M${W*.26} ${H*.37} L${W*.47} ${H*.2} L${W*.68} ${H*.37}z" fill="#c9563f"/><rect x="${W*.43}" y="${H*.48}" width="42" height="42" fill="#7fa8c9"/>`
+  if (m === 'space') art = `<circle cx="${W*.5}" cy="${H*.38}" r="52" fill="#e8ecf9" opacity=".9"/><circle cx="${W*.5}" cy="${H*.38}" r="70" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/><rect x="${W*.42}" y="${H*.6}" width="${W*.16}" height="${H*.24}" rx="16" fill="#dfe5f5"/><path d="M${W*.5} ${H*.6} l-26 -22 M${W*.5} ${H*.6} l26 -22" stroke="#dfe5f5" stroke-width="8"/>`
+  if (m === 'sun') art = `${[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>{const A=i*30*Math.PI/180;return `<rect x="${W/2-8+Math.cos(A)*70}" y="${H/2-26+Math.sin(A)*70}" width="16" height="52" rx="8" transform="rotate(${i*30} ${W/2} ${H/2})" fill="${c2}"/>`}).join('')}<circle cx="${W/2}" cy="${H/2}" r="58" fill="${c2}"/><circle cx="${W/2}" cy="${H/2}" r="30" fill="${c3}"/>`
+  if (m === 'ink') art = `<path d="M0 ${H*.72} q${W*.25} -${H*.42} ${W*.5} 0 q${W*.25} -${H*.3} ${W*.5} 0 v${H*.3} h-${W} z" fill="${c2}" opacity=".6"/><path d="M0 ${H*.85} q${W*.3} -${H*.25} ${W*.6} 0 v${H*.15} h-${W} z" fill="${c3}" opacity=".55"/><circle cx="${W*.78}" cy="${H*.2}" r="30" fill="${c2}" opacity=".45"/>`
+  if (m === 'candy') art = `<circle cx="${W*.3}" cy="${H*.36}" r="80" fill="${c2}" opacity=".7"/><circle cx="${W*.66}" cy="${H*.54}" r="96" fill="${c3}" opacity=".55"/><circle cx="${W*.5}" cy="${H*.78}" r="60" fill="#fff" opacity=".5"/>`
+  if (m === 'hut') art = `<rect y="${H*.68}" width="${W}" height="${H*.32}" fill="${c3}" opacity=".85"/><rect x="${W*.34}" y="${H*.44}" width="${W*.3}" height="${H*.26}" fill="${c2}"/><path d="M${W*.3} ${H*.45} L${W*.49} ${H*.28} L${W*.68} ${H*.45}z" fill="#8c4a2f"/><circle cx="${W*.18}" cy="${H*.5}" r="34" fill="${c3}"/><circle cx="${W*.84}" cy="${H*.56}" r="28" fill="${c3}"/>`
+  if (m === 'cloud') art = `<circle cx="${W*.3}" cy="${H*.3}" r="58" fill="#fff" opacity=".9"/><circle cx="${W*.52}" cy="${H*.28}" r="72" fill="#fff" opacity=".85"/><circle cx="${W*.72}" cy="${H*.32}" r="52" fill="#fff" opacity=".9"/><path d="M${W*.5} ${H*.4} v${H*.2}" stroke="${c3}" stroke-width="5"/><rect x="${W*.42}" y="${H*.6}" width="${W*.16}" height="14" rx="7" fill="${c2}"/>`
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">${grad}${art}</svg>`
+}
+
+const grid = document.getElementById('grid')
+const note = document.getElementById('note')
+
+// 按顺序轮流铺进 4 列（第 1 张进第 1 列、第 2 张进第 2 列…），
+// 这样最上面一排就是最新四张，而不是像 CSS column-count 那样先把第 1 列填满。
+const COLS = 4
+function renderMasonry() {
+  const cols = Array.from({ length: COLS }, (_, i) => {
+    const d = document.createElement('div')
+    d.className = 'col' + (i >= 2 ? ` hide-${i + 1}` : '')
+    return d
+  })
+  WORKS.forEach((w, i) => cols[i % COLS].appendChild(cardEl(w)))
+  grid.replaceChildren(...cols)
+}
+function cardEl(w) {
+  const el = document.createElement('article')
+  el.className = 'card'
+  el.innerHTML = `
+    <div class="cover" style="aspect-ratio:${w.r}">
+      ${w.pin ? '<span class="pin">置顶</span>' : ''}
+      ${svg(1, w.r, w.m, w.g)}
+      <div class="ov">
+        <div><h2>${w.t}</h2><p>${w.a}</p></div>
+        <button class="like">★ ${w.n}</button>
+      </div>
+    </div>`
+  return el
+}
+function renderBefore() {
+  grid.replaceChildren(...WORKS.map(cardEl))
+}
+
+function setMode(m) {
+  document.body.className = 'mode-' + m
+  document.querySelectorAll('.ctrl button').forEach(b => b.classList.toggle('on', b.dataset.mode === m))
+  if (m === 'before') renderBefore(); else renderMasonry()
+  note.innerHTML = m === 'before'
+    ? '现状：4 列等高，作品图统一被裁成 260px 高 —— <b>竖图（9:16）上下被切掉一大截</b>，横图两侧被切。首屏固定 8 张。'
+    : '改后：<b>瀑布流</b>，每张按真实画幅完整显示、不裁切，高低错落；窄屏自动降到 3 列 / 2 列。'
+}
+document.querySelectorAll('.ctrl button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)))
+setMode('after')
+</script>
+</body>
+</html>

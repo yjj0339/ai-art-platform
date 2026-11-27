@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-10-12T16:23:03.535Z",
+  "docId": "doc_5M9ekxS5TB22tbGwQ7-mr3gs",
+  "targetNodeId": "image-1791798676966-exgixu",
+  "model": "doubao-seedream-4-0-250828",
+  "prompt": "我想要把标记的元素单独独立出来，其它的元素都不需要出现，保持原有比例和尺寸，纯白色背景，不要汽车，不要文字，不要标签",
+  "elementLabel": "小男孩头部和脸部特写",
+  "upstreamId": "image-1791797927562-xtnv5r",
+  "variants": [
+    {
+      "key": "H",
+      "file": "D:\\ruanjian\\workbuddy\\project-005-AI创意美术教学平台MVP\\docs\\ark-marked-probe\\H-no-image-text-only.jpg",
+      "imageShape": "(不传 image)",
+      "usedSize": "864x1536",
+      "usedPrompt": "我想要把标记的 小男孩头部和脸部特写 元素单独独立出来，其它的元素都不需要出现，保持原有比例和尺寸，纯白色背景，不要汽车，不要文字，不要标签",
+      "status": 200,
+      "error": "",
+      "metrics": {
+        "width": 864,
+        "height": 1536,
+        "r": 187,
+        "g": 160,
+        "b": 145,
+        "whiteRatio": 0.3413,
+        "subjectRatio": 0.6587,
+        "bbox": {
+          "x": 0.203,
+          "y": 0,
+          "w": 0.797,
+          "h": 1
+        },
+        "bboxCoverage": 0.797
+      }
+    }
+  ]
+}

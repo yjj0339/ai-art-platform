@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H5 报告 · 竖屏预览排版方案（效果图 v1）</title>
+<style>
+  :root{
+    --blue:#2860e8; --blue-l:#eef3ff;
+    --orange:#f26b2a; --orange-l:#fff3ec;
+    --ink:#152036; --ink2:#5a6a82; --ink3:#94a2b6;
+    --line:#e6ecf5; --bg:#eef2f8; --card:#fff; --r:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--ink); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:0 0 64px;
+  }
+
+  /* ---------- 页面头 ---------- */
+  .page-head{
+    background:#fff; border-bottom:1px solid var(--line); padding:26px 34px 22px;
+  }
+  .page-head h1{font-size:21px;margin:0 0 8px;letter-spacing:-.3px;}
+  .page-head p{margin:0;color:var(--ink2);font-size:13.5px;max-width:960px;}
+  .page-head .meta{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;}
+  .tag{font-size:12px;padding:4px 10px;border-radius:99px;background:#f2f6fd;color:#3a5680;border:1px solid #e2eaf8;}
+  .tag.warn{background:#fff7ed;color:#b45309;border-color:#fde3c4;}
+
+  /* ---------- 方案区 ---------- */
+  .plans{
+    display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px;
+    padding:34px 34px 10px; align-items:start; max-width:1320px;
+  }
+  .plan{min-width:0;}
+  .plan-cap{margin-bottom:14px;}
+  .plan-cap h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px;}
+  .plan-cap h2 b{
+    width:22px;height:22px;border-radius:7px;background:var(--blue);color:#fff;
+    font-size:12.5px;display:grid;place-items:center;font-weight:800;
+  }
+  .plan-cap p{margin:0;font-size:12.5px;color:var(--ink2);min-height:36px;}
+
+  /* ---------- 手机外框（外壳固定，屏幕内内容整体等比缩小） ---------- */
+  .phone{
+    width:100%; max-width:372px; margin:0 auto;
+    background:#0e1521;border-radius:44px;padding:12px;
+    box-shadow:0 24px 60px rgba(16,32,64,.22), 0 2px 0 rgba(255,255,255,.4) inset;
+    position:relative;
+  }
+  .phone::before{ /* 灵动岛 */
+    content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);
+    width:86px;height:22px;border-radius:99px;background:#0e1521;z-index:20;
+  }
+  /* 视窗：按 336×728 的原始宽度 390 缩小到 1/2.1，露出更多内容 */
+  .viewport{
+    position:relative; width:100%; aspect-ratio:348 / 748; border-radius:32px;
+    overflow:hidden; background:#fff;
+  }
+  .screen{
+    position:absolute; top:0; left:0; width:390px; height:844px;
+    background:#fff; overflow-y:auto; overflow-x:hidden; scrollbar-width:none;
+    transform:scale(.8923); transform-origin:top left;
+  }
+  .screen::-webkit-scrollbar{display:none;}
+
+  /* ---------- 图片占位 ---------- */
+  .ph{position:relative;background:#e8eef7;overflow:hidden;}
+  .ph::after{content:attr(data-t);position:absolute;left:8px;bottom:6px;font-size:10px;
+    color:#fff;font-weight:600;background:rgba(8,20,40,.42);padding:2px 7px;border-radius:99px;}
+  .g1{background:linear-gradient(150deg,#ffd9b0,#ff9f5a 55%,#ef6f3c);}
+  .g2{background:linear-gradient(150deg,#c9ddff,#7ba1ee 60%,#3f6ede);}
+  .g3{background:linear-gradient(150deg,#d8efe1,#7cc2a8 58%,#2f9c76);}
+  .g4{background:linear-gradient(150deg,#e7dcff,#a98ee8 60%,#6a48c9);}
+  .g5{background:linear-gradient(150deg,#ffe1e6,#ff9db0 58%,#e2607c);}
+
+  /* ============ 方案A：沉浸长图流 ============ */
+  .sA .abar{
+    position:sticky;top:0;z-index:10;height:46px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 16px;background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);border-bottom:1px solid #eef2f8;font-size:12px;color:var(--ink2);
+  }
+  .sA .abar b{font-size:12.5px;color:var(--ink);font-weight:700;}
+  .sA .abar .dot{width:22px;height:22px;border-radius:7px;background:var(--orange);display:grid;place-items:center;color:#fff;font-size:11px;font-weight:800;}
+  .sA .hero{position:relative;height:322px;}
+  .hero .ph{position:absolute;inset:0;}
+  .sA .hero .mask{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(6,14,28,.72));}
+  .sA .hero .cap{position:absolute;left:20px;right:20px;bottom:20px;color:#fff;}
+  .sA .hero .cap em{font-style:normal;font-size:11px;letter-spacing:2px;opacity:.85;}
+  .sA .hero .cap h3{margin:6px 0 8px;font-size:24px;line-height:1.25;font-weight:800;}
+  .sA .hero .cap p{margin:0;font-size:12.5px;opacity:.9;}
+  .sA .body{padding:22px 20px 90px;display:flex;flex-direction:column;gap:22px;}
+  .sA .sec .st{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .sA .sec .st i{width:4px;height:15px;border-radius:2px;background:var(--orange);}
+  .sA .sec .st b{font-size:15px;font-weight:800;}
+  .sA .sec .st span{font-size:11px;color:var(--ink3);margin-left:2px;}
+  .sA .sec p{margin:0;font-size:13.5px;color:#3d4a60;line-height:1.85;}
+  .sA .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .sA .duo .ph{aspect-ratio:3/4;border-radius:12px;}
+  .sA .tl{display:flex;flex-direction:column;gap:12px;padding-left:4px;}
+  .sA .tl .it{display:flex;gap:10px;}
+  .sA .tl .it .n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--blue-l);color:var(--blue);
+    font-size:11px;font-weight:800;display:grid;place-items:center;margin-top:1px;}
+  .sA .tl .it .c{font-size:13px;color:#3d4a60;line-height:1.7;}
+  .sA .tl .it .c b{color:var(--ink);}
+  .sA .quote{margin:0;background:#f7f9fd;border-left:3px solid var(--blue);border-radius:0 10px 10px 0;
+    padding:14px 16px;font-size:13px;color:#3d4a60;line-height:1.8;}
+  .sA .foot-card{background:linear-gradient(150deg,#fff7ed,#ffffff);border:1px solid #fde8d3;border-radius:14px;
+    padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .sA .foot-card .qr{width:60px;height:60px;border-radius:8px;background:
+    repeating-linear-gradient(0deg,#152036 0 4px,#fff 4px 8px),
+    repeating-linear-gradient(90deg,#152036 0 4px,#fff 4px 8px);
+    background-blend-mode:multiply;flex:0 0 auto;}
+  .sA .foot-card b{font-size:13px;}
+  .sA .foot-card small{display:block;color:var(--ink3);font-size:11px;margin-top:3px;}
+  .enter{
+    position:fixed;left:16px;right:16px;bottom:16px;height:46px;border-radius:14px;
+    background:var(--orange);color:#fff;font-size:14px;font-weight:700;display:flex;
+    align-items:center;justify-content:center;gap:6px;box-shadow:0 10px 24px rgba(242,107,42,.4);z-index:12;
+  }
+
+  /* ============ 方案B：翻页卡片 ============ */
+  .sB{background:#f4f6fa;}
+  .sB .top{padding:22px 20px 12px;display:flex;gap:5px;}
+  .sB .top i{height:3px;flex:1;border-radius:99px;background:#dbe3ef;}
+  .sB .top i.on{background:var(--blue);}
+  .sB .card{
+    margin:6px 16px;background:#fff;border-radius:22px;padding:26px 24px;
+    box-shadow:0 12px 34px rgba(21,32,54,.08);min-height:560px;display:flex;flex-direction:column;
+  }
+  .sB .kicker{font-size:11px;letter-spacing:2px;color:var(--blue);font-weight:700;margin-bottom:10px;}
+  .sB .card h3{margin:0 0 16px;font-size:28px;line-height:1.3;font-weight:800;letter-spacing:-.5px;}
+  .sB .card .ph{aspect-ratio:4/3;border-radius:16px;margin-bottom:16px;}
+  .sB .card p{margin:0;font-size:14px;line-height:1.9;color:#3d4a60;}
+  .sB .card .chip{display:inline-flex;align-items:center;gap:6px;margin-top:auto;align-self:flex-start;
+    background:var(--blue-l);color:var(--blue);font-size:12px;font-weight:700;padding:8px 13px;border-radius:99px;}
+  .sB .pager{padding:16px 20px 26px;text-align:center;color:var(--ink3);font-size:12px;display:flex;
+    align-items:center;justify-content:center;gap:8px;}
+  .sB .pager b{color:var(--ink);font-size:14px;}
+  .sB .dots{display:flex;gap:7px;justify-content:center;padding-bottom:8px;}
+  .sB .dots i{width:7px;height:7px;border-radius:50%;background:#cdd8e8;}
+  .sB .dots i.on{background:var(--blue);width:22px;border-radius:99px;}
+
+  /* ============ 方案C：手账拼贴 ============ */
+  .sC{
+    background:#fbf7ef;
+    background-image:radial-gradient(#e9e0cd 1px,transparent 1px);
+    background-size:16px 16px;
+  }
+  .sC .grad{min-height:100%;padding-bottom:92px;display:flex;flex-direction:column;}
+  .sC .head{padding:30px 22px 10px;position:relative;}
+  .sC .head em{font-style:normal;font-size:11px;color:#b08948;letter-spacing:2px;font-weight:700;}
+  .sC .head h3{margin:8px 0 0;font-size:26px;font-weight:800;color:#2c2418;letter-spacing:-.4px;}
+  .sC .head .tape{position:absolute;right:20px;top:20px;width:66px;height:22px;background:rgba(242,178,90,.55);
+    transform:rotate(8deg);border-radius:2px;}
+  .sC .wrap{padding:14px 20px 90px;display:flex;flex-direction:column;gap:18px;}
+  .sC .polar{background:#fff;padding:8px 8px 30px;border-radius:4px;box-shadow:0 8px 20px rgba(90,70,40,.12);
+    position:relative;transform:rotate(-1.5deg);}
+  .sC .polar:nth-child(even){transform:rotate(1.4deg);}
+  .sC .polar .ph{aspect-ratio:4/3;border-radius:2px;}
+  .sC .polar small{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11px;color:#8a7a5c;}
+  .sC .note{background:#fff8dc;padding:14px 16px;border-radius:3px;font-size:13px;color:#4a3f2a;line-height:1.85;
+    box-shadow:0 6px 16px rgba(90,70,40,.1);position:relative;}
+  .sC .note::before{content:"";position:absolute;left:50%;top:-9px;transform:translateX(-50%) rotate(-3deg);
+    width:56px;height:16px;background:rgba(120,190,170,.5);border-radius:1px;}
+  .sC .note b{display:block;margin-bottom:6px;font-size:12px;color:#a1622d;}
+  .sC .sticker{position:absolute;right:14px;bottom:70px;width:52px;height:52px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#ffd166,#f2a03d);display:grid;place-items:center;
+    color:#fff;font-size:11px;font-weight:800;transform:rotate(-12deg);box-shadow:0 6px 14px rgba(200,140,50,.4);}
+  .sC .enter{
+    background:#2c2418;box-shadow:0 10px 24px rgba(44,36,24,.32);}
+
+  /* ---------- 优缺点 ---------- */
+  .pros{list-style:none;padding:16px 4px 0;margin:0;display:flex;flex-direction:column;gap:7px;}
+  .pros li{font-size:12.5px;color:var(--ink2);display:flex;gap:7px;line-height:1.6;}
+  .pros li .ok{color:#18a06a;font-weight:800;flex:0 0 auto;}
+  .pros li .no{color:#e2607c;font-weight:800;flex:0 0 auto;}
+  .pros li b{color:var(--ink);}
+
+  /* ---------- 编辑器集成示意 ---------- */
+  .editor-sec{padding:44px 34px 10px;}
+  .editor-sec > h2{font-size:18px;margin:0 0 6px;}
+  .editor-sec > p{margin:0 0 20px;color:var(--ink2);font-size:13px;max-width:900px;}
+  .ws{
+    background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    box-shadow:0 18px 44px rgba(21,32,54,.08);
+  }
+  .ws-top{height:50px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--line);
+    font-size:13px;font-weight:700;color:var(--ink);}
+  .ws-top .logo{width:24px;height:24px;border-radius:7px;background:var(--orange);display:grid;place-items:center;color:#fff;font-size:11px;font-weight:800;}
+  .ws-top .steps{margin-left:auto;display:flex;gap:18px;font-size:12px;color:var(--ink3);font-weight:600;}
+  .ws-top .steps b{color:var(--blue);}
+  .ws-body{display:grid;grid-template-columns:236px 1fr 200px;height:560px;}
+  .ws-col{padding:16px;overflow:hidden;}
+  .ws-col.left{border-right:1px solid var(--line);background:#fbfcfe;}
+  .ws-col.right{border-left:1px solid var(--line);background:#fbfcfe;}
+  .ws-col.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;
+    background:#f4f6fa;gap:14px;}
+  .cfg-t{font-size:12px;font-weight:800;margin-bottom:12px;}
+  .cfg-item{border:1px solid var(--line);border-radius:9px;padding:9px 10px;margin-bottom:9px;font-size:11.5px;color:var(--ink2);background:#fff;}
+  .cfg-item.on{border-color:#c7d9fb;background:#f5f9ff;color:var(--blue);font-weight:700;}
+  .cfg-item span{display:block;font-size:10px;color:var(--ink3);margin-top:2px;font-weight:400;}
+  .mini-phone{
+    width:236px;height:512px;border-radius:28px;background:#0e1521;padding:8px;position:relative;
+    box-shadow:0 20px 40px rgba(16,32,64,.25);
+  }
+  .mini-phone .mscreen{width:220px;height:496px;border-radius:21px;overflow:hidden;background:#fff;position:relative;}
+  .mini-phone .mscreen .ph{position:absolute;inset:0;}
+  .mini-phone .mscreen .ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(6,14,28,.72));}
+  .mini-phone .mscreen .txt{position:absolute;left:14px;right:14px;bottom:16px;color:#fff;}
+  .mini-phone .mscreen .txt em{font-style:normal;font-size:9px;letter-spacing:1.5px;opacity:.85;}
+  .mini-phone .mscreen .txt h4{margin:5px 0 0;font-size:17px;line-height:1.25;}
+  .phone-nav{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--ink2);}
+  .phone-nav .rnd{width:30px;height:30px;border-radius:50%;border:1px solid #d5dfec;background:#fff;
+    display:grid;place-items:center;font-size:16px;color:var(--ink2);}
+  .phone-nav b{font-size:12.5px;color:var(--ink);}
+  .thumb{display:flex;gap:8px;margin-bottom:9px;align-items:center;font-size:11.5px;color:var(--ink2);}
+  .thumb i{width:32px;height:42px;border-radius:5px;background:#e5ecf6;flex:0 0 auto;border:2px solid transparent;}
+  .thumb.on i{border-color:var(--blue);}
+  .thumb.on{color:var(--blue);font-weight:700;}
+  .note-box{margin-top:14px;font-size:11px;color:var(--ink3);line-height:1.6;background:#fff;border:1px dashed #dbe3ef;
+    border-radius:9px;padding:10px;}
+
+  @media (max-width:900px){
+    .ws-body{grid-template-columns:1fr;}
+    .ws-col.left,.ws-col.right{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>H5 报告 · 竖屏预览排版方案（效果图 v1）</h1>
+  <p>当前编辑器预览是 16:9 横屏画布，和手机实际阅读效果不一致。下面是三种「竖屏 · 手机比例 390×844」的排版方案，内容取自现有报告章节（封面 / 课程理解 / 草图对比 / 迭代过程 / 成品说明 / AI 点评 / 教师评语 / 封底）。手机框内可直接上下滚动查看真实排版。</p>
+  <div class="meta">
+    <span class="tag">手机尺寸 390 × 844（示意按 336×728 等比）</span>
+    <span class="tag">正文 ≥ 14px · 无横向滚动</span>
+    <span class="tag warn">本次仅出效果图，未改动任何代码</span>
+  </div>
+</header>
+
+<section class="plans">
+
+  <!-- ================= 方案 A ================= -->
+  <article class="plan">
+    <div class="plan-cap">
+      <h2><b>A</b>沉浸长图流</h2>
+      <p>封面大图开场，整份报告一路向下滚动阅读，顶部章节名吸顶，底部固定「进入官网」。最接近家长熟悉的长图文体验。</p>
+    </div>
+
+    <div class="phone">
+      <div class="viewport"><div class="screen sA">
+        <div class="abar">
+          <span class="dot">AI</span>
+          <b>我的作品报告</b>
+          <span>6/8 章</span>
+        </div>
+
+        <div class="hero">
+          <div class="ph g1" data-t="最终作品"></div>
+          <div class="mask"></div>
+          <div class="cap">
+            <em>A I 创 意 美 术 课</em>
+            <h3>会飞的房子<br>小画家阿橙</h3>
+            <p>2026 秋季班 · 第 6 课 · 创意想象单元</p>
+          </div>
+        </div>
+
+        <div class="body">
+          <section class="sec">
+            <div class="st"><i></i><b>课程项目理解</b><span>从课程目标到创作方向</span></div>
+            <p>这节课的主题是「如果房子会飞」。我想到把屋顶改成翅膀，让它能带着一家人去看海。我想解决的是「搬家太麻烦」这个问题。</p>
+          </section>
+
+          <section class="sec">
+            <div class="st"><i></i><b>草图线稿对比</b><span>原始草图 vs AI 优化</span></div>
+            <div class="duo">
+              <div class="ph g2" data-t="原始草图"></div>
+              <div class="ph g3" data-t="AI 优化线稿"></div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="st"><i></i><b>迭代修改流程</b><span>共 3 个版本</span></div>
+            <div class="tl">
+              <div class="it"><span class="n">1</span><div class="c"><b>V1 初稿</b>：房子正面，颜色偏暗。</div></div>
+              <div class="it"><span class="n">2</span><div class="c"><b>V2 调整</b>：屋顶改成斜的，更像翅膀。</div></div>
+              <div class="it"><span class="n">3</span><div class="c"><b>V3 终稿</b>：加了云和热气球，画面更热闹。</div></div>
+            </div>
+          </section>
+
+          <section class="sec">
+            <div class="st"><i></i><b>成品创意说明</b><span>最终作品</span></div>
+            <div class="ph g4" data-t="最终作品 · 会飞的房子" style="aspect-ratio:4/3;border-radius:12px;"></div>
+            <p style="margin-top:10px;">画面主体突出、色彩明亮，屋顶的翅膀和背景云朵形成了向上生长的动势。</p>
+          </section>
+
+          <section class="sec">
+            <div class="st"><i></i><b>AI 专业点评</b></div>
+            <p class="quote">主体突出，构图清楚，色彩明亮。下一步可继续增强背景故事、角色动作和材质细节。</p>
+          </section>
+
+          <section class="sec">
+            <div class="st"><i></i><b>教师评语</b></div>
+            <div class="foot-card">
+              <div>
+                <b>想象力非常棒，构图有想法！</b>
+                <small>评分 ★★★★★ · 王老师</small>
+              </div>
+              <div class="qr"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="enter">进入官网 ›</div>
+      </div></div>
+    </div>
+
+    <ul class="pros">
+      <li><span class="ok">✓</span><span>最省事：一份长页面，AI 文案长短都能自然承接，不会出现「图大字少」的空页。</span></li>
+      <li><span class="ok">✓</span><span>家长零学习成本，和看公众号长图一样；分享到群里点开就能读。</span></li>
+      <li><span class="no">✗</span><span>「一页 = 一屏」的章节感弱，封面后需要往下滑才看到正文。</span></li>
+    </ul>
+  </article>
+
+  <!-- ================= 方案 B ================= -->
+  <article class="plan">
+    <div class="plan-cap">
+      <h2><b>B</b>一屏一页 · 翻页卡片</h2>
+      <p>一个章节占一屏，卡片式留白，顶部 8 段进度条，底部滑动/点按翻页。仪式感强，像翻阅一本小册子。</p>
+    </div>
+
+    <div class="phone">
+      <div class="viewport"><div class="screen sB">
+        <div class="top">
+          <i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+
+        <div class="card">
+          <div class="kicker">第 1 章 · 我的作品</div>
+          <h3>会飞的<br>房子</h3>
+          <div class="ph g4" data-t="最终作品"></div>
+          <p>我用 AI 做了一栋有翅膀的房子，希望它能带着全家去看海。这是我第一次把想象画得这么完整。</p>
+          <span class="chip">小画家阿橙 · 第 6 课</span>
+        </div>
+
+        <div class="pager">
+          <b>1</b> / 8
+        </div>
+        <div class="dots">
+          <i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div></div>
+    </div>
+
+    <ul class="pros">
+      <li><span class="ok">✓</span><span>章节感、仪式感最强，适合「作品集 / 汇报」，每页信息量可控。</span></li>
+      <li><span class="ok">✓</span><span>和现在 16:9 的「单页」逻辑最接近，改造成本最低（一页仍是 390×844 卡片）。</span></li>
+      <li><span class="no">✗</span><span>长文案要拆页，否则要么缩小字号要么溢出；AI 文案长短不一时排版压力大。</span></li>
+      <li><span class="no">✗</span><span>翻页交互略重，部分家长不习惯「一屏一滑」。</span></li>
+    </ul>
+  </article>
+
+  <!-- ================= 方案 C ================= -->
+  <article class="plan">
+    <div class="plan-cap">
+      <h2><b>C</b>手账拼贴</h2>
+      <p>纸张纹理底纹 + 拍立得、便签、胶带、贴纸错落排布，更像孩子的手工作品本。呼应进阶版「语义版式」方案。</p>
+    </div>
+
+    <div class="phone">
+      <div class="viewport"><div class="screen sC">
+        <div class="head">
+          <em>MY CREATIVE JOURNAL</em>
+          <h3>我的创意<br>小创作</h3>
+          <div class="tape"></div>
+        </div>
+
+        <div class="wrap">
+          <div class="polar">
+            <div class="ph g4" data-t="最终作品"></div>
+            <small>会飞的房子 · 阿橙 2026</small>
+          </div>
+
+          <div class="note">
+            <b>我想做什么？</b>
+            如果房子会飞，就能带着全家人去看海。所以我把屋顶改成了翅膀。
+          </div>
+
+          <div class="polar">
+            <div class="ph g2" data-t="原始草图"></div>
+            <small>一开始画的草图</small>
+          </div>
+
+          <div class="note">
+            <b>我试了几种？</b>
+            一共画了 3 个版本。第 3 版加了云和热气球，我最喜欢这一版。
+          </div>
+
+          <div class="polar">
+            <div class="ph g3" data-t="改过的版本"></div>
+            <small>改过的版本</small>
+          </div>
+
+          <div class="note">
+            <b>我的收获</b>
+            原来想象可以用 AI 变成真的画面，下次我想做一个海底学校。
+          </div>
+
+          <div class="sticker">★</div>
+        </div>
+
+        <div class="enter">进入官网 ›</div>
+      </div></div>
+    </div>
+
+    <ul class="pros">
+      <li><span class="ok">✓</span><span>最有人情味、最像「孩子的作品」，家长分享意愿最高。</span></li>
+      <li><span class="ok">✓</span><span>天然适配少素材项目：1 张图 + 几句话也能不空洞地成篇。</span></li>
+      <li><span class="no">✗</span><span>视觉资产（胶带、便签、贴纸）需要设计投入，且要维护装饰安全区。</span></li>
+      <li><span class="no">✗</span><span>图片数量多时容易显得乱，需要控制每页元素上限。</span></li>
+    </ul>
+  </article>
+
+</section>
+
+<!-- ================= 编辑器集成示意 ================= -->
+<section class="editor-sec">
+  <h2>编辑器里怎么放「竖屏预览」</h2>
+  <p>把中间原来的 16:9 画布换成一部竖屏手机（390×844 等比缩放），左右保持现有三栏结构：左边报告设置、右边页面缩略图。翻页按钮放在手机下方。这样「所见即所得」和最终 H5 完全一致。</p>
+
+  <div class="ws">
+    <div class="ws-top">
+      <div class="logo">AI</div>
+      <span>项目创作报告编辑器</span>
+      <div class="steps"><span>① 设置</span><b>② 预览</b><span>③ 导出</span></div>
+    </div>
+    <div class="ws-body">
+      <div class="ws-col left">
+        <div class="cfg-t">报告生成设置</div>
+        <div class="cfg-item on">模板：清新水彩<span>当前选中</span></div>
+        <div class="cfg-item">模板：童趣课堂</div>
+        <div class="cfg-item on">章节：封面 / 理解 / 过程<span>已启用 6 章</span></div>
+        <div class="cfg-item">机构 LOGO 水印</div>
+        <div class="cfg-item">学生信息水印</div>
+      </div>
+
+      <div class="ws-col mid">
+        <div class="mini-phone">
+          <div class="mscreen">
+            <div class="ph g4"></div>
+            <div class="ov"></div>
+            <div class="txt">
+              <em>A I 创 意 美 术 课</em>
+              <h4>会飞的房子</h4>
+            </div>
+          </div>
+        </div>
+        <div class="phone-nav">
+          <span class="rnd">‹</span>
+          <span>第 <b>1</b> 页 / 共 8 页</span>
+          <span class="rnd">›</span>
+        </div>
+      </div>
+
+      <div class="ws-col right">
+        <div class="cfg-t">页面</div>
+        <div class="thumb on"><i style="background:linear-gradient(150deg,#ffd9b0,#ef6f3c);"></i>封面</div>
+        <div class="thumb"><i></i>课程理解</div>
+        <div class="thumb"><i></i>草图对比</div>
+        <div class="thumb"><i></i>迭代流程</div>
+        <div class="thumb"><i></i>成品说明</div>
+        <div class="thumb"><i></i>AI 点评</div>
+        <div class="note-box">竖屏预览的关键改动：把 <b>.ppt-window</b> 的 <b>16/9</b> 改成 <b>390/844</b>，宽度按高度自适应，内部内容改为纵向流式，不再等比缩放一张横版画布。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

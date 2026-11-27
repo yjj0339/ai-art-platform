@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 创作台 · 画板 + 生成 · 效果图 v2</title>
+<style>
+:root{
+  --brand:#ff7a00;
+  --brand-2:#ff9f1c;
+  --blue:#36bffa;
+  --green:#34d399;
+  --pink:#f472b6;
+  --ink:#1f2937;
+  --text:#4b5563;
+  --muted:#9ca3af;
+  --line:#e5e7eb;
+  --bg:#f4f6fa;
+  --surface:#fff;
+  --stage-a:#eef3fa;
+  --stage-b:#e2e9f4;
+  --shadow-card:0 12px 28px rgba(31,41,55,.08);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:'Source Han Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input{font:inherit;color:inherit}
+
+/* ================= 骨架 ================= */
+.app{height:100dvh;display:flex;flex-direction:column;gap:12px;padding:12px 16px 14px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{height:52px;flex:0 0 52px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand-mark{
+  width:36px;height:36px;border-radius:12px;flex:0 0 36px;
+  background:linear-gradient(135deg,#ff7a00,#ffb02e);display:grid;place-items:center;
+  box-shadow:0 8px 18px rgba(255,122,0,.28);
+}
+.brand-mark svg{width:20px;height:20px}
+.brand-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.brand-text strong{font-size:15px;color:var(--ink);letter-spacing:.2px}
+.brand-text span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.save-state{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.save-state i{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(52,211,153,.16)}
+.btn-ghost{
+  height:34px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--text);
+  background:#fff;border:1px solid var(--line);transition:.18s var(--ease);
+}
+.btn-ghost:hover{border-color:rgba(255,122,0,.4);color:var(--brand);transform:translateY(-1px)}
+.avatar{
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(135deg,#ffe6cc,#ffd0a1);color:#b45309;font-size:13px;font-weight:700;
+  border:2px solid #fff;box-shadow:var(--shadow-card);
+}
+
+/* ================= 工作区 ================= */
+.workspace{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 496px;gap:14px}
+
+/* ---------- 左：画板 ---------- */
+.board{
+  display:flex;flex-direction:column;min-width:0;min-height:0;
+  background:var(--surface);border:1px solid rgba(31,41,55,.07);
+  border-radius:20px;box-shadow:var(--shadow-card);overflow:hidden;
+}
+.board-head{
+  height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px 0 14px;border-bottom:1px solid var(--line);
+}
+.bh-left{display:flex;align-items:center;gap:8px;min-width:0}
+.bh-left .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(255,122,0,.12)}
+.bh-left strong{font-size:13px;color:var(--ink);font-weight:700}
+.bh-tag{font-size:10.5px;color:#9a5b12;background:#fff3e6;border-radius:6px;padding:2px 7px;font-weight:600}
+.bh-size{font-size:10.5px;color:var(--muted);padding-left:2px}
+.bh-right{display:flex;align-items:center;gap:2px}
+.icon-btn{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:#8b95a3;transition:.16s}
+.icon-btn:hover{background:#f3f5f9;color:var(--ink)}
+.icon-btn svg{width:14px;height:14px}
+
+.board-body{flex:1;min-height:0;display:flex;position:relative}
+
+/* ---------- 工具栏：只留图标 ---------- */
+.tools{
+  width:56px;flex:0 0 56px;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:10px 0 10px;border-right:1px solid var(--line);background:#fdfdff;
+}
+.tool{
+  width:40px;height:40px;border-radius:11px;display:grid;place-items:center;
+  color:#6b7684;transition:.16s var(--ease);position:relative;
+}
+.tool svg{width:19px;height:19px}
+.tool:hover{background:#f4f6fa;color:var(--ink)}
+.tool.is-active{background:#fff3e6;color:#d96600;box-shadow:inset 0 0 0 1px rgba(255,122,0,.24)}
+.tool.is-active svg{stroke-width:2}
+.tool-sep{width:26px;height:1px;background:var(--line);margin:7px 0}
+.tool-color{
+  width:30px;height:30px;border-radius:50%;margin-top:2px;
+  background:#2b3440;border:2px solid #fff;
+  box-shadow:0 0 0 1px rgba(31,41,55,.16),0 4px 10px rgba(31,41,55,.16);
+  transition:.16s var(--ease);
+}
+.tool-color:hover{transform:scale(1.08)}
+
+/* ---------- 画笔浮层 ---------- */
+.brush-pop{
+  position:absolute;left:60px;top:10px;z-index:40;width:238px;max-height:566px;
+  display:flex;flex-direction:column;
+  background:#fff;border:1px solid rgba(31,41,55,.09);border-radius:16px;
+  box-shadow:0 26px 58px rgba(31,41,55,.22),0 3px 10px rgba(31,41,55,.07);
+  transform-origin:left top;
+  transition:opacity .16s var(--ease),transform .18s var(--ease);
+}
+.brush-pop::before{
+  content:'';position:absolute;left:-6px;top:26px;width:11px;height:11px;
+  background:#fff;border-left:1px solid rgba(31,41,55,.09);border-bottom:1px solid rgba(31,41,55,.09);
+  transform:rotate(45deg);
+}
+.brush-pop.is-closed{opacity:0;transform:translateX(-10px) scale(.97);pointer-events:none}
+
+.bp-head{
+  display:flex;align-items:center;gap:7px;padding:11px 12px 9px;
+  border-bottom:1px solid rgba(31,41,55,.06);
+}
+.bp-head b{font-size:12.5px;color:var(--ink);font-weight:700}
+.bp-head span{font-size:10px;color:var(--muted);background:#f1f4f9;padding:1.5px 6px;border-radius:5px}
+.bp-close{margin-left:auto;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:#a4aebc}
+.bp-close:hover{background:#f3f5f9;color:var(--ink)}
+.bp-close svg{width:12px;height:12px}
+
+.bp-list{overflow-y:auto;min-height:0;padding:5px 6px 7px;scrollbar-width:thin}
+.bp-list::-webkit-scrollbar{width:6px}
+.bp-list::-webkit-scrollbar-thumb{background:#dbe2ec;border-radius:3px}
+.bp-list::-webkit-scrollbar-track{background:transparent}
+
+.brush{
+  display:flex;align-items:center;gap:9px;width:100%;padding:7px 8px;border-radius:10px;
+  transition:.14s var(--ease);
+}
+.brush:hover{background:#f5f7fb}
+.brush.is-active{background:#fff3e6;box-shadow:inset 0 0 0 1px rgba(255,122,0,.28)}
+.brush-prev{width:72px;height:22px;flex:0 0 72px;display:grid;place-items:center;color:#3d4753}
+.brush-prev svg{width:70px;height:22px;display:block}
+.brush-info{display:flex;flex-direction:column;gap:0;min-width:0;text-align:left}
+.brush-info b{font-size:11.5px;color:var(--ink);font-weight:600;white-space:nowrap;line-height:1.35}
+.brush-info span{font-size:9.5px;color:var(--muted);line-height:1.3;white-space:nowrap}
+
+.bs path{fill:none;stroke:currentColor;stroke-linecap:round}
+.bs-pencil path{stroke-width:1.5;opacity:.62}
+.bs-colyar path{stroke-width:2.1;opacity:.55;stroke-dasharray:2.4 1.5}
+.bs-marker path{stroke-width:5.5;stroke-linecap:butt;opacity:.85}
+.bs-water path{stroke-width:7;opacity:.42;filter:url(#fxWater)}
+.bs-wash path{stroke-width:10;opacity:.26;filter:url(#fxWater)}
+.bs-crayon path{stroke-width:6;opacity:.72;filter:url(#fxGrain)}
+.bs-oil path{stroke-width:7;stroke-linecap:butt;opacity:.9;stroke-dasharray:10 2.6}
+.bs-air path{stroke-width:9;opacity:.34;stroke-dasharray:.6 3.6}
+.bs-ink path{stroke-width:1.4;opacity:.92}
+.bs-brush path{stroke-width:4.4;opacity:.86;filter:url(#fxWater)}
+.bs-chalk path{stroke-width:5.5;opacity:.5;stroke-dasharray:3.2 2;filter:url(#fxGrain)}
+.bs-sponge path{stroke-width:9;opacity:.36;stroke-dasharray:1.2 4.2;filter:url(#fxGrain)}
+
+.bp-foot{padding:9px 12px 11px;border-top:1px solid rgba(31,41,55,.06);background:#fcfdff;border-radius:0 0 16px 16px}
+.bp-size-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.bp-size-row span{font-size:10.5px;font-weight:600;color:#6b7684}
+.bp-size-row b{font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bp-foot input[type=range]{width:100%;accent-color:var(--brand);height:16px;margin:0 0 6px}
+.bp-colors{display:flex;align-items:center;gap:7px}
+.sw{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(31,41,55,.14);transition:.16s}
+.sw:hover{transform:scale(1.12)}
+.sw.is-active{box-shadow:0 0 0 2px var(--brand)}
+
+/* ---------- 图层：紧凑列 ---------- */
+.layers{
+  width:168px;flex:0 0 168px;display:flex;flex-direction:column;min-height:0;
+  background:#fcfdff;border-left:1px solid var(--line);overflow:hidden;
+}
+.layers-head{
+  display:flex;align-items:center;gap:6px;padding:9px 10px 8px;
+  border-bottom:1px solid rgba(31,41,55,.06);
+}
+.layers-head strong{font-size:11.5px;color:var(--ink);font-weight:700;display:flex;align-items:center;gap:5px}
+.layers-head strong svg{width:13px;height:13px;color:var(--brand)}
+.layers-head .cnt{font-size:9.5px;color:var(--muted);background:#f1f4f9;padding:1px 5px;border-radius:4px}
+.layers-head .l-add{
+  margin-left:auto;width:20px;height:20px;border-radius:6px;display:grid;place-items:center;
+  color:#8b95a3;background:#f2f5f9;
+}
+.layers-head .l-add:hover{background:#e9eef6;color:var(--brand)}
+.layers-head .l-add svg{width:11px;height:11px}
+
+.layer-row{
+  display:flex;align-items:center;gap:7px;padding:10px 8px 10px 7px;cursor:pointer;
+  border-left:2px solid transparent;transition:.14s;
+}
+.layer-row:hover{background:rgba(255,122,0,.05)}
+.layer-row.is-active{background:rgba(255,122,0,.09);border-left-color:var(--brand)}
+.eye{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;color:#94a0af;flex:0 0 18px}
+.eye:hover{background:rgba(31,41,55,.06);color:var(--ink)}
+.eye svg{width:12px;height:12px}
+.layer-row.is-off .eye{color:#c7cdd6}
+.layer-row.is-off .lname,.layer-row.is-off .lthumb{opacity:.42}
+.lthumb{
+  width:26px;height:20px;border-radius:4px;flex:0 0 26px;position:relative;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(31,41,55,.10);
+}
+.lthumb::after{content:'';position:absolute;inset:0}
+.lthumb--line{background:linear-gradient(135deg,#fff,#f3f6fa)}
+.lthumb--line::after{background:repeating-linear-gradient(-45deg,rgba(74,91,98,.55) 0 1.3px,transparent 1.3px 4.5px)}
+.lthumb--detail{background:linear-gradient(135deg,#ffe9c9,#ffce63)}
+.lthumb--main{background:linear-gradient(135deg,#a9e2c0,#63bf59 70%,#7cc96a)}
+.lthumb--bg{background:linear-gradient(180deg,#cfeaff,#fdf7ef)}
+.lname{font-size:11px;color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.lock{width:16px;height:16px;border-radius:4px;display:grid;place-items:center;color:#d3d9e1;flex:0 0 16px;opacity:0;transition:.14s}
+.layer-row:hover .lock{opacity:1}
+.lock:hover{color:var(--ink);background:rgba(31,41,55,.05)}
+.lock svg{width:10px;height:10px}
+
+.layer-tip{
+  margin:11px 9px 0;display:flex;gap:6px;padding:8px 9px;border-radius:9px;
+  background:#fffaef;border:1px dashed rgba(255,122,0,.28);font-size:9.5px;color:#9a7748;line-height:1.55;
+}
+.layer-tip svg{width:11px;height:11px;flex:0 0 11px;color:var(--brand);margin-top:1px}
+.layer-blend{
+  margin-top:auto;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 10px 0;border-top:1px solid rgba(31,41,55,.06);
+}
+.layer-blend span{font-size:11px;color:#6b7684;font-weight:600}
+.layer-blend em{
+  font-style:normal;display:inline-flex;align-items:center;gap:3px;
+  height:24px;padding:0 7px 0 9px;border-radius:7px;background:#f2f5f9;
+  color:#3d4753;font-size:10.5px;font-weight:600;
+}
+.layer-blend svg{width:11px;height:11px;color:#8b95a3}
+.layer-opacity{margin-top:0;padding:10px 10px 4px;border-top:1px solid rgba(31,41,55,.06)}
+.lo-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.lo-head span{font-size:10px;color:#6b7684;font-weight:600}
+.lo-head b{font-size:10px;color:var(--ink);font-variant-numeric:tabular-nums}
+.layer-opacity input[type=range]{width:100%;accent-color:var(--brand);height:14px;margin:0}
+.layers-foot{display:flex;gap:5px;padding:8px 9px 9px}
+.layers-foot button{
+  flex:1;height:26px;border-radius:7px;font-size:10.5px;font-weight:600;color:#5b6675;
+  background:#f3f6fa;display:inline-flex;align-items:center;justify-content:center;gap:3px;transition:.16s;
+}
+.layers-foot button:hover{background:#e9eef6;color:var(--brand)}
+.layers-foot svg{width:11px;height:11px}
+
+/* ---------- 画布舞台 ---------- */
+.stage{
+  flex:1;min-width:0;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(31,41,55,.11) 1px, transparent 0) 0 0/22px 22px,
+    linear-gradient(168deg,var(--stage-a),var(--stage-b));
+  cursor:grab;
+}
+.stage.is-dragging{cursor:grabbing}
+.paper-wrap{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) translate(var(--tx,0px),var(--ty,0px)) scale(var(--zoom,.86));
+  transform-origin:center center;transition:transform .22s var(--ease);will-change:transform;
+}
+.stage.is-dragging .paper-wrap{transition:none}
+.paper{
+  width:480px;height:600px;background:#fff;border-radius:3px;overflow:hidden;
+  box-shadow:0 1px 0 rgba(31,41,55,.05),0 26px 55px rgba(31,41,55,.20),0 6px 14px rgba(31,41,55,.08);
+}
+.paper svg{display:block;width:100%;height:100%}
+
+.stage-hint{
+  position:absolute;left:12px;bottom:12px;display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.82);
+  backdrop-filter:blur(8px);box-shadow:0 3px 10px rgba(31,41,55,.08);
+  font-size:10.5px;color:#6b7684;pointer-events:none;z-index:5;
+}
+.stage-hint svg{width:12px;height:12px;color:var(--brand)}
+.zoombar{
+  position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:2px;
+  padding:3px;border-radius:11px;background:rgba(255,255,255,.94);
+  backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(31,41,55,.10);border:1px solid rgba(31,41,55,.05);z-index:5;
+}
+.zbtn{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:#6b7684;font-size:14px;font-weight:600}
+.zbtn:hover{background:#f2f5f9;color:var(--ink)}
+.zoom-val{min-width:48px;text-align:center;font-size:11px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.zfit{padding:0 8px;height:26px;border-radius:7px;font-size:10.5px;color:#6b7684;font-weight:600}
+.zfit:hover{background:#f2f5f9;color:var(--brand)}
+
+/* ---------- 右：AI 生成（加宽） ---------- */
+.ai{
+  display:flex;flex-direction:column;min-height:0;
+  background:var(--surface);border:1px solid rgba(31,41,55,.07);
+  border-radius:20px;box-shadow:var(--shadow-card);overflow:hidden;position:relative;
+}
+.ai-head{padding:14px 16px 11px;border-bottom:1px solid var(--line)}
+.ai-head::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--brand),var(--pink),var(--blue));
+}
+.ai-title{display:flex;align-items:center;gap:8px}
+.ai-title strong{font-size:14.5px;color:var(--ink);letter-spacing:.2px}
+.ai-badge{
+  font-size:9.5px;font-weight:700;color:#fff;padding:2px 6px;border-radius:999px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));
+}
+.ref-pill{
+  margin-left:auto;display:inline-flex;align-items:center;gap:5px;
+  height:24px;padding:0 9px;border-radius:999px;font-size:10.5px;font-weight:600;color:#b45309;
+  background:#fff6ec;border:1px solid rgba(255,122,0,.22);
+}
+.ref-pill i{width:6px;height:6px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px rgba(255,122,0,.14)}
+.ref-pill.is-off{color:#8b95a3;background:#f4f6fa;border-color:#e3e8f0}
+.ref-pill.is-off i{background:#c2c9d2;box-shadow:none}
+.ai-sub{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+.ai-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:11px 16px 14px}
+.sec-label{
+  font-size:11px;font-weight:700;color:#6b7684;margin:0 0 7px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-label em{font-style:normal;font-weight:600;font-size:10px;color:var(--muted)}
+
+.styles{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px;scrollbar-width:none}
+.styles::-webkit-scrollbar{display:none}
+.style-chip{
+  flex:0 0 auto;height:26px;padding:0 10px;border-radius:8px;font-size:10.5px;font-weight:600;color:#5b6675;
+  background:#f5f7fb;border:1px solid transparent;transition:.16s var(--ease);white-space:nowrap;
+}
+.style-chip:hover{background:#eef2f8;color:var(--ink)}
+.style-chip.is-active{
+  color:#b45309;background:#fff3e6;border-color:rgba(255,122,0,.34);
+  box-shadow:0 2px 6px rgba(255,122,0,.12);
+}
+
+/* 结果区：一大（主图）+ 三小（变体） */
+.results{flex:1;min-height:0;display:flex;flex-direction:column;gap:9px}
+.result-main{flex:1 1 0;min-height:0;height:auto}
+.result-main .rbadge{left:10px;top:10px;font-size:10.5px;padding:3px 8px;border-radius:6px}
+.result-main .rindex{right:10px;top:10px;font-size:10px;padding:3px 7px}
+.result-main .rtools{opacity:1;transform:none;left:10px;right:10px;bottom:10px;justify-content:flex-start}
+.result-main .rtools span{flex:0 0 auto;padding:0 16px;height:28px;font-size:11.5px;box-shadow:0 4px 12px rgba(31,41,55,.14)}
+.result-thumbs{flex:0 0 96px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.result{
+  position:relative;border-radius:12px;overflow:hidden;height:100%;min-height:0;
+  box-shadow:0 2px 10px rgba(31,41,55,.10);border:2px solid transparent;
+  transition:.18s var(--ease);display:block;padding:0;text-align:left;
+}
+.result:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(31,41,55,.18)}
+.result.is-current{border-color:var(--brand);box-shadow:0 8px 22px rgba(255,122,0,.26)}
+.result svg{position:absolute;inset:0;display:block;width:100%;height:100%}
+.rbadge{
+  position:absolute;z-index:3;left:7px;top:7px;font-size:9.5px;font-weight:700;color:#fff;
+  background:var(--brand);padding:2px 6px;border-radius:5px;letter-spacing:.3px;
+}
+.rindex{
+  position:absolute;z-index:3;right:7px;top:7px;font-size:9px;font-weight:700;color:#3d4753;
+  background:rgba(255,255,255,.9);padding:2px 5px;border-radius:5px;
+}
+.rtools{
+  position:absolute;z-index:3;left:6px;right:6px;bottom:6px;display:flex;gap:4px;
+  opacity:0;transform:translateY(4px);transition:.18s var(--ease);
+}
+.result:hover .rtools{opacity:1;transform:none}
+.rtools span{
+  flex:1;height:22px;border-radius:6px;display:grid;place-items:center;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(6px);font-size:10px;font-weight:600;color:#3d4753;
+}
+.rtools span:hover{background:#fff;color:var(--brand)}
+
+/* ================= 底部提示词条 ================= */
+.composer{flex:0 0 auto}
+.prompt-bar{
+  display:flex;align-items:center;gap:10px;padding:9px 9px 9px 11px;
+  background:#fff;border:1px solid rgba(31,41,55,.08);border-radius:16px;
+  box-shadow:0 10px 26px rgba(31,41,55,.09);
+}
+.ref-chip{
+  height:34px;padding:0 12px;border-radius:10px;display:inline-flex;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:600;color:#b45309;background:#fff6ec;border:1px solid rgba(255,122,0,.22);
+  white-space:nowrap;transition:.16s;
+}
+.ref-chip:hover{background:#ffeeda}
+.ref-chip svg{width:13px;height:13px}
+.prompt-input{flex:1;min-width:0;height:36px;border:0;outline:none;background:transparent;font-size:13px;color:var(--ink)}
+.prompt-input::placeholder{color:#b3bcc8}
+.count{font-size:10.5px;color:var(--muted);white-space:nowrap;padding-right:2px}
+.gen-btn{
+  height:40px;padding:0 18px;border-radius:11px;display:inline-flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:700;color:#fff;white-space:nowrap;
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  box-shadow:0 10px 22px rgba(255,122,0,.30);transition:.18s var(--ease);
+}
+.gen-btn:hover{transform:translateY(-1px);box-shadow:0 14px 26px rgba(255,122,0,.36)}
+.gen-btn:active{transform:scale(.98)}
+.gen-btn svg{width:14px;height:14px}
+
+/* ================= 适配 ================= */
+@media (max-width:1360px){
+  .workspace{grid-template-columns:minmax(0,1fr) 440px}
+  .layers{width:156px;flex:0 0 156px}
+}
+@media (max-width:1180px){
+  .workspace{grid-template-columns:minmax(0,1fr) 380px}
+  .layers{width:148px;flex:0 0 148px}
+  .brand-text span{display:none}
+}
+@media (max-width:1020px){
+  .workspace{grid-template-columns:minmax(0,1fr)}
+  .ai{display:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <filter id="fxWater" x="-20%" y="-60%" width="140%" height="220%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="fxGrain" x="-20%" y="-60%" width="140%" height="220%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.9" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="app">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20c3.5.6 5-1.2 6.4-3.4 1.6-2.6 3.2-6.6 7.2-9.4"/>
+          <path d="M15.4 3.6a2.6 2.6 0 0 1 3.7 3.7l-3 3-3.7-3.7 3-3Z"/>
+        </svg>
+      </span>
+      <div class="brand-text">
+        <strong>美佳美画 · AI 创作台</strong>
+        <span>四年级 · 水彩小景 / 我的画纸</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="save-state"><i></i>已保存</span>
+      <button class="btn-ghost">导出作品</button>
+      <span class="avatar">言</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+
+    <!-- ========== 左：画板 ========== -->
+    <section class="board" aria-label="画板">
+      <div class="board-head">
+        <div class="bh-left">
+          <span class="dot"></span>
+          <strong>我的画纸</strong>
+          <span class="bh-tag">水彩小景</span>
+          <span class="bh-size">480 × 600</span>
+        </div>
+        <div class="bh-right">
+          <button class="icon-btn" title="撤销">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+          </button>
+          <button class="icon-btn" title="重做">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg>
+          </button>
+          <button class="icon-btn" title="更多">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="board-body">
+
+        <!-- 工具栏：只有图标 -->
+        <aside class="tools" aria-label="画布工具">
+          <button class="tool is-active" id="toolBrush" title="画笔（点开选择笔刷）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14.6 4.6 4.8 4.8L8.2 20.6 3 21l.4-5.2L14.6 4.6Z"/><path d="m12.8 6.4 4.8 4.8"/></svg>
+          </button>
+          <button class="tool" title="橡皮">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 6.5-6.5a2 2 0 0 1 2.8 0l3.2 3.2a2 2 0 0 1 0 2.8L13 19H7l-3-3Z"/><path d="m9 11 5 5"/></svg>
+          </button>
+          <button class="tool" title="填充">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 12.5 5l6 6-7.5 7.5-6-6Z"/><path d="M9 8.5 6.5 6"/><path d="M19.5 16s1.5 1.8 1.5 3a1.5 1.5 0 0 1-3 0c0-1.2 1.5-3 1.5-3Z"/></svg>
+          </button>
+          <button class="tool" title="套索（圈住区域让 AI 只改这里）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c0-3.3 3.6-6 8-6s8 2.7 8 6-3.6 6-8 6c-1.6 0-3.1-.3-4.4-.9"/><path d="M7.6 17.2c-.7.9-1 1.7-1 2.3M4.4 16.4c-.3.8-.3 1.6 0 2.3"/></svg>
+          </button>
+          <button class="tool" title="移动 / 抓手">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 12V4.5a1.5 1.5 0 0 1 3 0V12"/><path d="M14 12V6.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5.2-3L4 15.5a1.6 1.6 0 0 1 2.7-1.7L8 15"/></svg>
+          </button>
+          <button class="tool" title="吸管取色">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m17.5 3.5 3 3-9.6 9.6-3.9.9.9-3.9 9.6-9.6Z"/><path d="m14.4 6.6 3 3"/><path d="M5 20l3-1"/></svg>
+          </button>
+          <div class="tool-sep"></div>
+          <button class="tool-color" id="curColor" title="当前颜色"></button>
+        </aside>
+
+        <!-- 画笔浮层：点画笔向右展开 -->
+        <div class="brush-pop" id="brushPop" role="dialog" aria-label="选择画笔">
+          <div class="bp-head">
+            <b>画笔</b><span>12 种</span>
+            <button class="bp-close" id="bpClose" aria-label="收起">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+          </div>
+
+          <div class="bp-list" id="bpList">
+            <button class="brush is-active" type="button" data-name="铅笔">
+              <span class="brush-prev"><svg class="bs bs-pencil" viewBox="0 0 70 22"><path d="M3 15c6-8 11 4 17-2s9 5 15-1 11 5 16-3 10 4 15-2"/></svg></span>
+              <span class="brush-info"><b>铅笔</b><span>细硬 · 2B</span></span>
+            </button>
+            <button class="brush" type="button" data-name="彩铅">
+              <span class="brush-prev"><svg class="bs bs-colyar" viewBox="0 0 70 22"><path d="M3 15c6-8 11 4 17-2s9 5 15-1 11 5 16-3 10 4 15-2"/></svg></span>
+              <span class="brush-info"><b>彩铅</b><span>颗粒 · 可叠色</span></span>
+            </button>
+            <button class="brush" type="button" data-name="马克笔">
+              <span class="brush-prev"><svg class="bs bs-marker" viewBox="0 0 70 22"><path d="M3 14c6-7 11 4 17-1s9 5 15-1 11 5 16-2 10 3 15-1"/></svg></span>
+              <span class="brush-info"><b>马克笔</b><span>方头 · 均匀</span></span>
+            </button>
+            <button class="brush" type="button" data-name="水彩笔">
+              <span class="brush-prev"><svg class="bs bs-water" viewBox="0 0 70 22"><path d="M3 14c6-7 11 4 17-1s9 5 15-1 11 5 16-2 10 3 15-1"/></svg></span>
+              <span class="brush-info"><b>水彩笔</b><span>湿润 · 半透明</span></span>
+            </button>
+            <button class="brush" type="button" data-name="水彩晕染">
+              <span class="brush-prev"><svg class="bs bs-wash" viewBox="0 0 70 22"><path d="M5 13c6-6 11 3 17-1s9 4 15-1 11 4 16-2 8 3 12-1"/></svg></span>
+              <span class="brush-info"><b>水彩晕染</b><span>大扩散 · 湿画</span></span>
+            </button>
+            <button class="brush" type="button" data-name="蜡笔">
+              <span class="brush-prev"><svg class="bs bs-crayon" viewBox="0 0 70 22"><path d="M3 15c6-8 11 4 17-2s9 5 15-1 11 5 16-3 10 4 15-2"/></svg></span>
+              <span class="brush-info"><b>蜡笔</b><span>粗糙 · 留白</span></span>
+            </button>
+            <button class="brush" type="button" data-name="油画棒">
+              <span class="brush-prev"><svg class="bs bs-oil" viewBox="0 0 70 22"><path d="M3 14c6-7 11 4 17-1s9 5 15-1 11 5 16-2 10 3 15-1"/></svg></span>
+              <span class="brush-info"><b>油画棒</b><span>厚重 · 笔痕</span></span>
+            </button>
+            <button class="brush" type="button" data-name="喷枪">
+              <span class="brush-prev"><svg class="bs bs-air" viewBox="0 0 70 22"><path d="M3 14c6-7 11 4 17-1s9 5 15-1 11 5 16-2 10 3 15-1"/></svg></span>
+              <span class="brush-info"><b>喷枪</b><span>雾状 · 柔边</span></span>
+            </button>
+            <button class="brush" type="button" data-name="勾线笔">
+              <span class="brush-prev"><svg class="bs bs-ink" viewBox="0 0 70 22"><path d="M3 15c6-8 11 4 17-2s9 5 15-1 11 5 16-3 10 4 15-2"/></svg></span>
+              <span class="brush-info"><b>勾线笔</b><span>极细 · 实心</span></span>
+            </button>
+            <button class="brush" type="button" data-name="毛笔">
+              <span class="brush-prev"><svg class="bs bs-brush" viewBox="0 0 70 22"><path d="M4 16c7-9 10 4 16-2s10 5 15-2 10 4 15-3 7 3 11-1"/></svg></span>
+              <span class="brush-info"><b>毛笔</b><span>提按 · 有锋</span></span>
+            </button>
+            <button class="brush" type="button" data-name="粉笔">
+              <span class="brush-prev"><svg class="bs bs-chalk" viewBox="0 0 70 22"><path d="M3 14c6-7 11 4 17-1s9 5 15-1 11 5 16-2 10 3 15-1"/></svg></span>
+              <span class="brush-info"><b>粉笔</b><span>干涩 · 灰粉</span></span>
+            </button>
+            <button class="brush" type="button" data-name="海绵">
+              <span class="brush-prev"><svg class="bs bs-sponge" viewBox="0 0 70 22"><path d="M4 13c6-6 10 3 16-1s9 4 14-1 10 4 15-2 9 3 14-1"/></svg></span>
+              <span class="brush-info"><b>海绵</b><span>纹理 · 按压</span></span>
+            </button>
+          </div>
+
+          <div class="bp-foot">
+            <div class="bp-size-row"><span>笔刷粗细</span><b><span id="sizeNum">16</span> px</b></div>
+            <input type="range" min="2" max="40" value="16" id="sizeRange" aria-label="笔刷粗细">
+            <div class="bp-colors">
+              <button class="sw is-active" style="background:#2b3440" aria-label="黑色"></button>
+              <button class="sw" style="background:#ff7a00" aria-label="橙色"></button>
+              <button class="sw" style="background:#36bffa" aria-label="蓝色"></button>
+              <button class="sw" style="background:#34d399" aria-label="绿色"></button>
+              <button class="sw" style="background:#f472b6" aria-label="粉色"></button>
+              <button class="sw" style="background:#ffe08a" aria-label="黄色"></button>
+              <button class="sw" style="background:#ffffff" aria-label="白色"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 画布舞台 -->
+        <div class="stage" id="stage">
+          <div class="paper-wrap" id="paperWrap">
+            <div class="paper">
+              <svg viewBox="0 0 480 600" role="img" aria-label="画纸内容：水彩小景">
+                <defs>
+                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#cfeaff"/>
+                    <stop offset=".52" stop-color="#e9f6ff"/>
+                    <stop offset="1" stop-color="#fdf6ec"/>
+                  </linearGradient>
+                  <radialGradient id="sunG" cx=".38" cy=".34" r=".72">
+                    <stop offset="0" stop-color="#ffe9a8"/>
+                    <stop offset=".55" stop-color="#ffcc5c"/>
+                    <stop offset="1" stop-color="#ff9f1c"/>
+                  </radialGradient>
+                  <linearGradient id="hillA" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#b9e0cf"/><stop offset="1" stop-color="#8acdb2"/>
+                  </linearGradient>
+                  <linearGradient id="hillB" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#9bd6bb"/><stop offset="1" stop-color="#6cbf9e"/>
+                  </linearGradient>
+                  <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#a9e08a"/><stop offset="1" stop-color="#63bf59"/>
+                  </linearGradient>
+                  <filter id="wc" x="-10%" y="-10%" width="120%" height="120%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="9" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+                  </filter>
+                </defs>
+
+                <g data-layer="bg">
+                  <rect width="480" height="600" fill="url(#sky)"/>
+                  <g fill="#ffffff" opacity=".9">
+                    <ellipse cx="106" cy="92" rx="42" ry="20"/>
+                    <ellipse cx="140" cy="82" rx="30" ry="16"/>
+                    <ellipse cx="72" cy="84" rx="24" ry="13"/>
+                    <ellipse cx="296" cy="216" rx="34" ry="14"/>
+                    <ellipse cx="326" cy="209" rx="22" ry="10"/>
+                  </g>
+                </g>
+
+                <g data-layer="main" filter="url(#wc)">
+                  <path d="M-10 402 96 292l64 68 52-46 118 96 40-30 120 92v128H-10Z" fill="url(#hillA)" opacity=".95"/>
+                  <path d="M120 410 236 274l72 62 44-32 138 106v40H120Z" fill="url(#hillB)" opacity=".9"/>
+                  <path d="M-10 424c70-16 132 8 196-4s128-22 194-8 106 6 110 4v190H-10Z" fill="url(#grass)"/>
+
+                  <g>
+                    <rect x="96" y="392" width="13" height="70" rx="5" fill="#9a6b45"/>
+                    <circle cx="102" cy="368" r="40" fill="#4fa96b"/>
+                    <circle cx="74" cy="388" r="27" fill="#5cba77"/>
+                    <circle cx="130" cy="386" r="24" fill="#45a061"/>
+                  </g>
+
+                  <g>
+                    <rect x="268" y="392" width="104" height="82" rx="4" fill="#fff6e8"/>
+                    <path d="M258 396 320 340l62 56Z" fill="#ef7f5c"/>
+                    <rect x="300" y="428" width="26" height="46" rx="3" fill="#c98b5c"/>
+                    <rect x="338" y="414" width="22" height="22" rx="3" fill="#ffe1a8" stroke="#d9a35c" stroke-width="2"/>
+                    <rect x="330" y="352" width="10" height="22" rx="2" fill="#c98b5c"/>
+                    <circle cx="322" cy="352" r="9" fill="#fff" opacity=".55"/>
+                  </g>
+
+                  <path d="M240 600c10-64 36-108 96-138" stroke="#f0e2c8" stroke-width="26" fill="none" opacity=".75" stroke-linecap="round"/>
+                </g>
+
+                <g data-layer="detail">
+                  <circle cx="378" cy="112" r="66" fill="#ffcc5c" opacity=".18"/>
+                  <circle cx="378" cy="112" r="44" fill="url(#sunG)"/>
+                  <g fill="#fff" opacity=".5">
+                    <circle cx="62" cy="196" r="5"/>
+                    <circle cx="84" cy="186" r="3.4"/>
+                    <circle cx="48" cy="212" r="3"/>
+                  </g>
+                  <g stroke="#5b6b73" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".8">
+                    <path d="M196 138c6-8 12-8 18 0"/>
+                    <path d="M214 138c6-8 12-8 18 0"/>
+                    <path d="M262 96c5-6 10-6 15 0"/>
+                    <path d="M277 96c5-6 10-6 15 0"/>
+                  </g>
+                  <g>
+                    <circle cx="152" cy="506" r="7" fill="#f472b6"/>
+                    <circle cx="146" cy="516" r="5" fill="#ff9fb8"/>
+                    <circle cx="160" cy="517" r="5" fill="#ff9fb8"/>
+                    <circle cx="152" cy="524" r="5" fill="#ff9fb8"/>
+                    <circle cx="152" cy="516" r="3" fill="#ffe08a"/>
+                  </g>
+                  <g>
+                    <circle cx="398" cy="470" r="6" fill="#ffffff"/>
+                    <circle cx="392" cy="480" r="4.4" fill="#f6f9ff"/>
+                    <circle cx="404" cy="481" r="4.4" fill="#f6f9ff"/>
+                    <circle cx="398" cy="488" r="4.4" fill="#f6f9ff"/>
+                    <circle cx="398" cy="480" r="2.6" fill="#ffd166"/>
+                  </g>
+                  <circle cx="330" cy="520" r="5" fill="#ffd166"/>
+                  <circle cx="352" cy="536" r="4" fill="#f472b6"/>
+                </g>
+
+                <g data-layer="line" fill="none" stroke="#4a5b62" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".55">
+                  <path d="M-10 424c70-16 132 8 196-4s128-22 194-8"/>
+                  <path d="M258 396 320 340l62 56"/>
+                  <path d="M268 474h104"/>
+                  <circle cx="102" cy="368" r="40"/>
+                  <path d="M96 462V392"/>
+                  <circle cx="378" cy="112" r="44"/>
+                  <path d="M60 150s14-26 34-26"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <div class="stage-hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 12V4.5a1.5 1.5 0 0 1 3 0V12"/><path d="M14 12V6.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5.2-3L4 15.5a1.6 1.6 0 0 1 2.7-1.7L8 15"/></svg>
+            拖拽移动 · 滚轮缩放
+          </div>
+
+          <div class="zoombar">
+            <button class="zbtn" id="zoomOut" aria-label="缩小">−</button>
+            <span class="zoom-val" id="zoomVal">86%</span>
+            <button class="zbtn" id="zoomIn" aria-label="放大">+</button>
+            <button class="zfit" id="zoomFit">适应</button>
+          </div>
+        </div>
+
+        <!-- 图层：紧凑列 -->
+        <div class="layers" role="group" aria-label="图层">
+          <div class="layers-head">
+            <strong>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>
+              图层
+            </strong>
+            <span class="cnt">4</span>
+            <button class="l-add" title="新建图层">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+
+          <div class="layer-row is-active" data-layer="line">
+            <span class="eye" title="显示/隐藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+            </span>
+            <span class="lthumb lthumb--line"></span>
+            <span class="lname">线稿层</span>
+            <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          </div>
+
+          <div class="layer-row" data-layer="detail">
+            <span class="eye" title="显示/隐藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+            </span>
+            <span class="lthumb lthumb--detail"></span>
+            <span class="lname">点缀层</span>
+            <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          </div>
+
+          <div class="layer-row" data-layer="main">
+            <span class="eye" title="显示/隐藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+            </span>
+            <span class="lthumb lthumb--main"></span>
+            <span class="lname">主体层</span>
+            <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          </div>
+
+          <div class="layer-row" data-layer="bg">
+            <span class="eye" title="显示/隐藏">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+            </span>
+            <span class="lthumb lthumb--bg"></span>
+            <span class="lname">背景层</span>
+            <span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          </div>
+
+          <div class="layer-blend">
+            <span>混合模式</span>
+            <em>正常 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></em>
+          </div>
+
+          <div class="layer-opacity">
+            <div class="lo-head"><span>不透明度</span><b>100%</b></div>
+            <input type="range" min="0" max="100" value="100" aria-label="图层不透明度">
+          </div>
+
+          <div class="layer-tip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="3.4"/></svg>
+            <span>点小眼睛可以单独隐藏一层。试试关掉「背景层」，只留下山和小屋。</span>
+          </div>
+
+          <div class="layers-foot">
+            <button type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              新建
+            </button>
+            <button type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+              删除
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== 右：AI 生成 ========== -->
+    <aside class="ai" aria-label="AI 生成">
+      <div class="ai-head">
+        <div class="ai-title">
+          <strong>AI 生成</strong>
+          <span class="ai-badge">灵感加速</span>
+          <button class="ref-pill" id="refPill"><i></i>参考画纸</button>
+        </div>
+        <p class="ai-sub">看着你的画来生成，结果可直接插回画纸。</p>
+      </div>
+
+      <div class="ai-body">
+        <div class="styles">
+          <button class="style-chip is-active">水彩绘本</button>
+          <button class="style-chip">国风线描</button>
+          <button class="style-chip">厚涂油画</button>
+          <button class="style-chip">3D 卡通</button>
+          <button class="style-chip">黏土质感</button>
+          <button class="style-chip">布贴拼画</button>
+        </div>
+
+        <p class="sec-label">生成结果 <em>主图 1 张 · 备选 3 张</em></p>
+
+        <div class="results">
+          <button class="result result-main is-current">
+            <span class="rbadge">当前选用</span>
+            <span class="rindex">1</span>
+            <svg viewBox="0 0 200 160" preserveAspectRatio="xMidYMid slice">
+              <rect width="200" height="160" fill="#e8f4ff"/>
+              <circle cx="152" cy="38" r="17" fill="#ffcc5c"/>
+              <path d="M0 110 46 66l40 44Z" fill="#a5d9c0"/>
+              <path d="M58 114 116 60l60 54Z" fill="#6cbf9e"/>
+              <path d="M0 112c40-12 74 6 108-2s62-10 92-2v52H0Z" fill="#7cc96a"/>
+              <rect x="42" y="100" width="7" height="24" fill="#9a6b45"/>
+              <circle cx="45" cy="94" r="13" fill="#4fa96b"/>
+              <rect x="120" y="102" width="34" height="24" fill="#fff6e8"/>
+              <path d="M116 104 137 88l21 16Z" fill="#ef7f5c"/>
+            </svg>
+            <span class="rtools"><span>插回画纸</span><span>再生成</span></span>
+          </button>
+
+          <div class="result-thumbs">
+          <button class="result">
+            <span class="rindex">2</span>
+            <svg viewBox="0 0 200 160" preserveAspectRatio="xMidYMid slice">
+              <rect width="200" height="160" fill="#ffe9d6"/>
+              <circle cx="58" cy="46" r="20" fill="#ffb26b"/>
+              <path d="M0 106 52 70l44 36Z" fill="#e8b48f"/>
+              <path d="M70 110 126 62l74 48Z" fill="#c98b6b"/>
+              <path d="M0 108c46-10 82 8 118-2s58-6 82 2v52H0Z" fill="#a8754f"/>
+              <rect x="128" y="92" width="8" height="26" fill="#7a4f34"/>
+              <circle cx="132" cy="86" r="14" fill="#8a5c3d"/>
+            </svg>
+            <span class="rtools"><span>插回画纸</span><span>再生成</span></span>
+          </button>
+
+          <button class="result">
+            <span class="rindex">3</span>
+            <svg viewBox="0 0 200 160" preserveAspectRatio="xMidYMid slice">
+              <rect width="200" height="160" fill="#f7f2e4"/>
+              <circle cx="150" cy="40" r="15" fill="none" stroke="#c86b4a" stroke-width="2"/>
+              <path d="M0 108 54 68l42 40Z" fill="#dfe6d8" stroke="#8f9a88" stroke-width="1.4"/>
+              <path d="M62 112 122 64l70 48Z" fill="#cdd8c6" stroke="#8f9a88" stroke-width="1.4"/>
+              <path d="M0 110c44-8 78 6 112-2s64-6 88 2v50H0Z" fill="#e6ecd9"/>
+              <path d="M128 92 150 78l22 14Z" fill="#9aa596"/>
+              <path d="M112 114V96" stroke="#8f9a88" stroke-width="1.8"/>
+              <circle cx="112" cy="92" r="9" fill="none" stroke="#8f9a88" stroke-width="1.6"/>
+              <path d="M40 124V102" stroke="#8f9a88" stroke-width="1.8"/>
+              <circle cx="40" cy="98" r="10" fill="none" stroke="#8f9a88" stroke-width="1.6"/>
+            </svg>
+            <span class="rtools"><span>插回画纸</span><span>再生成</span></span>
+          </button>
+
+          <button class="result">
+            <span class="rindex">4</span>
+            <svg viewBox="0 0 200 160" preserveAspectRatio="xMidYMid slice">
+              <rect width="200" height="160" fill="#dbe9f5"/>
+              <circle cx="44" cy="42" r="16" fill="#ffe08a"/>
+              <path d="M0 102 48 62l46 40Z" fill="#7fa8b8"/>
+              <path d="M66 106 128 58l72 48Z" fill="#4f7f92"/>
+              <path d="M0 106c42-12 80 4 114-4s60-8 86 0v58H0Z" fill="#3f6b57"/>
+              <rect x="136" y="90" width="9" height="28" fill="#2f4636"/>
+              <circle cx="140" cy="82" r="15" fill="#2f6b4a"/>
+              <rect x="40" y="88" width="30" height="20" fill="#f2e6d0"/>
+              <path d="M36 90 55 76l19 14Z" fill="#c2593f"/>
+            </svg>
+            <span class="rtools"><span>插回画纸</span><span>再生成</span></span>
+          </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ========== 底部提示词 ========== -->
+  <footer class="composer">
+    <div class="prompt-bar">
+      <button class="ref-chip" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 15 3.4-3.6 3 3L16 11l4 4"/><circle cx="8.4" cy="8.6" r="1.4"/></svg>
+        引用当前画布
+      </button>
+      <input class="prompt-input" type="text" value="把画纸上的小屋画成水彩绘本风格，暖色黄昏，加一点雾气" aria-label="提示词">
+      <span class="count">今日剩余 24 次</span>
+      <button class="gen-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></svg>
+        开始生成
+      </button>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  /* ---------- 画笔浮层开关 ---------- */
+  var pop = document.getElementById('brushPop');
+  var toolBrush = document.getElementById('toolBrush');
+  var toolOthers = document.querySelectorAll('.tool:not(#toolBrush)');
+
+  toolBrush.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var closed = pop.classList.toggle('is-closed');
+    toolBrush.classList.add('is-active');
+    toolOthers.forEach(function (x) { x.classList.remove('is-active'); });
+    if (!closed) pop.scrollTop = 0;
+  });
+  document.getElementById('bpClose').addEventListener('click', function () {
+    pop.classList.add('is-closed');
+  });
+  toolOthers.forEach(function (t) {
+    t.addEventListener('click', function () {
+      toolOthers.forEach(function (x) { x.classList.remove('is-active'); });
+      t.classList.add('is-active');
+      toolBrush.classList.remove('is-active');
+      pop.classList.add('is-closed');
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (!pop.contains(e.target) && !toolBrush.contains(e.target)) pop.classList.add('is-closed');
+  });
+  pop.addEventListener('click', function (e) { e.stopPropagation(); });
+
+  /* ---------- 笔刷选择 ---------- */
+  var brushes = document.querySelectorAll('.brush');
+  brushes.forEach(function (b) {
+    b.addEventListener('click', function () {
+      brushes.forEach(function (x) { x.classList.remove('is-active'); });
+      b.classList.add('is-active');
+      if (toolBrush) toolBrush.title = '画笔：' + b.dataset.name;
+    });
+  });
+
+  /* ---------- 颜色 ---------- */
+  var sws = document.querySelectorAll('.sw');
+  var curColor = document.getElementById('curColor');
+  sws.forEach(function (s) {
+    s.addEventListener('click', function () {
+      sws.forEach(function (x) { x.classList.remove('is-active'); });
+      s.classList.add('is-active');
+      curColor.style.background = getComputedStyle(s).backgroundColor;
+    });
+  });
+
+  /* ---------- 笔刷粗细 ---------- */
+  var range = document.getElementById('sizeRange');
+  var num = document.getElementById('sizeNum');
+  range.addEventListener('input', function () { num.textContent = range.value; });
+
+  /* ---------- 图层显隐 / 选中 ---------- */
+  var rows = document.querySelectorAll('.layer-row');
+  var stageSvg = document.querySelector('.paper svg');
+  rows.forEach(function (row) {
+    row.querySelector('.eye').addEventListener('click', function (e) {
+      e.stopPropagation();
+      row.classList.toggle('is-off');
+      var g = stageSvg.querySelector('[data-layer="' + row.dataset.layer + '"]');
+      if (g) g.style.display = row.classList.contains('is-off') ? 'none' : '';
+    });
+    row.addEventListener('click', function () {
+      rows.forEach(function (r) { r.classList.remove('is-active'); });
+      row.classList.add('is-active');
+    });
+  });
+
+  /* ---------- 画布拖拽 + 缩放 ---------- */
+  var stage = document.getElementById('stage');
+  var wrap = document.getElementById('paperWrap');
+  var zoomVal = document.getElementById('zoomVal');
+  var zoom = 0.86, tx = 0, ty = 0, dragging = false, sx = 0, sy = 0, stx = 0, sty = 0;
+  var MIN = 0.3, MAX = 3;
+
+  function apply() {
+    wrap.style.setProperty('--zoom', zoom);
+    wrap.style.setProperty('--tx', tx + 'px');
+    wrap.style.setProperty('--ty', ty + 'px');
+    zoomVal.textContent = Math.round(zoom * 100) + '%';
+  }
+  function clampZoom(z) { return Math.min(MAX, Math.max(MIN, z)); }
+
+  stage.addEventListener('pointerdown', function (e) {
+    if (e.target.closest('.zoombar, .stage-hint')) return;
+    dragging = true;
+    stage.classList.add('is-dragging');
+    sx = e.clientX; sy = e.clientY; stx = tx; sty = ty;
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    tx = stx + (e.clientX - sx);
+    ty = sty + (e.clientY - sy);
+    apply();
+  });
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    stage.classList.remove('is-dragging');
+    if (e && e.pointerId !== undefined && stage.hasPointerCapture(e.pointerId)) stage.releasePointerCapture(e.pointerId);
+  }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+
+  stage.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    zoom = clampZoom(zoom * (1 - e.deltaY * 0.0014));
+    apply();
+  }, { passive: false });
+
+  document.getElementById('zoomIn').addEventListener('click', function () { zoom = clampZoom(zoom + 0.1); apply(); });
+  document.getElementById('zoomOut').addEventListener('click', function () { zoom = clampZoom(zoom - 0.1); apply(); });
+  document.getElementById('zoomFit').addEventListener('click', function () { zoom = 0.86; tx = 0; ty = 0; apply(); });
+
+  /* ---------- 参考画纸开关 ---------- */
+  var pill = document.getElementById('refPill');
+  pill.addEventListener('click', function () { pill.classList.toggle('is-off'); });
+
+  /* ---------- 风格单选 ---------- */
+  var chips = document.querySelectorAll('.style-chip');
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      chips.forEach(function (x) { x.classList.remove('is-active'); });
+      c.classList.add('is-active');
+    });
+  });
+
+  /* ---------- 点下方小图：与主图互换（相当于把这张选为当前） ---------- */
+  var mainCard = document.querySelector('.result-main');
+  var thumbs = document.querySelectorAll('.result-thumbs .result');
+  thumbs.forEach(function (t) {
+    t.addEventListener('click', function () {
+      var mainSvg = mainCard.querySelector('svg');
+      var thumbSvg = t.querySelector('svg');
+      if (!mainSvg || !thumbSvg) return;
+      /* 必须用占位节点中转：先把主图 svg 摘下，若直接 replaceChild(thumbSvg, mainSvg)
+         会把 thumbSvg 移走，紧接着在原位置换回时会抛 NotFoundError，缩略图变空白 */
+      var hole = document.createElement('span');
+      mainCard.replaceChild(hole, mainSvg);
+      t.replaceChild(mainSvg, thumbSvg);
+      mainCard.replaceChild(thumbSvg, hole);
+
+      /* 序号跟着画面一起走 */
+      var mi = mainCard.querySelector('.rindex');
+      var ti = t.querySelector('.rindex');
+      if (mi && ti) {
+        var tmp = mi.textContent;
+        mi.textContent = ti.textContent;
+        ti.textContent = tmp;
+      }
+    });
+  });
+
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案2 · 报告工作流库（后台效果图）</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: #f4f6fa;
+    color: #1f2d3d;
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ============ 左侧导航（模拟后台，弱化） ============ */
+  .side {
+    width: 208px; flex: 0 0 208px;
+    background: #fff; border-right: 1px solid #e6ecf5;
+    padding: 18px 12px; display: flex; flex-direction: column; gap: 3px;
+  }
+  .side .logo { display: flex; align-items: center; gap: 9px; padding: 4px 8px 18px; }
+  .side .logo i {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: linear-gradient(135deg, #ff7a00, #ff9f1c);
+  }
+  .side .logo b { font-size: 13.5px; letter-spacing: .2px; }
+  .side .grp { margin: 10px 8px 5px; font-size: 11px; font-weight: 700; color: #a3b1c4; letter-spacing: .8px; }
+  .side a {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; border-radius: 8px;
+    color: #4a6484; text-decoration: none; font-size: 13px;
+  }
+  .side a::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: #cfd9e6; flex: 0 0 5px;
+  }
+  .side a.on { background: #eef4ff; color: #1768d4; font-weight: 700; }
+  .side a.on::before { background: #1768d4; }
+
+  /* ============ 主区 ============ */
+  .main { flex: 1; min-width: 0; padding: 22px 30px 40px; }
+
+  .crumb { font-size: 12.5px; color: #8fa0b6; display: flex; align-items: center; gap: 7px; }
+  .crumb b { color: #4a6484; font-weight: 700; }
+  .crumb button {
+    border: 0; background: none; padding: 0 2px; color: #1768d4;
+    font-size: 12.5px; font-weight: 700;
+  }
+
+  .head { display: flex; align-items: flex-end; gap: 14px; margin: 9px 0 18px; }
+  .head h1 { margin: 0; font-size: 21px; letter-spacing: -.2px; }
+  .head p { margin: 0 0 2px; color: #7d8ea6; font-size: 12.5px; }
+  .head .spacer { flex: 1; }
+
+  /* ============ 横排工具条：多选 / 设置 / 删除 ============ */
+  .toolbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 8px;
+    min-height: 54px; padding: 8px 12px;
+    background: #fff; border: 1px solid #e6ecf5; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(31, 45, 61, .04);
+  }
+  .toolbar .sel-info {
+    display: none; align-items: center; gap: 9px;
+    padding-left: 4px; font-size: 12.5px; color: #1768d4; font-weight: 700;
+  }
+  .toolbar .sel-info em { font-style: normal; color: #7d8ea6; font-weight: 400; }
+  .toolbar.selecting .sel-info { display: flex; }
+  .toolbar .sum {
+    display: flex; align-items: center; gap: 8px;
+    padding-left: 4px; font-size: 12.5px; color: #7d8ea6;
+  }
+  .toolbar .sum b { color: #3b567a; font-weight: 700; }
+  .toolbar .sum i {
+    width: 1px; height: 12px; background: #e0e8f3; display: block; margin: 0 3px;
+  }
+  .toolbar.selecting .sum { display: none; }
+  .toolbar .spacer { flex: 1; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: 34px; padding: 0 13px;
+    border: 1px solid #dbe5f2; border-radius: 8px;
+    background: #fff; color: #3b567a; font-size: 13px; font-weight: 600;
+    transition: .14s;
+  }
+  .btn:hover { border-color: #b9cdea; background: #f8fbff; }
+  .btn svg { width: 15px; height: 15px; flex: 0 0 15px; }
+  .btn.primary {
+    border-color: #1768d4; background: #1768d4; color: #fff;
+    box-shadow: 0 4px 12px rgba(23, 104, 212, .22);
+  }
+  .btn.primary:hover { background: #1158bd; }
+  .btn.danger { color: #c0392b; border-color: #f0cfc9; }
+  .btn.danger:hover { background: #fdf3f1; border-color: #e5b0a6; }
+  .btn.on { border-color: #1768d4; background: #eef4ff; color: #1768d4; }
+  .btn:disabled { opacity: .42; cursor: not-allowed; }
+  .btn:disabled:hover { background: #fff; border-color: #dbe5f2; }
+
+  .search {
+    display: flex; align-items: center; gap: 7px;
+    height: 34px; padding: 0 12px; margin-left: 4px;
+    border: 1px solid #e6ecf5; border-radius: 8px; background: #f8fafd;
+    color: #9aa9bd; font-size: 12.5px; min-width: 178px;
+  }
+  .search svg { width: 14px; height: 14px; }
+
+  /* ============ 下拉滚动列表 ============ */
+  .list {
+    margin-top: 14px; padding-right: 4px;
+    display: flex; flex-direction: column; gap: 10px;
+    max-height: calc(100vh - 218px); overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  .list::-webkit-scrollbar { width: 8px; }
+  .list::-webkit-scrollbar-thumb { background: #d8e2ef; border-radius: 8px; }
+  .list::-webkit-scrollbar-thumb:hover { background: #c2d1e4; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 0px 86px minmax(0, 1fr) 132px 96px 74px 40px;
+    align-items: center; gap: 14px;
+    padding: 12px 14px;
+    background: #fff; border: 1px solid #e6ecf5; border-radius: 12px;
+    transition: .16s; cursor: pointer;
+  }
+  .row:hover { border-color: #c9dcf5; box-shadow: 0 6px 20px rgba(31, 45, 61, .07); transform: translateY(-1px); }
+  .row.picked { border-color: #1768d4; background: #f7faff; box-shadow: 0 0 0 2px rgba(23, 104, 212, .12); }
+  .toolbar.selecting ~ .list .row:not(.add) { grid-template-columns: 26px 86px minmax(0, 1fr) 132px 96px 74px 40px; }
+
+  .cb { width: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .toolbar.selecting ~ .list .row:not(.add) .cb { width: 26px; }
+  .cb i {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1.5px solid #ccd8e8; background: #fff; display: block; position: relative;
+  }
+  .row.picked .cb i { background: #1768d4; border-color: #1768d4; }
+  .row.picked .cb i::after {
+    content: ""; position: absolute; left: 5px; top: 1.5px;
+    width: 5px; height: 9px; border: 2px solid #fff; border-top: 0; border-left: 0;
+    transform: rotate(43deg);
+  }
+
+  /* 缩略图：封面在前 + 2 张内页在后 */
+  .thumb {
+    position: relative; width: 86px; height: 62px;
+    border-radius: 8px; overflow: hidden; flex: 0 0 86px;
+    border: 1px solid rgba(0, 0, 0, .06); background: #f3f6fa;
+  }
+  .thumb .cover {
+    position: absolute; left: 2px; top: 2px; width: 34px; height: 58px;
+    border-radius: 4px; overflow: hidden; z-index: 3;
+    box-shadow: 0 2px 7px rgba(31, 45, 61, .22); transform: rotate(-2deg);
+    background: #fff;
+  }
+  .thumb .cover svg { display: block; width: 100%; height: 100%; }
+  .thumb .cover.is-empty {
+    border: 1px dashed #c6d4e6; background: #fff;
+    display: grid; place-items: center;
+    color: #b7c5d7; font-size: 15px; font-weight: 700;
+  }
+  .thumb .pg {
+    position: absolute; top: 8px; width: 22px; height: 50px;
+    border-radius: 3px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(31, 45, 61, .13);
+  }
+  .thumb .pg1 { left: 39px; z-index: 2; }
+  .thumb .pg2 { left: 59px; z-index: 1; }
+  .thumb .pg span { display: block; border-radius: 2px; }
+
+  .info { min-width: 0; }
+  .info .nm {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 700; letter-spacing: -.1px;
+  }
+  .info .nm i {
+    font-style: normal; font-size: 10.5px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px; background: #eef3f8; color: #6f819a;
+    letter-spacing: .2px;
+  }
+  .info .desc {
+    margin-top: 6px; font-size: 12.5px; color: #8496ad;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .info .flow {
+    margin-top: 7px; display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: #a3b1c4; flex-wrap: wrap;
+  }
+  .info .flow b { font-weight: 600; color: #6f819a; }
+  .info .flow u { text-decoration: none; color: #c3cfdd; }
+
+  .meta { font-size: 12px; color: #7d8ea6; line-height: 1.75; }
+  .meta b { color: #3b567a; font-weight: 700; }
+
+  .status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700;
+    white-space: nowrap;
+  }
+  .status::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .s-live { background: #e5f7ed; color: #198754; }
+  .s-test { background: #fff3df; color: #bf7415; }
+  .s-draft { background: #eef3f8; color: #718198; }
+
+  .sw { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .sw small { font-size: 10.5px; color: #a3b1c4; }
+  .sw button {
+    width: 38px; height: 21px; border-radius: 999px; border: 0;
+    background: #dde5ef; position: relative; transition: .18s; padding: 0;
+  }
+  .sw button::after {
+    content: ""; position: absolute; top: 2.5px; left: 2.5px;
+    width: 16px; height: 16px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .2); transition: .18s;
+  }
+  .sw button.on { background: #1768d4; }
+  .sw button.on::after { left: 19.5px; }
+
+  .more {
+    width: 30px; height: 30px; min-height: 0; border-radius: 7px;
+    border: 1px solid transparent; background: none; color: #9aa9bd;
+    display: grid; place-items: center; font-size: 17px; letter-spacing: 1px;
+  }
+  .more:hover { background: #f2f6fc; border-color: #e6ecf5; color: #4a6484; }
+
+  /* 新建占位行 */
+  .row.add {
+    grid-template-columns: 1fr; justify-items: center; cursor: pointer;
+    border-style: dashed; border-color: #d5e0ee; background: #fbfcfe;
+    padding: 20px; color: #8194ac; font-size: 13px; font-weight: 600;
+  }
+  .row.add:hover { border-color: #1768d4; color: #1768d4; background: #f7faff; }
+  .row.add span { display: flex; align-items: center; gap: 7px; }
+  .row.add span::before { content: "+"; font-size: 17px; font-weight: 400; }
+
+  /* ============ 设置抽屉 ============ */
+  .mask {
+    position: fixed; inset: 0; background: rgba(24, 38, 56, .34);
+    opacity: 0; pointer-events: none; transition: .2s; z-index: 40;
+  }
+  .mask.show { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 396px;
+    background: #fff; z-index: 41; transform: translateX(100%);
+    transition: transform .26s cubic-bezier(.22, .7, .3, 1);
+    box-shadow: -12px 0 40px rgba(24, 38, 56, .14);
+    display: flex; flex-direction: column;
+  }
+  .drawer.show { transform: translateX(0); }
+  .drawer header {
+    padding: 18px 20px; border-bottom: 1px solid #eef2f8;
+    display: flex; align-items: center;
+  }
+  .drawer header b { font-size: 15px; }
+  .drawer header button {
+    margin-left: auto; border: 0; background: none; color: #9aa9bd;
+    font-size: 19px; line-height: 1; padding: 4px 6px;
+  }
+  .drawer .body { flex: 1; overflow-y: auto; padding: 6px 20px 20px; }
+  .fld { padding: 14px 0; border-bottom: 1px solid #f3f6fa; }
+  .fld:last-child { border-bottom: 0; }
+  .fld > label { display: block; font-size: 12.5px; font-weight: 700; color: #4a6484; margin-bottom: 8px; }
+  .fld input[type=text], .fld select {
+    width: 100%; height: 38px; padding: 0 11px;
+    border: 1px solid #dbe5f2; border-radius: 8px; background: #fff;
+    font-family: inherit; font-size: 13.5px; color: #1f2d3d;
+  }
+  .fld .hint { margin-top: 7px; font-size: 11.5px; color: #a3b1c4; line-height: 1.6; }
+  .seg { display: flex; gap: 7px; }
+  .seg button {
+    flex: 1; min-height: 34px; border: 1px solid #dbe5f2; border-radius: 8px;
+    background: #fff; color: #6f819a; font-size: 12.5px; font-weight: 600;
+  }
+  .seg button.on { border-color: #1768d4; background: #eef4ff; color: #1768d4; }
+
+  /* 封面图编辑 */
+  .fld > label em {
+    font-style: normal; font-weight: 400; color: #a3b1c4; margin-left: 6px;
+  }
+  .cover-edit { display: flex; gap: 14px; align-items: flex-start; }
+  .cover-box {
+    width: 96px; height: 128px; flex: 0 0 96px;
+    border-radius: 8px; overflow: hidden; background: #f3f6fa;
+    border: 1px solid #e2eaf4; position: relative;
+  }
+  .cover-box svg { display: block; width: 100%; height: 100%; }
+  .cover-box .badge {
+    position: absolute; left: 6px; bottom: 6px;
+    padding: 2px 6px; border-radius: 4px;
+    background: rgba(24, 38, 56, .62); color: #fff;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .2px;
+  }
+  .cover-ops { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .cover-ops .btn { width: 100%; justify-content: center; min-height: 32px; font-size: 12.5px; padding: 0 10px; }
+  .cover-ops .btn svg { width: 14px; height: 14px; flex: 0 0 14px; }
+  .cover-ops .btn.ai { border-color: #d6c6fb; color: #6d3fd1; background: #faf7ff; }
+  .cover-ops .btn.ai:hover { background: #f3ecff; border-color: #c3acf7; }
+  .cover-ops .btn.ghost { border-style: dashed; color: #7d8ea6; }
+  .cover-ops .hint { margin: 1px 0 0; }
+  .drawer footer {
+    padding: 14px 20px; border-top: 1px solid #eef2f8;
+    display: flex; gap: 9px; justify-content: flex-end;
+  }
+  .tip {
+    margin-top: 16px; padding: 11px 13px; border-radius: 9px;
+    background: #f5f9ff; border: 1px solid #dbe9fb; color: #5c7ba3;
+    font-size: 11.5px; line-height: 1.7;
+  }
+  .tip b { color: #1768d4; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- 左导航 -->
+  <aside class="side">
+    <div class="logo"><i></i><b>美佳美画 · 后台</b></div>
+    <div class="grp">教学管理</div>
+    <a href="#">校区与班级</a>
+    <a href="#">学员档案</a>
+    <a href="#">课程设置</a>
+    <div class="grp">内容中心</div>
+    <a href="#">H5 报告中心</a>
+    <a href="#" class="on">方案 2 · 工作流</a>
+    <a href="#">AI 玩法中心</a>
+    <a href="#">素材库</a>
+    <div class="grp">系统</div>
+    <a href="#">模型配置</a>
+    <a href="#">智能体配置</a>
+  </aside>
+
+  <main class="main">
+    <div class="crumb">
+      <button>H5 报告中心</button>
+      <span>/</span>
+      <b>方案 2 · 报告工作流</b>
+    </div>
+
+    <div class="head">
+      <div>
+        <h1>报告工作流库</h1>
+        <p>每种风格一条工作流。学生在前端选定模板后，系统按这条流程自动出报告。</p>
+      </div>
+      <div class="spacer"></div>
+      <div class="search">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14"/></svg>
+        搜索工作流
+      </div>
+    </div>
+
+    <!-- 横排工具条 -->
+    <div class="toolbar" id="toolbar">
+      <div class="sel-info">
+        <span id="selCount">已选 0 项</span>
+        <em>勾选后可批量删除或批量设置</em>
+      </div>
+      <div class="sum">
+        <span>共 <b>5</b> 条</span><i></i><span>已发布 <b>2</b> 条</span><i></i><span>学生可选 <b>2</b> 条</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn" id="btnMulti">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.2" y="2.2" width="11.6" height="11.6" rx="3"/><path d="M5.2 8.2 7.2 10.2 11 6.2"/></svg>
+        多选
+      </button>
+      <button class="btn" id="btnSetting">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.8v1.6M8 12.6v1.6M14.2 8h-1.6M3.4 8H1.8M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1M12.4 12.4l-1.1-1.1M4.7 4.7 3.6 3.6"/></svg>
+        设置
+      </button>
+      <button class="btn danger" id="btnDel" disabled>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.6 4.3h10.8M6 4.3V2.8h4v1.5M4.2 4.3l.7 9h6.2l.7-9"/></svg>
+        删除
+      </button>
+      <button class="btn primary" id="btnNew">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8 3v10M3 8h10"/></svg>
+        新建工作流
+      </button>
+    </div>
+
+    <!-- 下拉滚动列表 -->
+    <div class="list" id="list">
+
+      <!-- 1 工业设计 -->
+      <article class="row" data-name="工业设计风格报告">
+        <div class="cb"><i></i></div>
+        <div class="thumb">
+          <div class="cover">
+            <svg viewBox="0 0 34 58" xmlns="http://www.w3.org/2000/svg">
+              <rect width="34" height="58" fill="#3f5b78"/>
+              <circle cx="26" cy="14" r="9" fill="#5f7d9c" opacity=".6"/>
+              <rect x="4" y="5" width="13" height="2.4" rx="1.2" fill="#dce7f2"/>
+              <path d="M4.5 41 L12 25 L19.5 41 Z" fill="#8fa8c2"/>
+              <path d="M15 41 L21 31 L27 41 Z" fill="#b3c8dc" opacity=".8"/>
+              <rect x="4" y="45" width="20" height="2.4" rx="1.2" fill="#fff"/>
+              <rect x="4" y="50" width="12" height="1.6" rx=".8" fill="#a8bed4"/>
+            </svg>
+          </div>
+          <div class="pg pg1" style="background:#fff;padding:3px 2px">
+            <span style="height:22px;background:#b9c9da;border-radius:2px"></span>
+            <span style="height:3px;width:80%;background:#e3ebf3;margin-top:3px"></span>
+            <span style="height:3px;width:56%;background:#e3ebf3;margin-top:2px"></span>
+          </div>
+          <div class="pg pg2" style="background:#3f5b78;padding:3px 2px">
+            <span style="height:4px;width:70%;background:#fff;margin-bottom:3px"></span>
+            <span style="height:20px;background:#7d97b3;border-radius:2px"></span>
+          </div>
+        </div>
+        <div class="info">
+          <div class="nm">工业设计风格报告 <i>已发布 v3</i></div>
+          <div class="desc">冷灰工业风，强调结构与材质。适合立体构成、产品造型、模型制作类课程。</div>
+          <div class="flow"><b>手稿</b><u>→</u><b>线稿强化</b><u>→</u><b>材质渲染</b><u>→</u><b>成品图</b><u>→</u>排版</div>
+        </div>
+        <div class="meta">8 节点 · 5 页<br><b>约 6 分钟</b></div>
+        <div><span class="status s-live">已发布</span></div>
+        <div class="sw"><button class="on"></button><small>学生可选</small></div>
+        <button class="more">⋯</button>
+      </article>
+
+      <!-- 2 动漫风格 -->
+      <article class="row" data-name="动漫风格报告">
+        <div class="cb"><i></i></div>
+        <div class="thumb">
+          <div class="cover">
+            <svg viewBox="0 0 34 58" xmlns="http://www.w3.org/2000/svg">
+              <rect width="34" height="58" fill="#8b5cf6"/>
+              <circle cx="25" cy="15" r="10" fill="#b794fa" opacity=".7"/>
+              <circle cx="14" cy="30" r="8" fill="#a78bfa" opacity=".9"/>
+              <rect x="4" y="5" width="12" height="2.4" rx="1.2" fill="#fff"/>
+              <rect x="4" y="45" width="22" height="2.4" rx="1.2" fill="#fff"/>
+              <rect x="4" y="50" width="14" height="1.6" rx=".8" fill="#e9dcff"/>
+            </svg>
+          </div>
+          <div class="pg pg1" style="background:#fff;padding:3px 2px">
+            <span style="height:22px;background:#e2ccfb;border-radius:2px"></span>
+            <span style="height:3px;width:72%;background:#f0e4fd;margin-top:3px"></span>
+          </div>
+          <div class="pg pg2" style="background:#8b5cf6;padding:3px 2px">
+            <span style="height:4px;width:64%;background:#fff;margin-bottom:3px"></span>
+            <span style="height:18px;background:#b794fa;border-radius:2px"></span>
+          </div>
+        </div>
+        <div class="info">
+          <div class="nm">动漫风格报告 <i>已发布 v2</i></div>
+          <div class="desc">高饱和二次元配色，角色立绘夹页。适合IP形象设计、角色设定、漫画分镜类课程。</div>
+          <div class="flow"><b>手稿</b><u>→</u><b>角色转绘</b><u>→</u><b>多方案对比</b><u>→</u><b>定稿</b><u>→</u>排版</div>
+        </div>
+        <div class="meta">6 节点 · 4 页<br><b>约 4 分钟</b></div>
+        <div><span class="status s-live">已发布</span></div>
+        <div class="sw"><button class="on"></button><small>学生可选</small></div>
+        <button class="more">⋯</button>
+      </article>
+
+      <!-- 3 服装设计 -->
+      <article class="row" data-name="服装设计报告">
+        <div class="cb"><i></i></div>
+        <div class="thumb">
+          <div class="cover is-empty">+</div>
+          <div class="pg pg1" style="background:#fff;padding:3px 2px">
+            <span style="height:22px;background:#ded2be;border-radius:2px"></span>
+            <span style="height:3px;width:64%;background:#efe8de;margin-top:3px"></span>
+          </div>
+          <div class="pg pg2" style="background:#1f2d3d;padding:3px 2px">
+            <span style="height:4px;width:60%;background:#e8dcc9;margin-bottom:3px"></span>
+            <span style="height:18px;background:#4a5a6d;border-radius:2px"></span>
+          </div>
+        </div>
+        <div class="info">
+          <div class="nm">服装设计报告 <i style="background:#fff3df;color:#bf7415">测试中</i></div>
+          <div class="desc">米白配黑，布料质感底纹。适合服饰创意、面料拼贴、人物造型类课程。</div>
+          <div class="flow"><b>手稿</b><u>→</u><b>款式提取</b><u>→</u><b>面料重建</b><u>→</u><b>试穿效果</b><u>→</u>排版</div>
+        </div>
+        <div class="meta">10 节点 · 6 页<br><b>约 8 分钟</b></div>
+        <div><span class="status s-test">测试中</span></div>
+        <div class="sw"><button></button><small>学生可选</small></div>
+        <button class="more">⋯</button>
+      </article>
+
+      <!-- 4 绘本插画 -->
+      <article class="row" data-name="绘本插画风格报告">
+        <div class="cb"><i></i></div>
+        <div class="thumb">
+          <div class="cover">
+            <svg viewBox="0 0 34 58" xmlns="http://www.w3.org/2000/svg">
+              <rect width="34" height="58" fill="#f3f7f3"/>
+              <rect x="0" y="34" width="34" height="24" fill="#cbe7d0"/>
+              <circle cx="11" cy="20" r="7" fill="#8fce9f" opacity=".85"/>
+              <path d="M20 34 q5 -11 10 -2 v2 z" fill="#2f7d4f" opacity=".6"/>
+              <rect x="4" y="5" width="14" height="2.4" rx="1.2" fill="#2f7d4f"/>
+              <rect x="4" y="42" width="20" height="2.2" rx="1.1" fill="#2f7d4f"/>
+              <rect x="4" y="47" width="12" height="1.6" rx=".8" fill="#6fae83"/>
+            </svg>
+          </div>
+          <div class="pg pg1" style="background:#fff;padding:3px 2px">
+            <span style="height:22px;background:#cbe7d0;border-radius:2px"></span>
+            <span style="height:3px;width:70%;background:#e3f2e5;margin-top:3px"></span>
+          </div>
+          <div class="pg pg2" style="background:#2f7d4f;padding:3px 2px">
+            <span style="height:4px;width:62%;background:#fff;margin-bottom:3px"></span>
+            <span style="height:18px;background:#66a87c;border-radius:2px"></span>
+          </div>
+        </div>
+        <div class="info">
+          <div class="nm">绘本插画风格报告 <i style="background:#eef3f8;color:#718198">草稿</i></div>
+          <div class="desc">温柔水彩绘本风，大字少字。适合低龄启蒙、故事创作、亲子共读类课程。</div>
+          <div class="flow"><b>手稿</b><u>→</u><b>绘本化</b><u>→</u><b>场景延展</b><u>→</u>排版</div>
+        </div>
+        <div class="meta">5 节点 · 4 页<br><b>约 3 分钟</b></div>
+        <div><span class="status s-draft">草稿</span></div>
+        <div class="sw"><button></button><small>学生可选</small></div>
+        <button class="more">⋯</button>
+      </article>
+
+      <!-- 5 黏土手作 -->
+      <article class="row" data-name="黏土手作风格报告">
+        <div class="cb"><i></i></div>
+        <div class="thumb">
+          <div class="cover">
+            <svg viewBox="0 0 34 58" xmlns="http://www.w3.org/2000/svg">
+              <rect width="34" height="58" fill="#fbf3e8"/>
+              <circle cx="17" cy="26" r="11" fill="#e0a163" opacity=".9"/>
+              <circle cx="13" cy="22" r="4" fill="#f2cba4" opacity=".85"/>
+              <rect x="4" y="5" width="13" height="2.4" rx="1.2" fill="#c2731f"/>
+              <rect x="4" y="43" width="21" height="2.4" rx="1.2" fill="#c2731f"/>
+              <rect x="4" y="48" width="13" height="1.6" rx=".8" fill="#d99b5e"/>
+            </svg>
+          </div>
+          <div class="pg pg1" style="background:#fff;padding:3px 2px">
+            <span style="height:22px;background:#f2d6b6;border-radius:2px"></span>
+            <span style="height:3px;width:66%;background:#fbeedd;margin-top:3px"></span>
+          </div>
+          <div class="pg pg2" style="background:#c2731f;padding:3px 2px">
+            <span style="height:4px;width:58%;background:#fff;margin-bottom:3px"></span>
+            <span style="height:18px;background:#dda05c;border-radius:2px"></span>
+          </div>
+        </div>
+        <div class="info">
+          <div class="nm">黏土手作风格报告 <i style="background:#eef3f8;color:#718198">草稿</i></div>
+          <div class="desc">暖橙陶土质感，圆润卡片。适合超轻黏土、陶艺、立体手工类课程。</div>
+          <div class="flow"><b>作品照</b><u>→</u><b>造型提取</b><u>→</u><b>场景化</b><u>→</u>排版</div>
+        </div>
+        <div class="meta">4 节点 · 3 页<br><b>约 2 分钟</b></div>
+        <div><span class="status s-draft">草稿</span></div>
+        <div class="sw"><button></button><small>学生可选</small></div>
+        <button class="more">⋯</button>
+      </article>
+
+      <article class="row add" id="addRow"><span>新建一种报告风格的工作流</span></article>
+    </div>
+  </main>
+</div>
+
+<!-- 设置抽屉 -->
+<div class="mask" id="mask"></div>
+<aside class="drawer" id="drawer">
+  <header><b>工作流设置</b><button id="closeDrawer">✕</button></header>
+  <div class="body">
+    <div class="fld">
+      <label>封面图 <em>学生端选风格时看到的第一张图</em></label>
+      <div class="cover-edit">
+        <div class="cover-box">
+          <svg viewBox="0 0 96 128" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#4d6b8a"/><stop offset="1" stop-color="#2f4763"/>
+              </linearGradient>
+            </defs>
+            <rect width="96" height="128" fill="url(#cg1)"/>
+            <circle cx="72" cy="30" r="26" fill="#5f7d9c" opacity=".55"/>
+            <rect x="10" y="14" width="30" height="4" rx="2" fill="#c9d8e8"/>
+            <rect x="10" y="24" width="18" height="3" rx="1.5" fill="#8fa8c2"/>
+            <path d="M14 100 L34 62 L54 100 Z" fill="#8ea9c4" opacity=".9"/>
+            <path d="M40 100 L60 74 L80 100 Z" fill="#b3c8dc" opacity=".75"/>
+            <rect x="10" y="106" width="52" height="5" rx="2.5" fill="#fff"/>
+            <rect x="10" y="115" width="34" height="3.5" rx="1.75" fill="#9fb6cd"/>
+          </svg>
+          <span class="badge">封面</span>
+        </div>
+        <div class="cover-ops">
+          <button class="btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 11V2.6M4.6 6 8 2.6 11.4 6"/><path d="M2.6 10.6v1.8a1 1 0 0 0 1 1h8.8a1 1 0 0 0 1-1v-1.8"/></svg>上传图片</button>
+          <button class="btn ai"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1.8l1.5 3.4 3.4 1.5-3.4 1.5L8 11.6 6.5 8.2 3.1 6.7l3.4-1.5z"/><path d="M12.4 11.2l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7z"/></svg>AI 生成封面</button>
+          <button class="btn ghost">用画布第一页当封面</button>
+          <div class="hint">建议竖图 3:4（如 900×1200）。不上传时，学生端会显示一条同色系占位条，不会报错。</div>
+        </div>
+      </div>
+    </div>
+    <div class="fld">
+      <label>工作流名称</label>
+      <input type="text" value="工业设计风格报告">
+      <div class="hint">这个名字会显示在学生端“选择报告风格”的列表里。</div>
+    </div>
+    <div class="fld">
+      <label>运行状态</label>
+      <div class="seg">
+        <button>草稿</button><button>测试中</button><button class="on">已发布</button>
+      </div>
+      <div class="hint">只有“已发布”的工作流才会出现在学生端。</div>
+    </div>
+    <div class="fld">
+      <label>学生端可见</label>
+      <div class="seg">
+        <button class="on">允许学生选择</button><button>仅老师可用</button>
+      </div>
+    </div>
+    <div class="fld">
+      <label>预计耗时（用于前端提示）</label>
+      <select><option>约 3 分钟</option><option selected>约 6 分钟</option><option>约 10 分钟</option></select>
+      <div class="hint">学生提交后会看到“大约还要 X 分钟”，避免干等。</div>
+    </div>
+    <div class="fld">
+      <label>每日调用上限</label>
+      <select><option>不限制</option><option selected>50 份报告 / 天</option><option>100 份报告 / 天</option></select>
+      <div class="hint">超过上限后自动排队到第二天，防止一张图刷爆账单。</div>
+    </div>
+    <div class="tip">
+      <b>打开画布改流程：</b>在列表里点这一行，会直接进入无限画布编辑这条工作流，改完保存后自动升版本。已发布的旧版本仍会保留，历史报告不受影响。
+    </div>
+  </div>
+  <footer>
+    <button class="btn" id="cancelDrawer">取消</button>
+    <button class="btn primary">保存设置</button>
+  </footer>
+</aside>
+
+<script>
+  const toolbar = document.getElementById('toolbar');
+  const list = document.getElementById('list');
+  const btnMulti = document.getElementById('btnMulti');
+  const btnDel = document.getElementById('btnDel');
+  const selCount = document.getElementById('selCount');
+  let selecting = false;
+
+  function refreshCount() {
+    const n = list.querySelectorAll('.row.picked').length;
+    selCount.textContent = `已选 ${n} 项`;
+    btnDel.disabled = n === 0;
+  }
+
+  btnMulti.addEventListener('click', () => {
+    selecting = !selecting;
+    toolbar.classList.toggle('selecting', selecting);
+    btnMulti.classList.toggle('on', selecting);
+    btnMulti.lastChild.textContent = selecting ? ' 取消多选' : ' 多选';
+    if (!selecting) list.querySelectorAll('.row.picked').forEach((r) => r.classList.remove('picked'));
+    refreshCount();
+  });
+
+  list.querySelectorAll('.row').forEach((row) => {
+    row.addEventListener('click', (e) => {
+      if (row.classList.contains('add')) return;
+      if (e.target.closest('.sw') || e.target.closest('.more')) return;
+      if (selecting) {
+        row.classList.toggle('picked');
+        refreshCount();
+      } else {
+        openDrawer();
+      }
+    });
+  });
+
+  list.querySelectorAll('.sw button').forEach((btn) => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); btn.classList.toggle('on'); });
+  });
+
+  const mask = document.getElementById('mask');
+  const drawer = document.getElementById('drawer');
+  function openDrawer() { mask.classList.add('show'); drawer.classList.add('show'); }
+  function closeDrawer() { mask.classList.remove('show'); drawer.classList.remove('show'); }
+  document.getElementById('btnSetting').addEventListener('click', openDrawer);
+  document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+  document.getElementById('cancelDrawer').addEventListener('click', closeDrawer);
+  mask.addEventListener('click', closeDrawer);
+
+  drawer.querySelectorAll('.seg').forEach((seg) => {
+    seg.querySelectorAll('button').forEach((b) => {
+      b.addEventListener('click', () => {
+        seg.querySelectorAll('button').forEach((x) => x.classList.remove('on'));
+        b.classList.add('on');
+      });
+    });
+  });
+</script>
+</body>
+</html>

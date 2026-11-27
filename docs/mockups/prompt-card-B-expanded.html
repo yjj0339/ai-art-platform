@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>效果图 B · 点击右上角放大按钮之后（卡片居中放大 + 画布灰度冻结）</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px 20px 48px;
+    background: #eef2f7;
+    color: #2c3240;
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  }
+  .head { max-width: 1180px; margin: 0 auto 14px; }
+  .head h1 { margin: 0 0 6px; font-size: 16px; font-weight: 800; }
+  .head p { margin: 0; font-size: 12.5px; line-height: 1.85; color: #5c6b80; }
+  .head b { color: #12213a; }
+  .head code { padding: 1px 5px; border-radius: 5px; background: #e3eaf5; color: #1f4b8f; font-family: Consolas, Monaco, monospace; font-size: 11.5px; }
+  .head .tag { display: inline-block; margin-right: 6px; padding: 2px 8px; border-radius: 20px; background: #1e6fd9; color: #fff; font-size: 11px; font-weight: 700; vertical-align: 1px; }
+
+  .stage {
+    position: relative; width: 1180px; height: 720px; border-radius: 14px; overflow: hidden;
+    background-color: #f8fafc;
+    background-image: radial-gradient(circle, #d7dee8 1.1px, transparent 1.1px);
+    background-size: 22px 22px;
+    box-shadow: 0 12px 34px rgba(23, 43, 77, .12);
+  }
+
+  /* ★ 画布其它地方：冻结 + 灰度 + 压暗 */
+  .scene { position: absolute; inset: 0; filter: grayscale(1) contrast(.94); }
+  .scrim { position: absolute; inset: 0; background: rgba(14, 21, 34, .52); }
+
+  .wires { position: absolute; inset: 0; }
+  .ref-node { position: absolute; left: 40px; top: 60px; width: 260px; padding: 8px; border: 1.5px solid #8f8a83; border-radius: 17px; background: #e9e7e2; }
+  .ref-node .kind, .gen-node .kind { position: absolute; left: 10px; bottom: calc(100% + 5px); display: inline-flex; align-items: center; gap: 4px; color: #595650; font-size: 12px; line-height: 1; white-space: nowrap; }
+  .ref-node .kind svg, .gen-node .kind svg { width: 13px; height: 13px; }
+  .ref-frame { width: 100%; height: 172px; border-radius: 15px; overflow: hidden; background: #dfe6ef; }
+  .ref-frame .photo { width: 100%; height: 100%; display: block; background: radial-gradient(circle at 30% 28%, #ffd98a 0 34px, transparent 35px), linear-gradient(160deg, #bcd9ff 0%, #dcecff 42%, #f3e2c7 43%, #e6c894 100%); }
+  .gen-node { position: absolute; left: 375px; top: 60px; width: 430px; border: 1.5px solid #8f8a83; border-radius: 17px; background: #e9e7e2; }
+  .gen-preview { height: 242px; border-radius: 15px; overflow: hidden; display: grid; place-items: center; align-content: center; gap: 9px; background: #e9e7e2; color: #827f79; font-size: 12px; }
+  .gen-preview svg { width: 40px; height: 40px; }
+  .handle { position: absolute; width: 12px; height: 12px; border: 2px solid #827b72; border-radius: 50%; background: #fff; }
+  .handle.l { left: -7px; top: 50%; margin-top: -6px; }
+  .handle.r { right: -7px; top: 50%; margin-top: -6px; }
+
+  /* ★ 被放大的卡片：居中 + scale(1.35)，内部所有元素（含字号、输入框、滚动条）等比放大 */
+  .card-holder {
+    position: absolute; left: 50%; top: 50%; width: 626px;
+    transform: translate(-50%, -50%) scale(1.35);
+    animation: pop .26s cubic-bezier(.22, 1.2, .36, 1) both;
+  }
+  @keyframes pop {
+    from { transform: translate(-50%, -50%) scale(1.02); opacity: .35; }
+    to   { transform: translate(-50%, -50%) scale(1.35); opacity: 1; }
+  }
+  .card {
+    position: relative; width: 626px; padding: 16px;
+    border: 1px solid #d7d3cc; border-radius: 16px; background: #fffefa;
+    box-shadow: 0 30px 70px rgba(8, 16, 30, .45);
+  }
+
+  .card-head { display: flex; align-items: flex-start; gap: 10px; min-height: 32px; margin-bottom: 10px; }
+  .thumbs { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: 10px; padding: 2px 0 0; }
+  .thumb { position: relative; width: 65px; height: 65px; flex: 0 0 auto; }
+  .thumb-open { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; padding: 0; border: 1px solid rgba(22, 131, 255, .28); border-radius: 12px; background: #eef6ff; color: #1260b3; cursor: zoom-in; }
+  .thumb-open svg { width: 40px; height: 40px; }
+  .thumb-index { position: absolute; top: -8px; left: -8px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; background: #334155; color: #fff; font-size: 13px; font-weight: 700; line-height: 24px; text-align: center; }
+  .thumb-mention { position: absolute; right: -8px; bottom: -8px; display: flex; width: 24px; height: 24px; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 50%; background: #1260b3; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; cursor: pointer; }
+
+  /* 放大态下，右上角同一个按钮变成「收起」 */
+  .expand-btn { flex: 0 0 auto; display: flex; width: 32px; height: 32px; align-items: center; justify-content: center; padding: 0; border: 1px solid #86b1f5; border-radius: 16px; background: #eef6ff; color: #1260b3; cursor: pointer; }
+  .expand-btn svg { width: 16px; height: 16px; }
+
+  .prompt-shell { width: 100%; padding: 8px 8px; border: 1px solid #dfe6ef; border-radius: 9px; background: #f8faff; }
+  .prompt-inline { display: flex; align-items: flex-start; min-width: 0; }
+  .prompt-editor {
+    width: 100%; min-height: 96px; max-height: 160px; margin: 0; padding: 0 2px;
+    border: 0; background: transparent; outline: 0;
+    color: #302f2d; font-size: 16px; line-height: 32px;
+    white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto;
+  }
+  .prompt-editor::-webkit-scrollbar { width: 6px; height: 6px; }
+  .prompt-editor::-webkit-scrollbar-track { background: transparent; }
+  .prompt-editor::-webkit-scrollbar-thumb { border-radius: 3px; background: #b9c5d4; }
+  .prompt-editor::-webkit-scrollbar-thumb:hover { background: #94a4b8; }
+  @supports not selector(::-webkit-scrollbar) {
+    .prompt-editor { scrollbar-width: thin; scrollbar-color: #b9c5d4 transparent; }
+  }
+
+  .controls { margin-top: 10px; }
+  .assets { display: flex; align-items: center; gap: 6px; }
+  .assets button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 32px; padding: 0 12px; border: 1px solid #e2dfd9; border-radius: 16px; background: #f8f7f3; color: #45413c; font-size: 12px; white-space: nowrap; cursor: pointer; }
+  .assets button svg { width: 14px; height: 14px; }
+  .param-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .param-row select { height: 32px; padding: 0 12px; border: 1px solid #e2dfd9; border-radius: 16px; background: #f8f7f3; color: #45413c; font-size: 12px; white-space: nowrap; }
+  .param-row .model { width: 200px; }
+  .param-row .ratio { width: 84px; }
+  .run-btn { margin-left: auto; height: 32px; padding: 0 14px; border: 1px solid #242424; border-radius: 16px; background: #242424; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* 提示标签 */
+  .flag {
+    position: absolute; right: 26px; top: 22px; display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 12px; border-radius: 10px; background: rgba(255, 255, 255, .92); color: #12213a;
+    font-size: 12px; font-weight: 700; box-shadow: 0 6px 18px rgba(8, 16, 30, .28);
+  }
+  .flag i { display: block; width: 8px; height: 8px; border-radius: 50%; background: #1e6fd9; }
+  .esc-hint {
+    position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+    padding: 6px 12px; border-radius: 20px; background: rgba(255, 255, 255, .14);
+    color: #eaf1fb; font-size: 12px; letter-spacing: .3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1><span class="tag">效果图 B</span>点击卡片右上角放大按钮之后</h1>
+  <p>
+    卡片<b>居中、等比放大 1.35 倍</b>（<code>626 → ≈845px</code>，字号 16 → 21.6px、输入框与滚动条同步放大）；
+    <b>画布其余部分冻结为灰度并压暗</b>；卡片右上角原位置的按钮变成<b>「收起」</b>；
+    按 <code>Esc</code> 或点「收起」返回效果图 A 的状态。
+  </p>
+</div>
+
+<div class="stage">
+
+  <!-- 冻结 + 灰度的画布 -->
+  <div class="scene">
+    <svg class="wires" viewBox="0 0 1180 720" fill="none">
+      <path d="M301 156 C 335 156, 340 182, 374 182" stroke="#4b8ef7" stroke-width="2" fill="none" />
+    </svg>
+    <div class="ref-node">
+      <span class="kind">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.6 16 11 6 20"/></svg>
+        参考素材
+      </span>
+      <div class="ref-frame"><i class="photo"></i></div>
+      <div class="handle r"></div>
+    </div>
+    <div class="gen-node">
+      <span class="kind">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.6 16 11 6 20"/></svg>
+        图像生成 3
+      </span>
+      <div class="handle l"></div>
+      <div class="handle r"></div>
+      <div class="gen-preview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="M21 15.5 16 11.2 6 19.5"/></svg>
+        空图片节点
+      </div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+
+  <!-- 放大的卡片（626 × 1.35） -->
+  <div class="card-holder">
+    <div class="card">
+      <div class="card-head">
+        <div class="thumbs">
+          <div class="thumb">
+            <button class="thumb-open" title="放大预览">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="M21 15.5 16 11.2 6 19.5"/></svg>
+            </button>
+            <span class="thumb-index">1</span>
+            <button class="thumb-mention" title="引用到提示词">@</button>
+          </div>
+        </div>
+        <!-- 同一位置、同一个按钮：变「收起」 -->
+        <button class="expand-btn" title="收起（Esc）" aria-label="收起">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v6H3M3 10l7-7M15 20v-6h6M21 14l-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="prompt-shell">
+        <div class="prompt-inline">
+          <div class="prompt-editor">一只戴着黄色雨衣的小熊，在雨后的森林小路上散步，水洼里倒映着柔和的晨光；主体放在画面偏左位置，右侧留出空间放标题文字；整体为温暖童话插画风格，色彩柔和、光影自然，注意雨滴落在地面上的细小涟漪和路面湿漉漉的反光质感；远景做浅色虚化处理。</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="assets">
+          <button>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.6 16 11 6 20"/></svg>
+            参考图
+          </button>
+          <button>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 2v3.2M12 18.8V22M2 12h3.2M18.8 12H22"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+            标记
+          </button>
+          <button>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="13" height="10" rx="2.5"/><path d="M15.5 11.2 21 8.6v6.8l-5.5-2.6z"/></svg>
+            摄像机
+          </button>
+        </div>
+        <div class="param-row">
+          <select class="model">
+            <option>Agnes Image 2.1 Flash</option>
+            <option>火山方舟 · doubao-seedream</option>
+          </select>
+          <select class="ratio">
+            <option>16:9</option>
+            <option>1:1</option>
+            <option>9:16</option>
+          </select>
+          <button class="run-btn">生成图像</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flag"><i></i>画布已冻结 · 灰度显示</div>
+  <div class="esc-hint">点击右上角「收起」或按 Esc 返回</div>
+</div>
+
+</body>
+</html>

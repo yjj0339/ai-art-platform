@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>积分与充值 · 界面演示 v1</title>
+<style>
+  :root{
+    --pri:#ff7a00; --pri-soft:#fff3e6; --pri-deep:#e56c00;
+    --blue:#36bffa; --blue-soft:#e8f7ff;
+    --green:#34d399; --green-soft:#e9fbf4;
+    --pink:#f472b6; --pink-soft:#fdeef6;
+    --title:#1f2937; --text:#4b5563; --muted:#9ca3af;
+    --border:#e5e7eb; --bg:#f5f7fa; --surface:#fff;
+    --r-sm:8px; --r-md:12px; --r-lg:16px;
+    --shadow-card:0 12px 28px rgba(31,41,55,.08);
+    --shadow-soft:0 18px 45px rgba(31,41,55,.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Source Han Sans SC','Microsoft YaHei',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;}
+  input,select{font:inherit;}
+  .num{font-variant-numeric:tabular-nums;}
+
+  /* ---------- 顶部 ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50; background:#fff;
+    border-bottom:1px solid var(--border);
+    padding:14px 28px; display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; color:var(--title); font-size:15px; white-space:nowrap;}
+  .brand-dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--pri),#ff9f1c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;}
+  .brand small{font-weight:500;color:var(--muted);font-size:12px;margin-left:2px;}
+  .tabs{display:flex; gap:6px; flex-wrap:wrap;}
+  .tab{
+    padding:9px 16px; border-radius:999px; font-size:13.5px; font-weight:600;
+    color:var(--text); border:1px solid transparent; transition:.18s; white-space:nowrap;
+  }
+  .tab:hover{background:#f3f4f6;}
+  .tab.on{background:var(--pri-soft); color:var(--pri-deep); border-color:rgba(255,122,0,.22);}
+
+  .banner{
+    max-width:1240px; margin:18px auto 0; padding:12px 18px;
+    background:#fff; border:1px dashed rgba(255,122,0,.35); border-radius:var(--r-md);
+    font-size:13px; color:var(--text); display:flex; gap:12px; align-items:flex-start;
+  }
+  .banner b{color:var(--pri-deep);}
+  .banner .chip{
+    flex:none; background:var(--pri-soft); color:var(--pri-deep);
+    border-radius:999px; padding:3px 10px; font-size:12px; font-weight:700;
+  }
+
+  main{max-width:1240px; margin:0 auto; padding:22px 20px 0;}
+  .view{display:none;}
+  .view.on{display:block; animation:fade .22s ease-out;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .view-head{margin:0 0 16px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .view-head h2{margin:0; font-size:18px; color:var(--title); font-weight:800;}
+  .view-head p{margin:0; font-size:13px; color:var(--muted);}
+
+  /* ---------- 手机壳 ---------- */
+  .phone-wrap{display:flex; justify-content:center; padding:8px 0 20px;}
+  .phone{
+    width:392px; height:770px; border-radius:34px; background:var(--bg);
+    border:9px solid #1f2937; box-shadow:var(--shadow-soft); position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .phone::before{
+    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:110px; height:20px; background:#1f2937; border-radius:0 0 14px 14px; z-index:20;
+  }
+  .ph-scroll{flex:1; overflow-y:auto; overflow-x:hidden; padding:16px 16px 24px;}
+  .ph-scroll::-webkit-scrollbar{width:0;}
+  .ph-top{
+    flex:none; height:68px; background:#fff; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 14px 0; gap:10px;
+  }
+  .ph-top .back{font-size:13px; color:var(--text); display:flex; align-items:center; gap:5px; font-weight:600;}
+  .ph-top .ttl{font-size:15px; font-weight:800; color:var(--title);}
+
+  /* 积分胶囊 */
+  .credit-pill{
+    display:flex; align-items:center; gap:7px; background:linear-gradient(135deg,#fff7ec,#ffe9ce);
+    border:1px solid rgba(255,122,0,.28); border-radius:999px; padding:6px 12px 6px 10px;
+    font-size:12.5px; font-weight:700; color:var(--pri-deep); transition:.18s; white-space:nowrap;
+    flex:none; max-width:214px;
+  }
+  .credit-pill:active{transform:scale(.96);}
+  .credit-pill .coin{
+    width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ffb347,#ff7a00);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;
+  }
+  .credit-pill em{font-style:normal; font-weight:500; color:#a8621a; font-size:11.5px;}
+
+  /* ---------- 家长充值 ---------- */
+  .p-card{background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:16px; margin-bottom:14px;}
+  .p-card h3{margin:0 0 4px; font-size:14.5px; color:var(--title); font-weight:800; display:flex; align-items:center; gap:8px;}
+  .p-card h3 .step{
+    width:20px;height:20px;border-radius:50%;background:var(--pri);color:#fff;
+    font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;
+  }
+  .p-card .sub{margin:0 0 12px 28px; font-size:12px; color:var(--muted); line-height:1.6;}
+
+  .kid-line{
+    display:flex; align-items:center; gap:10px; background:var(--pri-soft); border-radius:var(--r-md);
+    padding:10px 12px; margin-bottom:14px;
+  }
+  .kid-ava{width:34px;height:34px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .kid-line b{color:var(--title); font-size:14px; display:block;}
+  .kid-line span{font-size:11.5px; color:#a8621a;}
+
+  .free-note{
+    font-size:11.5px; line-height:1.65; color:#6b7280; background:#f9fafb;
+    border-left:3px solid var(--green); border-radius:0 var(--r-sm) var(--r-sm) 0;
+    padding:8px 10px; margin-bottom:14px;
+  }
+  .free-note b{color:#0f9d76;}
+
+  .amt-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .amt{
+    border:1.5px solid var(--border); border-radius:var(--r-md); background:#fff;
+    padding:12px 10px; text-align:left; transition:.16s; position:relative;
+  }
+  .amt b{display:block; font-size:17px; color:var(--title); font-weight:800; line-height:1.2;}
+  .amt span{font-size:11.5px; color:var(--muted);}
+  .amt.on{border-color:var(--pri); background:var(--pri-soft); box-shadow:0 6px 16px rgba(255,122,0,.14);}
+  .amt.on b{color:var(--pri-deep);}
+  .amt .tj{
+    position:absolute; top:-1px; right:-1px; background:var(--pri); color:#fff;
+    font-size:10px; font-weight:700; padding:2px 7px; border-radius:0 var(--r-md) 0 var(--r-md);
+  }
+
+  .btn{
+    width:100%; min-height:46px; border-radius:var(--r-md); font-weight:800; font-size:14px;
+    display:flex; align-items:center; justify-content:center; gap:8px; transition:.16s;
+  }
+  .btn-pri{background:linear-gradient(135deg,var(--pri),#ff9f1c); color:#fff; box-shadow:0 10px 22px rgba(255,122,0,.26);}
+  .btn-pri:active{transform:scale(.97);}
+  .btn-sec{background:#fff; color:var(--pri-deep); border:1px solid rgba(255,122,0,.3);}
+  .btn-ghost{background:#f3f4f6; color:var(--text);}
+  .btn-sm{min-height:34px; font-size:12.5px; border-radius:var(--r-sm); padding:0 12px; width:auto;}
+
+  /* 订单面板 */
+  .order-box{display:none;}
+  .order-box.on{display:block; animation:fade .2s;}
+  .qr-card{
+    display:flex; gap:14px; align-items:center; background:#fafafa; border:1px solid var(--border);
+    border-radius:var(--r-md); padding:13px;
+  }
+  .qr-frame{
+    width:112px;height:112px;background:#fff;border-radius:10px;flex:none;
+    display:flex;align-items:center;justify-content:center;border:1px solid var(--border);
+  }
+  .qr-side{flex:1; min-width:0;}
+  .qr-side .lbl{font-size:11px; color:var(--muted);}
+  .qr-side .big{font-size:19px; font-weight:800; color:var(--title); margin:2px 0 6px;}
+  .qr-side .oid{font-size:11px; color:var(--muted); word-break:break-all; line-height:1.5;}
+  .qr-side .oid b{color:var(--text); font-weight:600;}
+  .wx-tip{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0f9d76;background:var(--green-soft);border-radius:999px;padding:3px 9px;margin-top:6px;}
+
+  .code-card{
+    margin-top:12px; border:1.5px dashed rgba(255,122,0,.45); background:var(--pri-soft);
+    border-radius:var(--r-md); padding:13px;
+  }
+  .code-card .cap{font-size:11.5px;color:#a8621a;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .code-card .cap b{color:var(--pri-deep);}
+  .code-val{
+    display:flex; align-items:center; gap:10px; background:#fff; border-radius:var(--r-sm);
+    padding:10px 12px; box-shadow:inset 0 0 0 1px rgba(255,122,0,.18);
+  }
+  .code-val code{
+    flex:1; font-family:'SFMono-Regular',Consolas,monospace; font-size:14.5px; font-weight:800;
+    letter-spacing:1.2px; color:var(--title); word-break:break-all;
+  }
+  .copy-btn{
+    flex:none; background:var(--pri); color:#fff; border-radius:var(--r-sm); padding:7px 12px;
+    font-size:12px; font-weight:700;
+  }
+  .code-hint{font-size:11px; color:#a8621a; line-height:1.6; margin-top:8px;}
+
+  .done-box{display:none; text-align:center; padding:22px 12px;}
+  .done-box.on{display:block; animation:fade .25s;}
+  .done-ico{
+    width:64px;height:64px;border-radius:50%;background:var(--green-soft);color:#0f9d76;
+    display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;
+  }
+  .done-box h4{margin:0 0 6px; font-size:17px; color:var(--title); font-weight:800;}
+  .done-box p{margin:0 0 4px; font-size:12.5px; color:var(--text);}
+  .done-box .voucher{font-size:11px; color:var(--muted); margin-top:10px; font-family:Consolas,monospace;}
+
+  .faq{background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:15px 16px;}
+  .faq-t{font-size:12.5px; font-weight:800; color:var(--title); margin-bottom:10px;}
+  .faq-i{font-size:11.5px; line-height:1.8; color:var(--text); padding:8px 0; border-top:1px solid #f3f4f6;}
+  .faq-i:first-of-type{border-top:0; padding-top:0;}
+  .faq-i b{display:block; color:var(--title); font-weight:700; margin-bottom:2px; font-size:12px;}
+
+  /* ---------- 学生端工作台 ---------- */
+  .wb-head{margin-bottom:14px;}
+  .wb-head h3{margin:0 0 4px; font-size:16px; color:var(--title); font-weight:800;}
+  .wb-head p{margin:0; font-size:12px; color:var(--muted);}
+  .play-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .play{
+    background:#fff; border-radius:var(--r-md); box-shadow:var(--shadow-card); padding:12px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .play-ico{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+  .play b{font-size:13px; color:var(--title); font-weight:700;}
+  .play .cost{font-size:11px; color:var(--muted);}
+  .play .cost em{font-style:normal; color:var(--pri-deep); font-weight:700;}
+
+  .gen-demo{background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:14px;}
+  .gen-demo .cap{font-size:11.5px;color:var(--muted);margin-bottom:10px;}
+  .gen-btn{
+    width:100%; min-height:48px; border-radius:var(--r-md); color:#fff; font-weight:800; font-size:14.5px;
+    background:linear-gradient(135deg,var(--pri),#ff9f1c); box-shadow:0 10px 22px rgba(255,122,0,.24);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .gen-btn .tag{background:rgba(255,255,255,.22); border-radius:999px; padding:3px 9px; font-size:12px;}
+  .gen-btn.off{background:#e5e7eb; color:#6b7280; box-shadow:none;}
+
+  .month-card{background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:14px; margin-top:12px;}
+  .mc-t{font-size:12.5px; font-weight:800; color:var(--title); margin-bottom:11px;}
+  .mc-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;}
+  .mc-i{text-align:center; background:#fafbfc; border-radius:var(--r-sm); padding:10px 4px;}
+  .mc-i b{display:block; font-size:18px; font-weight:800; color:var(--pri-deep); line-height:1.1;}
+  .mc-i span{font-size:11px; color:var(--muted);}
+
+  /* 抽屉 */
+  .mask{
+    position:absolute; inset:0; background:rgba(17,24,39,.38); z-index:30;
+    opacity:0; pointer-events:none; transition:.24s;
+  }
+  .mask.on{opacity:1; pointer-events:auto;}
+  .drawer{
+    position:absolute; top:0; right:0; bottom:0; width:322px; background:#fff; z-index:31;
+    transform:translateX(100%); transition:transform .26s cubic-bezier(.32,.72,0,1);
+    display:flex; flex-direction:column; box-shadow:-14px 0 34px rgba(31,41,55,.14);
+  }
+  .drawer.on{transform:none;}
+  .dr-head{
+    flex:none; padding:16px 16px 14px; background:linear-gradient(135deg,#fff7ec,#ffe9ce);
+    border-bottom:1px solid rgba(255,122,0,.16); position:relative;
+  }
+  .dr-head .close{position:absolute; top:12px; right:12px; font-size:18px; color:#a8621a; width:26px;height:26px;border-radius:50%;}
+  .dr-head .lbl{font-size:11.5px; color:#a8621a; font-weight:600;}
+  .dr-head .bal{font-size:32px; font-weight:800; color:var(--pri-deep); line-height:1.1; margin-top:2px; font-variant-numeric:tabular-nums;}
+  .dr-head .bal small{font-size:13px; font-weight:700; margin-left:4px;}
+  .dr-head .bal.eq{font-size:12px; color:#a8621a; font-weight:600; margin-top:4px;}
+  .dr-body{flex:1; overflow-y:auto; padding:14px 16px 20px;}
+  .dr-body::-webkit-scrollbar{width:0;}
+
+  .free-bar-wrap{background:#f9fafb; border-radius:var(--r-md); padding:11px 12px; margin-bottom:14px;}
+  .free-bar-wrap .row{display:flex; justify-content:space-between; font-size:12px; margin-bottom:7px;}
+  .free-bar-wrap .row b{color:var(--title);}
+  .free-bar-wrap .row span{color:var(--muted);}
+  .bar{height:7px; background:#e5e7eb; border-radius:999px; overflow:hidden;}
+  .bar i{display:block; height:100%; background:linear-gradient(90deg,var(--green),#7ee0be); border-radius:999px; transition:width .4s;}
+
+  .sec-t{font-size:12.5px; font-weight:800; color:var(--title); margin:16px 0 9px; display:flex; justify-content:space-between; align-items:center;}
+  .sec-t a{font-size:11.5px; color:var(--muted); font-weight:500;}
+
+  .redeem{display:flex; gap:8px; margin-bottom:6px;}
+  .redeem input{
+    flex:1; min-width:0; border:1.5px solid var(--border); border-radius:var(--r-sm); padding:10px 11px;
+    font-size:12.5px; font-family:Consolas,monospace; letter-spacing:.4px; outline:none; color:var(--title);
+  }
+  .redeem input:focus{border-color:var(--pri); box-shadow:0 0 0 3px rgba(255,122,0,.1);}
+  .redeem button{flex:none; background:var(--pri); color:#fff; border-radius:var(--r-sm); padding:0 14px; font-weight:700; font-size:12.5px;}
+  .redeem-msg{font-size:11px; color:var(--muted); line-height:1.6; margin-top:6px; min-height:16px;}
+  .redeem-msg.ok{color:#0f9d76; font-weight:600;}
+  .redeem-msg.err{color:#dc2626; font-weight:600;}
+
+  .flow-list{display:flex; flex-direction:column; gap:2px;}
+  .flow-item{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f3f4f6;}
+  .flow-item:last-child{border-bottom:0;}
+  .flow-item .fi-ico{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;}
+  .flow-item .fi-main{flex:1; min-width:0;}
+  .flow-item .fi-main b{display:block; font-size:12.5px; color:var(--title); font-weight:600;}
+  .flow-item .fi-main span{font-size:11px; color:var(--muted);}
+  .flow-item .fi-amt{font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; flex:none;}
+  .plus{color:#0f9d76;} .minus{color:#6b7280;}
+
+  .dr-foot{flex:none; padding:12px 16px 16px; border-top:1px solid var(--border); background:#fff;}
+
+  /* ---------- 后台 ---------- */
+  .admin{display:grid; grid-template-columns:190px minmax(0,1fr); gap:18px; align-items:start;}
+  .admin > div{min-width:0;}
+  .side{
+    background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:12px 10px;
+    position:sticky; top:82px;
+  }
+  .side .si{
+    display:flex; align-items:center; gap:9px; padding:10px 12px; border-radius:var(--r-sm);
+    font-size:13px; color:var(--text); font-weight:600; margin-bottom:2px;
+  }
+  .side .si.on{background:var(--pri-soft); color:var(--pri-deep);}
+  .side .si.dim{color:#c3c8d0; font-weight:500;}
+  .side .divider{height:1px; background:var(--border); margin:9px 6px;}
+
+  .panel{background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:18px; margin-bottom:16px; min-width:0;}
+  .panel-h{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
+  .panel-h h3{margin:0; font-size:15px; color:var(--title); font-weight:800;}
+  .panel-h .desc{font-size:12px; color:var(--muted); margin-top:3px;}
+  .panel-h .acts{display:flex; gap:8px; flex-wrap:wrap;}
+
+  .searchbar{display:flex; gap:9px; margin-bottom:14px;}
+  .searchbar input{
+    flex:1; min-width:0; border:1.5px solid var(--border); border-radius:var(--r-sm);
+    padding:11px 14px; font-size:13px; outline:none; color:var(--title);
+  }
+  .searchbar input:focus{border-color:var(--pri); box-shadow:0 0 0 3px rgba(255,122,0,.1);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:left; font-size:11.5px; color:var(--muted); font-weight:600;
+    padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  tbody td{padding:11px 10px; border-bottom:1px solid #f3f4f6; color:var(--text); vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:0;}
+  tbody tr.sel{background:var(--pri-soft);}
+  tbody tr:hover:not(.sel){background:#fafbfc;}
+  td .who{display:flex; align-items:center; gap:9px;}
+  td .ava{width:28px;height:28px;border-radius:9px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;}
+  td .who b{display:block; font-size:13px; color:var(--title); font-weight:600;}
+  td .who span{font-size:11px; color:var(--muted);}
+  td.mono{font-family:Consolas,monospace; font-size:12px; letter-spacing:.3px; color:var(--title); font-weight:600;}
+  td.right,th.right{text-align:right;}
+
+  .tag{display:inline-flex; align-items:center; gap:4px; border-radius:999px; padding:3px 9px; font-size:11px; font-weight:700;}
+  .tag-g{background:var(--green-soft); color:#0f9d76;}
+  .tag-o{background:var(--pri-soft); color:var(--pri-deep);}
+  .tag-b{background:var(--blue-soft); color:#0d8fc4;}
+  .tag-p{background:var(--pink-soft); color:#c2408c;}
+  .tag-gray{background:#f3f4f6; color:#6b7280;}
+
+  .lnk{color:var(--pri-deep); font-size:12px; font-weight:700;}
+  .lnk.danger{color:#dc2626;}
+  .lnk.mute{color:var(--muted);}
+
+  /* 卡片统计 */
+  .stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px;}
+  .stat{background:#fff; border-radius:var(--r-md); box-shadow:var(--shadow-card); padding:14px 16px;}
+  .stat .k{font-size:11.5px; color:var(--muted); margin-bottom:6px;}
+  .stat .v{font-size:23px; font-weight:800; color:var(--title); line-height:1.1; font-variant-numeric:tabular-nums;}
+  .stat .v small{font-size:12px; font-weight:600; color:var(--muted); margin-left:3px;}
+  .stat .f{font-size:11px; color:var(--muted); margin-top:5px;}
+  .stat.warn .v{color:var(--pri-deep);}
+
+  /* 表单行 */
+  .form-row{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:11.5px; color:var(--muted); font-weight:600;}
+  .field input,.field select{
+    border:1.5px solid var(--border); border-radius:var(--r-sm); padding:10px 12px;
+    font-size:13px; outline:none; color:var(--title); background:#fff; min-width:150px;
+  }
+  .field input:focus,.field select:focus{border-color:var(--pri); box-shadow:0 0 0 3px rgba(255,122,0,.1);}
+  .field.sm input{min-width:88px; width:88px;}
+  .btn-main{
+    min-height:42px; padding:0 20px; border-radius:var(--r-sm); font-weight:800; font-size:13.5px;
+    background:linear-gradient(135deg,var(--pri),#ff9f1c); color:#fff; box-shadow:0 8px 18px rgba(255,122,0,.22);
+  }
+  .btn-line{
+    min-height:42px; padding:0 16px; border-radius:var(--r-sm); font-weight:700; font-size:13px;
+    background:#fff; color:var(--pri-deep); border:1px solid rgba(255,122,0,.3);
+  }
+  .btn-plain{
+    min-height:42px; padding:0 16px; border-radius:var(--r-sm); font-weight:700; font-size:13px;
+    background:#f3f4f6; color:var(--text);
+  }
+
+  .pkg-hint{font-size:12px; color:var(--muted); line-height:1.8; margin-top:10px; background:#f9fafb; border-radius:var(--r-sm); padding:10px 12px;}
+  .pkg-hint b{color:var(--text);}
+
+  /* 两栏：表 + 详情 */
+  .split{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:start;}
+  .split > *{min-width:0;}
+  .detail-card{background:#fff; border-radius:var(--r-lg); box-shadow:var(--shadow-card); padding:16px; position:sticky; top:82px;}
+  .dc-head{display:flex; align-items:center; gap:11px; padding-bottom:13px; border-bottom:1px solid var(--border); margin-bottom:13px;}
+  .dc-ava{width:44px;height:44px;border-radius:13px;background:var(--pri-soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;}
+  .dc-head b{display:block; font-size:14.5px; color:var(--title); font-weight:800;}
+  .dc-head span{font-size:11.5px; color:var(--muted);}
+  .dc-bal{text-align:center; padding:12px 0 14px;}
+  .dc-bal .v{font-size:34px; font-weight:800; color:var(--pri-deep); line-height:1; font-variant-numeric:tabular-nums;}
+  .dc-bal .k{font-size:11.5px; color:var(--muted); margin-top:5px;}
+  .quick{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:10px;}
+  .quick button{
+    background:var(--pri-soft); color:var(--pri-deep); border-radius:var(--r-sm); padding:9px 0;
+    font-size:12.5px; font-weight:700; border:1px solid rgba(255,122,0,.18);
+  }
+  .quick button:active{transform:scale(.96);}
+  .custom-add{display:flex; gap:7px; margin-bottom:14px;}
+  .custom-add input{
+    flex:1; min-width:0; border:1.5px solid var(--border); border-radius:var(--r-sm); padding:9px 11px; font-size:12.5px; outline:none;
+  }
+  .custom-add button{background:var(--pri); color:#fff; border-radius:var(--r-sm); padding:0 14px; font-weight:700; font-size:12.5px;}
+
+  .mini-flow .fi{display:flex; gap:9px; padding:9px 0; border-bottom:1px solid #f3f4f6; font-size:12px;}
+  .mini-flow .fi:last-child{border-bottom:0;}
+  .mini-flow .fi .t{color:var(--muted); flex:none; width:74px; font-size:11px;}
+  .mini-flow .fi .d{flex:1; color:var(--text); min-width:0;}
+  .mini-flow .fi .a{font-weight:800; font-variant-numeric:tabular-nums; flex:none;}
+
+  .empty{padding:40px 20px; text-align:center; color:var(--muted); font-size:12.5px;}
+
+  /* toast */
+  .toast{
+    position:fixed; left:50%; bottom:34px; transform:translate(-50%,20px);
+    background:#1f2937; color:#fff; padding:12px 20px; border-radius:999px; font-size:13px;
+    font-weight:600; box-shadow:0 14px 34px rgba(0,0,0,.22); opacity:0; pointer-events:none;
+    transition:.24s; z-index:999; display:flex; align-items:center; gap:8px;
+  }
+  .toast.on{opacity:1; transform:translate(-50%,0);}
+
+  .foot-note{max-width:1240px; margin:26px auto 0; padding:0 20px; font-size:12px; color:var(--muted); line-height:1.9;}
+
+  @media (max-width:1100px){
+    .split{grid-template-columns:1fr;}
+    .detail-card{position:static;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .admin{grid-template-columns:1fr;}
+    .side{position:static; display:flex; gap:6px; overflow-x:auto; padding:8px;}
+    .side .si{white-space:nowrap; margin:0;}
+    .side .divider{display:none;}
+    .side .si.dim{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-dot">美</div>
+    美佳美画 <small>· 积分系统界面演示 v1</small>
+  </div>
+  <nav class="tabs">
+    <button class="tab on" data-view="v-parent">① 家长充值</button>
+    <button class="tab" data-view="v-student">② 学生端余额</button>
+    <button class="tab" data-view="v-accounts">③ 后台 · 学生账户</button>
+    <button class="tab" data-view="v-codes">④ 后台 · 兑换码</button>
+    <button class="tab" data-view="v-prices">⑤ 后台 · 价目表</button>
+    <button class="tab" data-view="v-orders">⑥ 后台 · 今日核对</button>
+  </nav>
+</header>
+
+<div class="banner">
+  <span class="chip">仅演示</span>
+  <div>
+    这是<b>静态演示页</b>，数据都是假的，只为确认「页面长什么样、流程顺不顺」。当前参数：<b>10 元 = 100 积分</b>、倍率 <b>2.0</b>、每天免费送 <b>60 积分</b>、出图 <b>5 分/张</b>。看完后告诉我哪块要改，我再写真实功能。
+  </div>
+</div>
+
+<main>
+
+<!-- ============ ① 家长充值 ============ -->
+<section class="view on" id="v-parent">
+  <div class="view-head">
+    <h2>家长充值页</h2>
+    <p>家长的手机上打开的样子：选金额 → 扫码付款 → 拿到积分码 → 填到网站兑换</p>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="ph-top">
+        <div class="back">‹ 返回</div>
+        <div class="ttl">充值中心</div>
+        <div style="width:52px"></div>
+      </div>
+      <div class="ph-scroll">
+
+        <div class="kid-line">
+          <div class="kid-ava">🎨</div>
+          <div>
+            <b>言小画</b>
+            <span>庆云校区 · 三年级 · 当前余额 <span class="num" id="p-bal">320</span> 积分</span>
+          </div>
+        </div>
+
+        <div class="free-note">
+          <b>每天免费送 60 积分</b>，当天用完清零、不累加。免费额度用完了才会扣你充值的积分。
+        </div>
+
+        <!-- 第一步 -->
+        <div class="p-card">
+          <h3><span class="step">1</span>选择充值金额</h3>
+          <p class="sub">充多少得多少，10 元 = 100 积分</p>
+          <div class="amt-grid" id="amtGrid">
+            <button class="amt" data-amt="10" data-pt="100"><b>10 元</b><span>100 积分</span></button>
+            <button class="amt" data-amt="30" data-pt="300"><b>30 元</b><span>300 积分</span></button>
+            <button class="amt on" data-amt="50" data-pt="500"><span class="tj">常用</span><b>50 元</b><span>500 积分</span></button>
+            <button class="amt" data-amt="100" data-pt="1000"><b>100 元</b><span>1000 积分</span></button>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn btn-pri" id="genOrder">生成收款码与积分码</button>
+          </div>
+        </div>
+
+        <!-- 第二步 -->
+        <div class="p-card order-box" id="orderBox">
+          <h3><span class="step">2</span>扫码付款</h3>
+          <p class="sub" style="margin-left:0">付款时请在备注里填订单号，方便老师核对</p>
+          <div class="qr-card">
+            <div class="qr-frame" id="qrBox"></div>
+            <div class="qr-side">
+              <div class="lbl">应付金额</div>
+              <div class="big num" id="payAmt">50.00 元</div>
+              <div class="oid">订单号 <b id="orderId">CZ20261105193047</b></div>
+              <div class="wx-tip">微信扫一扫</div>
+            </div>
+          </div>
+
+          <div class="code-card">
+            <div class="cap">
+              <span>你的积分码</span>
+              <b id="codePt">500 积分</b>
+            </div>
+            <div class="code-val">
+              <code id="codeVal">MJMM-7K2P-9XQF-3TBH</code>
+              <button class="copy-btn" id="copyBtn">复制</button>
+            </div>
+            <div class="code-hint">
+              复制后到孩子账号里「我的积分 → 兑换码」粘贴，积分立即到账。码只算一次，请勿外传。
+            </div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button class="btn btn-sec" style="flex:1" id="gotoRedeem">去兑换（演示）</button>
+          </div>
+        </div>
+
+        <div class="p-card done-box" id="doneBox">
+          <div class="done-ico">✓</div>
+          <h4>充值成功</h4>
+          <p><span class="num" id="doneAdd">+500</span> 积分已到账，当前余额 <b class="num" id="doneBal">820</b> 积分</p>
+          <p style="color:var(--muted);font-size:12px;margin-top:8px">够孩子生成约 <b id="doneTimes">100</b> 张图</p>
+          <div class="voucher">凭证号 CZ20261105193047</div>
+        </div>
+
+        <div class="faq">
+          <div class="faq-t">家长常问</div>
+          <div class="faq-i"><b>每天送 60 分，怎么还要充值？</b>每天 60 分够生成 12 张图，用不完当天清零。孩子一天画得多，用完就会扣充值的积分。</div>
+          <div class="faq-i"><b>充的积分会过期吗？</b>不会，一直放在账户里，用完为止。</div>
+          <div class="faq-i"><b>付款后钱去哪了？</b>直接付给校区，积分码当场生效。老师晚上核对，万一没到账，拿订单号找老师即可。</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ② 学生端 ============ -->
+<section class="view" id="v-student">
+  <div class="view-head">
+    <h2>学生端 · 余额与扣费</h2>
+    <p>顶栏常驻一个积分胶囊；点开是余额抽屉，里面有兑换码输入框和每一笔明细</p>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="ph-top">
+        <div class="back">‹ 工作台</div>
+        <div class="credit-pill" id="pillBtn">
+          <span class="coin">分</span>
+          <span id="pillBal">320</span>
+          <em>今日免费 <span id="pillFree">45</span></em>
+        </div>
+      </div>
+      <div class="ph-scroll">
+        <div class="wb-head">
+          <h3>下午好，言小画</h3>
+          <p>今天免费额度还剩 45 分，够再生成 9 张图</p>
+        </div>
+
+        <div class="play-grid">
+          <div class="play">
+            <div class="play-ico" style="background:var(--pri-soft)">🖼</div>
+            <b>AI 出图</b>
+            <div class="cost">生成一张 <em>5 积分</em></div>
+          </div>
+          <div class="play">
+            <div class="play-ico" style="background:var(--blue-soft)">📄</div>
+            <b>高级 H5 报告</b>
+            <div class="cost">生成一份 <em>10 积分</em></div>
+          </div>
+          <div class="play">
+            <div class="play-ico" style="background:var(--pink-soft)">🎬</div>
+            <b>AI 视频</b>
+            <div class="cost">生成一条 <em>30 积分</em></div>
+          </div>
+          <div class="play">
+            <div class="play-ico" style="background:var(--green-soft)">✏️</div>
+            <b>AI 创作台</b>
+            <div class="cost">每张 <em>5 积分</em></div>
+          </div>
+        </div>
+
+        <div class="gen-demo">
+          <div class="cap">生成按钮上会直接写清楚要花多少分</div>
+          <button class="gen-btn" id="genBtn">
+            生成图片
+            <span class="tag" id="genTag">5 积分</span>
+          </button>
+        </div>
+
+        <div class="month-card">
+          <div class="mc-t">本月使用情况</div>
+          <div class="mc-row">
+            <div class="mc-i"><b class="num">36</b><span>生成图片</span></div>
+            <div class="mc-i"><b class="num">180</b><span>消耗积分</span></div>
+            <div class="mc-i"><b class="num">500</b><span>充值积分</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 抽屉 -->
+      <div class="mask" id="mask"></div>
+      <div class="drawer" id="drawer">
+        <div class="dr-head">
+          <button class="close" id="closeDrawer">✕</button>
+          <div class="lbl">我的积分</div>
+          <div class="bal"><span id="drBal">320</span><small>分</small></div>
+          <div class="bal eq">约等于 <span id="drMoney">32.0</span> 元，够生成 <span id="drTimes">64</span> 张图</div>
+        </div>
+
+        <div class="dr-body">
+          <div class="free-bar-wrap">
+            <div class="row">
+              <b>今日免费额度</b>
+              <span>剩 <b class="num" id="freeLeft">45</b> / 60 分</span>
+            </div>
+            <div class="bar"><i id="freeBar" style="width:75%"></i></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:7px">每天 0 点重置，用不完不累加</div>
+          </div>
+
+          <div class="sec-t">兑换码</div>
+          <div class="redeem">
+            <input id="redeemInput" placeholder="输入兑换码，如 MJMM-XXXX-XXXX" autocomplete="off">
+            <button id="redeemBtn">兑换</button>
+          </div>
+          <div class="redeem-msg" id="redeemMsg">找老师充值后，把拿到的码填在这里即可到账</div>
+
+          <div class="sec-t">最近明细 <a>全部 ›</a></div>
+          <div class="flow-list" id="flowList">
+            <div class="flow-item">
+              <div class="fi-ico" style="background:var(--pri-soft)">🖼</div>
+              <div class="fi-main"><b>生成图片</b><span>今天 14:32 · 免费额度</span></div>
+              <div class="fi-amt minus">-5</div>
+            </div>
+            <div class="flow-item">
+              <div class="fi-ico" style="background:var(--pri-soft)">🖼</div>
+              <div class="fi-main"><b>生成图片</b><span>今天 14:28 · 免费额度</span></div>
+              <div class="fi-amt minus">-5</div>
+            </div>
+            <div class="flow-item">
+              <div class="fi-ico" style="background:var(--green-soft)">🎁</div>
+              <div class="fi-main"><b>每日免费额度</b><span>今天 00:00 自动发放</span></div>
+              <div class="fi-amt plus">+60</div>
+            </div>
+            <div class="flow-item">
+              <div class="fi-ico" style="background:var(--green-soft)">💳</div>
+              <div class="fi-main"><b>兑换码充值</b><span>昨天 20:15 · 家长充值</span></div>
+              <div class="fi-amt plus">+500</div>
+            </div>
+            <div class="flow-item">
+              <div class="fi-ico" style="background:var(--pri-soft)">📄</div>
+              <div class="fi-main"><b>高级 H5 报告</b><span>昨天 19:50 · 扣充值积分</span></div>
+              <div class="fi-amt minus">-10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dr-foot">
+          <button class="btn btn-pri" onclick="go('v-parent')">积分不够 · 去充值</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ③ 后台账户 ============ -->
+<section class="view" id="v-accounts">
+  <div class="view-head">
+    <h2>后台 · 学生账户</h2>
+    <p>搜学生姓名 → 看余额 → 点一下加分。这是你不接支付也能收钱的通道</p>
+  </div>
+
+  <div class="admin">
+    <aside class="side">
+      <div class="si">📊 概览</div>
+      <div class="si on">👥 学生账户</div>
+      <div class="si">🎟 兑换码</div>
+      <div class="si">🏷 价目表</div>
+      <div class="si">✅ 今日核对</div>
+      <div class="divider"></div>
+      <div class="si dim">🏫 机构管理（后期）</div>
+      <div class="si dim">📈 消耗报表（二期）</div>
+    </aside>
+
+    <div>
+      <div class="stats">
+        <div class="stat"><div class="k">在册学生</div><div class="v">255<small>人</small></div><div class="f">美术 205 · 书法 50</div></div>
+        <div class="stat"><div class="k">本月充值</div><div class="v">3,400<small>分</small></div><div class="f">折合 340 元</div></div>
+        <div class="stat"><div class="k">今日消耗</div><div class="v">1,245<small>分</small></div><div class="f">成本约 62 元</div></div>
+        <div class="stat warn"><div class="k">待核对订单</div><div class="v">2<small>笔</small></div><div class="f">点右侧「今日核对」处理</div></div>
+      </div>
+
+      <div class="split">
+        <div class="panel">
+          <div class="panel-h">
+            <div>
+              <h3>学生列表</h3>
+              <div class="desc">点一行，右侧出现这个学生的账户详情</div>
+            </div>
+            <div class="acts">
+              <button class="btn-line">导出名单</button>
+            </div>
+          </div>
+          <div class="searchbar">
+            <input placeholder="输入学生姓名、账号或家长手机号">
+            <button class="btn-main">搜索</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>学生</th>
+                <th class="right">余额</th>
+                <th class="right">今日免费剩</th>
+                <th class="right">本月已用</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="stuTable">
+              <tr class="sel" data-name="言小画" data-id="ceshi3" data-bal="320" data-free="45" data-used="180">
+                <td><div class="who"><div class="ava">🎨</div><div><b>言小画</b><span>ceshi3 · 庆云校区</span></div></div></td>
+                <td class="right num"><b style="color:var(--pri-deep)">320</b></td>
+                <td class="right num">45</td>
+                <td class="right num">180</td>
+                <td class="right"><span class="lnk">加分 ›</span></td>
+              </tr>
+              <tr data-name="李小艺" data-id="ceshi4" data-bal="80" data-free="60" data-used="95">
+                <td><div class="who"><div class="ava">🖌</div><div><b>李小艺</b><span>ceshi4 · 艺美合一</span></div></div></td>
+                <td class="right num"><b style="color:var(--pri-deep)">80</b></td>
+                <td class="right num">60</td>
+                <td class="right num">95</td>
+                <td class="right"><span class="lnk">加分 ›</span></td>
+              </tr>
+              <tr data-name="王小墨" data-id="ceshi5" data-bal="0" data-free="60" data-used="60">
+                <td><div class="who"><div class="ava">✏️</div><div><b>王小墨</b><span>ceshi5 · 庆云校区</span></div></div></td>
+                <td class="right num"><b style="color:#dc2626">0</b></td>
+                <td class="right num">60</td>
+                <td class="right num">60</td>
+                <td class="right"><span class="lnk">加分 ›</span></td>
+              </tr>
+              <tr data-name="张小雨" data-id="ceshi6" data-bal="1500" data-free="30" data-used="420">
+                <td><div class="who"><div class="ava">🎭</div><div><b>张小雨</b><span>ceshi6 · 艺美合一</span></div></div></td>
+                <td class="right num"><b style="color:var(--pri-deep)">1,500</b></td>
+                <td class="right num">30</td>
+                <td class="right num">420</td>
+                <td class="right"><span class="lnk">加分 ›</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="detail-card">
+          <div class="dc-head">
+            <div class="dc-ava">🎨</div>
+            <div>
+              <b id="dcName">言小画</b>
+              <span id="dcId">ceshi3 · 庆云校区</span>
+            </div>
+          </div>
+          <div class="dc-bal">
+            <div class="v num" id="dcBal">320</div>
+            <div class="k">当前积分余额</div>
+          </div>
+          <div class="quick">
+            <button data-add="100">+100 分</button>
+            <button data-add="500">+500 分</button>
+            <button data-add="1000">+1000 分</button>
+          </div>
+          <div class="custom-add">
+            <input id="customAmt" placeholder="自定义分值" type="number">
+            <button id="customBtn">加</button>
+          </div>
+          <div class="sec-t" style="margin-top:0">最近流水</div>
+          <div class="mini-flow" id="dcFlow">
+            <div class="fi"><div class="t">今天 14:32</div><div class="d">生成图片</div><div class="a minus">-5</div></div>
+            <div class="fi"><div class="t">今天 00:00</div><div class="d">每日免费额度</div><div class="a plus">+60</div></div>
+            <div class="fi"><div class="t">昨天 20:15</div><div class="d">兑换码充值</div><div class="a plus">+500</div></div>
+            <div class="fi"><div class="t">昨天 19:50</div><div class="d">高级 H5 报告</div><div class="a minus">-10</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ④ 兑换码 ============ -->
+<section class="view" id="v-codes">
+  <div class="view-head">
+    <h2>后台 · 兑换码</h2>
+    <p>一次生成一批、导出发给家长。也能直接上传到发卡平台自动发货</p>
+  </div>
+
+  <div class="admin">
+    <aside class="side">
+      <div class="si">📊 概览</div>
+      <div class="si">👥 学生账户</div>
+      <div class="si on">🎟 兑换码</div>
+      <div class="si">🏷 价目表</div>
+      <div class="si">✅ 今日核对</div>
+      <div class="divider"></div>
+      <div class="si dim">🏫 机构管理（后期）</div>
+      <div class="si dim">📈 消耗报表（二期）</div>
+    </aside>
+
+    <div>
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <h3>批量生成</h3>
+            <div class="desc">生成的码只在你自己的库里登记面额，发给谁就算谁的</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>每张面额</label>
+            <select id="genPt">
+              <option value="100">100 积分（10 元）</option>
+              <option value="300">300 积分（30 元）</option>
+              <option value="500" selected>500 积分（50 元）</option>
+              <option value="1000">1000 积分（100 元）</option>
+            </select>
+          </div>
+          <div class="field sm">
+            <label>生成数量</label>
+            <input id="genCount" type="number" value="20" min="1" max="500">
+          </div>
+          <div class="field">
+            <label>备注</label>
+            <input id="genNote" value="开学促销 · 秋季班">
+          </div>
+          <button class="btn-main" id="genCodes">生成兑换码</button>
+          <button class="btn-line" id="exportCsv">导出 CSV</button>
+        </div>
+        <div class="pkg-hint">
+          导出的文件是两列：<b>卡密,备注</b>。可以直接上传到发卡平台，家长付款后平台自动把码显示给他。
+          码本身不带面额信息，只有你库里知道它值多少分，所以平台看到码也没用。
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <h3>已生成的码</h3>
+            <div class="desc">共 <b id="codeTotal">20</b> 张 · 未使用 <b id="codeUnused">20</b> 张</div>
+          </div>
+          <div class="acts">
+            <select style="border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;outline:none;">
+              <option>全部状态</option>
+              <option>未使用</option>
+              <option>已使用</option>
+              <option>已作废</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>兑换码</th>
+              <th class="right">面额</th>
+              <th>状态</th>
+              <th>使用时填的名</th>
+              <th>使用时间</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="codeTable">
+            <tr>
+              <td class="mono">MJMM-7K2P-9XQF-3TBH</td>
+              <td class="right num">500</td>
+              <td><span class="tag tag-g">已使用</span></td>
+              <td>言小画</td>
+              <td class="num">11-05 19:30</td>
+              <td class="right"><span class="lnk mute">明细</span></td>
+            </tr>
+            <tr>
+              <td class="mono">MJMM-3RTV-8WNB-6LMC</td>
+              <td class="right num">500</td>
+              <td><span class="tag tag-gray">未使用</span></td>
+              <td>—</td>
+              <td class="num">—</td>
+              <td class="right"><span class="lnk danger">作废</span></td>
+            </tr>
+            <tr>
+              <td class="mono">MJMM-5HJQ-2PDX-9KFW</td>
+              <td class="right num">500</td>
+              <td><span class="tag tag-gray">未使用</span></td>
+              <td>—</td>
+              <td class="num">—</td>
+              <td class="right"><span class="lnk danger">作废</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ⑤ 价目表 ============ -->
+<section class="view" id="v-prices">
+  <div class="view-head">
+    <h2>后台 · 价目表</h2>
+    <p>改完立即生效；改价不影响已经发生的流水（流水里记的是当时扣了多少分）</p>
+  </div>
+
+  <div class="admin">
+    <aside class="side">
+      <div class="si">📊 概览</div>
+      <div class="si">👥 学生账户</div>
+      <div class="si">🎟 兑换码</div>
+      <div class="si on">🏷 价目表</div>
+      <div class="si">✅ 今日核对</div>
+      <div class="divider"></div>
+      <div class="si dim">🏫 机构管理（后期）</div>
+      <div class="si dim">📈 消耗报表（二期）</div>
+    </aside>
+
+    <div>
+      <div class="stats">
+        <div class="stat"><div class="k">今日收取积分</div><div class="v">245<small>分</small></div><div class="f">折合 24.5 元</div></div>
+        <div class="stat"><div class="k">今日真实成本</div><div class="v">12.3<small>元</small></div><div class="f">按上游实际账单</div></div>
+        <div class="stat"><div class="k">今日毛利率</div><div class="v">50<small>%</small></div><div class="f">低于 40% 会自动提醒你</div></div>
+        <div class="stat"><div class="k">免费额度支出</div><div class="v">38.6<small>元</small></div><div class="f">今天全部学生用掉的成本</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <h3>功能定价</h3>
+            <div class="desc">售价 = 成本 × 倍率；倍率 2.0 意味着成本涨一倍你才开始亏</div>
+          </div>
+          <div class="acts">
+            <button class="btn-line" id="recalc">按成本重算建议价</button>
+            <button class="btn-main">保存</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>功能</th>
+              <th class="right">实际成本</th>
+              <th class="right">倍率</th>
+              <th class="right">售价（积分）</th>
+              <th>参与每日免费</th>
+              <th class="right">60 分能换</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b style="color:var(--title)">普通出图</b><div style="font-size:11px;color:var(--muted)">单张 1024×1024</div></td>
+              <td class="right num">0.25 元</td>
+              <td class="right num">2.0</td>
+              <td class="right"><b class="num" style="color:var(--pri-deep);font-size:15px">5</b></td>
+              <td><span class="tag tag-g">参与</span></td>
+              <td class="right num">12 张</td>
+            </tr>
+            <tr>
+              <td><b style="color:var(--title)">高级 H5 报告</b><div style="font-size:11px;color:var(--muted)">整份生成</div></td>
+              <td class="right num">0.50 元</td>
+              <td class="right num">2.0</td>
+              <td class="right"><b class="num" style="color:var(--pri-deep);font-size:15px">10</b></td>
+              <td><span class="tag tag-g">参与</span></td>
+              <td class="right num">6 份</td>
+            </tr>
+            <tr>
+              <td><b style="color:var(--title)">AI 视频</b><div style="font-size:11px;color:var(--muted)">单条 5 秒</div></td>
+              <td class="right num">1.50 元</td>
+              <td class="right num">2.0</td>
+              <td class="right"><b class="num" style="color:var(--pri-deep);font-size:15px">30</b></td>
+              <td><span class="tag tag-g">参与</span></td>
+              <td class="right num">2 条</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pkg-hint">
+          <b>为什么要有「按成本重算建议价」：</b>上游（火山）随时可能调价。系统每天把真实成本记下来，
+          跑两周后算出一个建议价，你点一下就全部更新。不用自己拿计算器算。
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <h3>全局参数</h3>
+            <div class="desc">这几个数字决定你每天要贴多少钱</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>每天免费额度</label>
+            <input value="60" type="number" style="width:110px">
+          </div>
+          <div class="field">
+            <label>锚点（元 / 积分）</label>
+            <input value="10 元 = 100 积分" readonly style="width:170px;background:#f9fafb;color:var(--muted)">
+          </div>
+          <div class="field">
+            <label>单笔充值上限</label>
+            <input value="100" type="number" style="width:110px">
+          </div>
+          <div class="field">
+            <label>每月充值上限</label>
+            <input value="300" type="number" style="width:110px">
+          </div>
+          <div class="field">
+            <label>免费额度是否累加</label>
+            <select style="width:130px"><option>当天清零（推荐）</option><option>累加 7 天</option></select>
+          </div>
+        </div>
+        <div class="pkg-hint">
+          <b>60 分意味着什么：</b>全部用满 = 12 张图 = <b>约 3 元成本/人/天</b>。这是最坏情况的上限；
+          孩子实际一天画 2~3 张，真实消耗约 0.75~1 元。上线两周后看真实数据再调这个数。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ⑥ 今日核对 ============ -->
+<section class="view" id="v-orders">
+  <div class="view-head">
+    <h2>后台 · 今日核对</h2>
+    <p>家长自己扫码付款、自己拿码，你每天晚上对照微信收款记录勾一遍，一分钟完成</p>
+  </div>
+
+  <div class="admin">
+    <aside class="side">
+      <div class="si">📊 概览</div>
+      <div class="si">👥 学生账户</div>
+      <div class="si">🎟 兑换码</div>
+      <div class="si">🏷 价目表</div>
+      <div class="si on">✅ 今日核对</div>
+      <div class="divider"></div>
+      <div class="si dim">🏫 机构管理（后期）</div>
+      <div class="si dim">📈 消耗报表（二期）</div>
+    </aside>
+
+    <div>
+      <div class="stats">
+        <div class="stat"><div class="k">今日订单</div><div class="v">8<small>笔</small></div><div class="f">合计 400 元</div></div>
+        <div class="stat"><div class="k">已核对</div><div class="v">6<small>笔</small></div><div class="f">已确认收到钱</div></div>
+        <div class="stat warn"><div class="k">待核对</div><div class="v">2<small>笔</small></div><div class="f">打开微信收款记录对照</div></div>
+        <div class="stat"><div class="k">已作废</div><div class="v">0<small>笔</small></div><div class="f">没收到钱的单</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <h3>订单列表</h3>
+            <div class="desc">家长填的孩子名不一定准，主要认订单号和金额</div>
+          </div>
+          <div class="acts">
+            <button class="btn-line">全部标记已收款</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>订单号</th>
+              <th>时间</th>
+              <th>家长填的孩子</th>
+              <th class="right">金额</th>
+              <th>积分码</th>
+              <th>状态</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="orderTable">
+            <tr data-state="done">
+              <td class="mono">CZ20261105184120</td>
+              <td class="num">18:41</td>
+              <td>言小画</td>
+              <td class="right num">50 元</td>
+              <td class="mono">MJMM-9Q3K-2LMD-7XVB</td>
+              <td><span class="tag tag-g">已到账</span></td>
+              <td class="right"><span class="lnk mute">明细</span></td>
+            </tr>
+            <tr data-state="done">
+              <td class="mono">CZ20261105180935</td>
+              <td class="num">18:09</td>
+              <td>李小艺</td>
+              <td class="right num">30 元</td>
+              <td class="mono">MJMM-4WDN-8RKC-3HPT</td>
+              <td><span class="tag tag-g">已到账</span></td>
+              <td class="right"><span class="lnk mute">明细</span></td>
+            </tr>
+            <tr data-state="wait">
+              <td class="mono">CZ20261105193047</td>
+              <td class="num">19:30</td>
+              <td>张小雨</td>
+              <td class="right num">100 元</td>
+              <td class="mono">MJMM-7K2P-9XQF-3TBH</td>
+              <td><span class="tag tag-o">待核对</span></td>
+              <td class="right" style="white-space:nowrap">
+                <span class="lnk act-ok">✓ 已收款</span>
+                <span class="lnk danger act-void" style="margin-left:8px">✗ 没收到</span>
+              </td>
+            </tr>
+            <tr data-state="wait">
+              <td class="mono">CZ20261105194402</td>
+              <td class="num">19:44</td>
+              <td>王小墨</td>
+              <td class="right num">50 元</td>
+              <td class="mono">MJMM-6BTY-5NKW-2DQR</td>
+              <td><span class="tag tag-o">待核对</span></td>
+              <td class="right" style="white-space:nowrap">
+                <span class="lnk act-ok">✓ 已收款</span>
+                <span class="lnk danger act-void" style="margin-left:8px">✗ 没收到</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pkg-hint">
+          <b>为什么先发码再核对：</b>不做微信支付直连，系统不知道钱有没有到。所以让它先信任家长（码立即生效），
+          你晚上对照微信收款记录勾选。发现没付钱的，点「没收到」把码作废、积分扣回，学生端会提示「这笔充值未收到款」。
+          测试阶段一天几笔，一分钟就能对完。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="foot-note">
+  演示页说明：所有数字均为示例，未连接任何真实数据。<br>
+  参数口径：10 元 = 100 积分 · 倍率 2.0 · 每日免费 60 分（当天清零）· 出图 5 分 / 报告 10 分 / 视频 30 分 · 单笔充值上限 100 元。
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var $ = function(s){ return document.querySelector(s); };
+  var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  /* ---------- toast ---------- */
+  var toastEl = $('#toast'), toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, 2200);
+  }
+
+  /* ---------- tab 切换 ---------- */
+  function go(id){
+    $$('.view').forEach(function(v){ v.classList.toggle('on', v.id === id); });
+    $$('.tab').forEach(function(t){ t.classList.toggle('on', t.dataset.view === id); });
+    if (history.replaceState){
+      try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    }
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+  $$('.tab').forEach(function(t){
+    t.addEventListener('click', function(){ go(t.dataset.view); });
+  });
+  window.go = go;
+
+  // 支持用 #v-xxx 直接打开某一屏（方便分享）
+  (function(){
+    var h = (location.hash || '').replace('#','');
+    if (h && document.getElementById(h)) go(h);
+  })();
+
+  /* ---------- 假二维码 ---------- */
+  function fakeQR(size){
+    size = size || 25;
+    var cells = [];
+    var seed = 20261105;
+    function rnd(){ seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+    function isFinder(r,c){
+      var corners = [[0,0],[0,size-7],[size-7,0]];
+      for (var i=0;i<corners.length;i++){
+        var br = corners[i][0], bc = corners[i][1];
+        if (r>=br && r<br+7 && c>=bc && c<bc+7){
+          var rr = r-br, cc = c-bc;
+          var edge = (rr===0||rr===6||cc===0||cc===6);
+          var core = (rr>=2&&rr<=4&&cc>=2&&cc<=4);
+          return edge || core;
+        }
+        // 分隔留白
+        if (r>=br-1 && r<=br+7 && c>=bc-1 && c<=bc+7) return null;
+      }
+      return undefined;
+    }
+    var s = '<svg viewBox="0 0 '+size+' '+size+'" width="100%" height="100%" shape-rendering="crispEdges">';
+    s += '<rect width="'+size+'" height="'+size+'" fill="#fff"/>';
+    for (var r=0;r<size;r++){
+      for (var c=0;c<size;c++){
+        var f = isFinder(r,c);
+        var on;
+        if (f === true) on = true;
+        else if (f === null) on = false;
+        else on = rnd() > 0.52;
+        if (on) s += '<rect x="'+c+'" y="'+r+'" width="1" height="1" fill="#1f2937"/>';
+      }
+    }
+    s += '</svg>';
+    return s;
+  }
+  $('#qrBox').innerHTML = fakeQR(25);
+
+  /* ---------- ① 家长充值 ---------- */
+  var curAmt = 50, curPt = 500;
+  $$('#amtGrid .amt').forEach(function(a){
+    a.addEventListener('click', function(){
+      $$('#amtGrid .amt').forEach(function(x){ x.classList.remove('on'); });
+      a.classList.add('on');
+      curAmt = +a.dataset.amt;
+      curPt = +a.dataset.pt;
+    });
+  });
+
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+  var CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function randCode(){
+    var out = [];
+    for (var g=0; g<3; g++){
+      var seg = '';
+      for (var i=0;i<4;i++) seg += CHARS[Math.floor(Math.random()*CHARS.length)];
+      out.push(seg);
+    }
+    return 'MJMM-' + out.join('-');
+  }
+  var lastCode = 'MJMM-7K2P-9XQF-3TBH';
+
+  $('#genOrder').addEventListener('click', function(){
+    var d = new Date();
+    var oid = 'CZ' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate())
+            + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+    $('#orderId').textContent = oid;
+    $('#payAmt').textContent = curAmt.toFixed(2) + ' 元';
+    $('#codePt').textContent = curPt + ' 积分';
+    lastCode = randCode();
+    $('#codeVal').textContent = lastCode;
+    $('#orderBox').classList.add('on');
+    $('#doneBox').classList.remove('on');
+    toast('已生成，请扫码付款');
+    setTimeout(function(){
+      $('#orderBox').scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 60);  });
+
+  $('#copyBtn').addEventListener('click', function(){
+    var txt = $('#codeVal').textContent.trim();
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ toast('积分码已复制'); },
+        function(){ toast('已选中，请手动复制'); });
+    } else {
+      toast('已复制：' + txt);
+    }
+  });
+
+  $('#gotoRedeem').addEventListener('click', function(){
+    go('v-student');
+    setTimeout(function(){
+      openDrawer();
+      $('#redeemInput').value = lastCode;
+      $('#redeemInput').focus();
+      toast('已把码带过来，点「兑换」试试');
+    }, 260);
+  });
+
+  /* ---------- ② 学生端 ---------- */
+  var bal = 320, freeLeft = 45, FREE_MAX = 60;
+
+  function render(){
+    $('#pillBal').textContent = bal;
+    $('#pillFree').textContent = freeLeft;
+    $('#drBal').textContent = bal;
+    $('#drMoney').textContent = (bal / 10).toFixed(1);
+    $('#drTimes').textContent = Math.floor(bal / 5) + Math.floor(0);
+    $('#freeLeft').textContent = freeLeft;
+    $('#freeBar').style.width = (freeLeft / FREE_MAX * 100) + '%';
+    $('#p-bal').textContent = bal;
+    var gb = $('#genBtn');
+    if (bal <= 0 && freeLeft < 5){
+      gb.classList.add('off');
+      $('#genTag').textContent = '积分不足';
+    } else {
+      gb.classList.remove('off');
+      $('#genTag').textContent = '5 积分';
+    }
+  }
+
+  function openDrawer(){
+    $('#drawer').classList.add('on');
+    $('#mask').classList.add('on');
+  }
+  function closeDrawer(){
+    $('#drawer').classList.remove('on');
+    $('#mask').classList.remove('on');
+  }
+  window.openDrawer = openDrawer;
+  $('#pillBtn').addEventListener('click', openDrawer);
+  $('#closeDrawer').addEventListener('click', closeDrawer);
+  $('#mask').addEventListener('click', closeDrawer);
+
+  function addFlow(ico, bg, title, sub, amt, plus){
+    var el = document.createElement('div');
+    el.className = 'flow-item';
+    el.innerHTML = '<div class="fi-ico" style="background:' + bg + '">' + ico + '</div>'
+      + '<div class="fi-main"><b>' + title + '</b><span>' + sub + '</span></div>'
+      + '<div class="fi-amt ' + (plus ? 'plus' : 'minus') + '">' + (plus ? '+' : '-') + amt + '</div>';
+    var list = $('#flowList');
+    list.insertBefore(el, list.firstChild);
+  }
+
+  var usedCodes = {};
+
+  $('#redeemBtn').addEventListener('click', function(){
+    var v = ($('#redeemInput').value || '').trim().toUpperCase();
+    var msg = $('#redeemMsg');
+    msg.className = 'redeem-msg';
+    if (!v){ msg.textContent = '请先填兑换码'; msg.classList.add('err'); return; }
+    if (!/^MJMM-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(v)){
+      msg.textContent = '格式不对，应该是 MJMM-XXXX-XXXX-XXXX'; msg.classList.add('err'); return;
+    }
+    if (usedCodes[v]){
+      msg.textContent = '这个码已经兑换过了，不能重复使用'; msg.classList.add('err'); return;
+    }
+    usedCodes[v] = true;
+    var add = (v === lastCode) ? curPt : 500;
+    bal += add;
+    msg.textContent = '兑换成功，+' + add + ' 积分已到账';
+    msg.classList.add('ok');
+    addFlow('🎁', 'var(--green-soft)', '兑换码充值', '刚刚 · 家长充值', add, true);
+    $('#redeemInput').value = '';
+    render();
+    toast('充值成功 +' + add + ' 积分');
+  });
+
+  $('#genBtn').addEventListener('click', function(){
+    if (bal <= 0 && freeLeft < 5){
+      toast('积分不足，请先充值');
+      openDrawer();
+      return;
+    }
+    var useFree = freeLeft >= 5;
+    if (useFree){
+      freeLeft -= 5;
+      addFlow('🖼', 'var(--pri-soft)', '生成图片', '刚刚 · 免费额度', 5, false);
+    } else {
+      bal -= 5;
+      addFlow('🖼', 'var(--pri-soft)', '生成图片', '刚刚 · 扣充值积分', 5, false);
+    }
+    render();
+    toast(useFree ? '已扣 5 分（免费额度）' : '已扣 5 分（充值积分）');
+  });
+
+  render();
+
+  /* ---------- ③ 后台账户 ---------- */
+  var curStu = { name:'言小画', id:'ceshi3', bal:320, free:45, used:180 };
+
+  $$('#stuTable tr').forEach(function(tr){
+    tr.addEventListener('click', function(){
+      $$('#stuTable tr').forEach(function(x){ x.classList.remove('sel'); });
+      tr.classList.add('sel');
+      curStu = {
+        name: tr.dataset.name,
+        id: tr.dataset.id,
+        bal: +tr.dataset.bal,
+        free: +tr.dataset.free,
+        used: +tr.dataset.used
+      };
+      $('#dcName').textContent = curStu.name;
+      $('#dcId').textContent = curStu.id + ' · ' + (tr.dataset.id === 'ceshi4' || tr.dataset.id === 'ceshi6' ? '艺美合一' : '庆云校区');
+      $('#dcBal').textContent = curStu.bal;
+    });
+  });
+
+  function stuAdd(n){
+    curStu.bal += n;
+    $('#dcBal').textContent = curStu.bal;
+    var tr = $('#stuTable tr.sel');
+    tr.dataset.bal = curStu.bal;
+    tr.querySelector('td.right b, td .num b').textContent = curStu.bal;
+    // 插入流水
+    var flow = $('#dcFlow');
+    var el = document.createElement('div');
+    el.className = 'fi';
+    el.innerHTML = '<div class="t">刚刚</div><div class="d">后台加分（老师操作）</div><div class="a plus">+' + n + '</div>';
+    flow.insertBefore(el, flow.firstChild);
+    toast('已给 ' + curStu.name + ' 加 ' + n + ' 分');
+  }
+  $$('.quick button').forEach(function(b){
+    b.addEventListener('click', function(){ stuAdd(+b.dataset.add); });
+  });
+  $('#customBtn').addEventListener('click', function(){
+    var n = parseInt($('#customAmt').value, 10);
+    if (!n || n <= 0){ toast('请输入大于 0 的整数'); return; }
+    stuAdd(n);
+    $('#customAmt').value = '';
+  });
+
+  /* ---------- ④ 兑换码生成 ---------- */
+  $('#genCodes').addEventListener('click', function(){
+    var pt = +$('#genPt').value;
+    var count = Math.min(Math.max(parseInt($('#genCount').value, 10) || 1, 1), 500);
+    var tbody = $('#codeTable');
+    var first = true;
+    for (var i=0;i<count;i++){
+      var code = randCode();
+      if (first){
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td class="mono">' + code + '</td>'
+          + '<td class="right num">' + pt + '</td>'
+          + '<td><span class="tag tag-gray">未使用</span></td>'
+          + '<td>—</td><td class="num">—</td>'
+          + '<td class="right"><span class="lnk danger">作废</span></td>';
+        tbody.insertBefore(tr, tbody.firstChild);
+        first = false;
+      }
+    }
+    $('#codeTotal').textContent = count;
+    $('#codeUnused').textContent = count;
+    toast('已生成 ' + count + ' 张 ' + pt + ' 分的码');
+  });
+
+  $('#exportCsv').addEventListener('click', function(){
+    toast('已导出 CSV（演示不真下载）');
+  });
+
+  $('#recalc').addEventListener('click', function(){
+    toast('两周后这里会给出建议价，点一下全部更新');
+  });
+
+  /* ---------- ⑥ 订单核对 ---------- */
+  function refreshStats(){
+    var rows = $$('#orderTable tr');
+    var done = 0, wait = 0, void_ = 0;
+    rows.forEach(function(r){
+      var s = r.dataset.state;
+      if (s === 'done') done++;
+      else if (s === 'wait') wait++;
+      else void_++;
+    });
+    var v = $$('#v-orders .stat .v');
+    if (v.length >= 4){
+      v[1].innerHTML = done + '<small>笔</small>';
+      v[2].innerHTML = wait + '<small>笔</small>';
+      v[3].innerHTML = void_ + '<small>笔</small>';
+    }
+  }
+  $$('#orderTable tr').forEach(function(tr){
+    var ok = tr.querySelector('.act-ok');
+    var vd = tr.querySelector('.act-void');
+    if (ok) ok.addEventListener('click', function(){
+      tr.dataset.state = 'done';
+      tr.querySelector('td:nth-child(6)').innerHTML = '<span class="tag tag-g">已到账</span>';
+      tr.querySelector('td:nth-child(7)').innerHTML = '<span class="lnk mute">明细</span>';
+      refreshStats();
+      toast('已确认收款，这笔算核完了');
+    });
+    if (vd) vd.addEventListener('click', function(){
+      tr.dataset.state = 'void';
+      tr.querySelector('td:nth-child(6)').innerHTML = '<span class="tag tag-gray">已作废</span>';
+      tr.querySelector('td:nth-child(7)').innerHTML = '<span class="lnk mute">明细</span>';
+      refreshStats();
+      toast('已作废，这个码失效、积分扣回');
+    });
+  });
+
+  /* ---------- Esc 关闭抽屉 ---------- */
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeDrawer();
+  });
+})();
+</script>
+</body>
+</html>

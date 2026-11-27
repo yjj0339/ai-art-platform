@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H5 报告 · 排法与皮肤静态样张</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#ECECEF;color:#17181C;
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:64px 40px 120px}
+
+/* ---------- 文档头 ---------- */
+.doc-hd{margin-bottom:20px}
+.doc-kicker{font-size:11px;letter-spacing:.2em;color:#8A8C94;margin-bottom:16px}
+.doc-hd h1{font-size:34px;line-height:1.3;letter-spacing:-.01em;font-weight:600}
+.doc-hd .lead{margin-top:18px;font-size:15px;line-height:1.85;color:#565963;max-width:800px}
+.doc-hd .legend{display:flex;gap:28px;flex-wrap:wrap;margin-top:30px;padding-top:24px;border-top:1px solid #DCDDE3;font-size:13px;color:#5D6069}
+.legend b{color:#17181C;font-weight:600}
+.legend i{font-style:normal;color:#9A9CA4}
+
+/* ---------- 分区 ---------- */
+.sec{margin-top:92px}
+.sec-hd{display:flex;align-items:center;gap:13px}
+.sec-idx{width:25px;height:25px;border-radius:50%;background:#17181C;color:#fff;font-size:11px;display:grid;place-items:center;font-weight:600;flex:0 0 auto}
+.sec-hd h2{font-size:21px;font-weight:600;letter-spacing:-.01em}
+.sec-desc{font-size:14px;line-height:1.8;color:#5D6069;max-width:840px;margin:14px 0 0 38px}
+.grid{display:grid;grid-template-columns:repeat(3,390px);gap:62px 40px;justify-content:center;margin-top:44px}
+#gridA{grid-template-columns:repeat(2,390px)}
+@media(max-width:1300px){.grid{grid-template-columns:repeat(2,390px)}}
+@media(max-width:880px){.grid,#gridA{grid-template-columns:390px}}
+
+/* ---------- 手机外壳 ---------- */
+.cell{display:flex;flex-direction:column;gap:14px;align-items:center}
+.cell-cap{width:390px;font-size:12.5px;line-height:1.7;color:#6A6D76;text-align:center}
+.cell-cap b{display:block;font-size:14px;color:#17181C;font-weight:600;margin-bottom:3px;letter-spacing:.01em}
+.phone{
+  position:relative;width:390px;height:844px;border-radius:30px;overflow:hidden;
+  background-color:var(--bg);color:var(--ink);font-family:var(--font);
+  box-shadow:0 22px 44px rgba(20,24,34,.15),0 3px 10px rgba(20,24,34,.06);
+  flex:0 0 auto;isolation:isolate;
+}
+.phone::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:9;opacity:.05;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.pg{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;padding:34px 28px 24px}
+.pg-head{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;letter-spacing:.12em;color:var(--sub);padding-bottom:13px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.pg-body{flex:1;min-height:0;padding-top:22px;display:flex;flex-direction:column;gap:16px}
+.pg-body.center-v{justify-content:center;padding-bottom:10px}
+.pg-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);letter-spacing:.05em;flex:0 0 auto}
+
+/* ---------- 通用内容块 ---------- */
+.art{position:relative;background:#fff;border-radius:calc(var(--rad) * .85);overflow:hidden;flex:0 0 auto}
+.art svg{display:block;width:100%;height:100%;border-radius:inherit}
+.art-hero{height:452px}
+.cap-hero h2{font-size:23px;line-height:1.4;font-weight:600;letter-spacing:.005em;color:var(--ink)}
+.cap-hero p{margin-top:10px;font-size:14.5px;line-height:1.9;color:var(--ink);opacity:.78}
+.body-txt{font-size:14px;line-height:1.95;color:var(--ink);opacity:.8}
+.body-txt.center{text-align:center}
+.tag{display:inline-block;margin-top:9px;font-size:10.5px;letter-spacing:.08em;color:var(--sub)}
+
+.cmp{display:grid;grid-template-columns:1fr 20px 1fr;gap:8px;align-items:start}
+.cmp .art{height:228px}
+.cmp-arrow{color:var(--sub);font-size:15px;text-align:center;padding-top:104px}
+
+.note-card{background:var(--soft);border-radius:var(--rad);padding:28px 22px}
+.note-card p{font-size:18.5px;line-height:2.05;color:var(--ink)}
+
+.steps{display:flex;flex-direction:column;gap:22px}
+.step{display:grid;grid-template-columns:126px 1fr;gap:16px;align-items:center}
+.step .art{height:118px}
+.step-idx{display:block;font-size:10px;letter-spacing:.14em;color:var(--sub);margin-bottom:5px}
+.step p{font-size:13px;line-height:1.8;color:var(--ink);opacity:.82}
+
+.collage{position:relative;height:426px}
+.collage .art{position:absolute;width:186px;height:198px;box-shadow:0 12px 26px rgba(20,30,45,.16)}
+.cl1{left:4px;top:10px;transform:rotate(-4deg)}
+.cl2{right:2px;top:58px;transform:rotate(3.5deg);z-index:2}
+.cl3{left:54px;bottom:0;transform:rotate(-1.5deg);z-index:3}
+
+.quote{flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;padding:0 6px}
+.quote p{font-size:25px;line-height:1.65;font-weight:500;letter-spacing:.01em}
+.quote span{font-size:11.5px;color:var(--sub);letter-spacing:.06em}
+
+.frame{padding:14px;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 30px rgba(20,24,34,.10)}
+.frame .art{height:322px;border-radius:0}
+.meta{font-size:11.5px;color:var(--sub);letter-spacing:.05em;text-align:center;line-height:1.7}
+
+.kw-hd{font-size:10.5px;letter-spacing:.14em;color:var(--sub);margin-bottom:12px}
+.kw{display:flex;flex-wrap:wrap;gap:9px;list-style:none}
+.kw li{font-size:12.5px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;color:var(--ink)}
+
+/* ---------- 封面 ---------- */
+.cv{height:100%;display:flex;flex-direction:column;padding:44px 30px 34px;position:relative;z-index:2}
+.cv-badge{font-size:10.5px;letter-spacing:.16em;color:var(--sub)}
+.cv-title{font-size:40px;line-height:1.28;font-weight:600;margin-top:14px;letter-spacing:.005em}
+.cv-art{height:392px;margin-top:26px;box-shadow:0 14px 34px rgba(20,30,45,.14)}
+.cv-meta{margin-top:auto;padding-top:22px;font-size:13px;color:var(--ink);opacity:.8;letter-spacing:.03em}
+.cv-meta b{font-weight:600;opacity:1}
+.cv-org{font-size:10.5px;color:var(--sub);letter-spacing:.14em;margin-top:6px}
+
+/* ---------- 皮肤 1：清爽水彩 ---------- */
+.sk-water{
+  --bg:#F7FBFD;--ink:#1F3A4A;--sub:#6E8B9C;--accent:#4A93BC;
+  --soft:#E8F2F8;--card:#FFFFFF;--line:#DBE9F1;--rad:18px;
+  --font:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+.sk-water .decor{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(115% 62% at 92% -10%, rgba(122,186,224,.30), transparent 60%),
+    radial-gradient(95% 52% at -12% 104%, rgba(178,214,236,.32), transparent 62%);
+}
+.sk-water .art{box-shadow:0 8px 22px rgba(58,110,145,.13)}
+.sk-water .cv-title{color:#183444}
+
+/* ---------- 皮肤 2：手账拼贴 ---------- */
+.sk-journal{
+  --bg:#FFFCF2;--ink:#3B3226;--sub:#8B7A61;--accent:#DE8A5B;
+  --soft:#FFF1C9;--card:#FFFDF7;--line:#E7DDC6;--rad:5px;
+  --font:"KaiTi","Kaiti SC","STKaiti","PingFang SC",serif;
+}
+.sk-journal{
+  background-image:
+    linear-gradient(rgba(215,201,170,.42) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(215,201,170,.42) 1px,transparent 1px);
+  background-size:26px 26px;background-position:-1px -1px;
+}
+.sk-journal .art-hero{overflow:visible}
+.sk-journal .art-hero::before,.sk-journal .art-hero::after{
+  content:"";position:absolute;width:92px;height:23px;z-index:4;
+  background:rgba(232,201,142,.66);box-shadow:0 2px 6px rgba(120,95,50,.16);
+}
+.sk-journal .art-hero::before{top:-9px;left:-14px;transform:rotate(-26deg)}
+.sk-journal .art-hero::after{top:-9px;right:-14px;transform:rotate(26deg)}
+.sk-journal .note-card{border:1px solid #EBD9A6;box-shadow:0 6px 16px rgba(150,120,60,.10)}
+.sk-journal .cv-title{font-size:44px;letter-spacing:.02em}
+.sk-journal .cv-art{transform:rotate(-1.5deg)}
+
+/* ---------- 皮肤 3：美术馆画廊 ---------- */
+.sk-gallery{
+  --bg:#FFFFFF;--ink:#121212;--sub:#828282;--accent:#121212;
+  --soft:#F5F5F5;--card:#FFFFFF;--line:#E4E4E4;--rad:1px;
+  --font:"Source Han Serif SC","Noto Serif SC","Songti SC","SimSun",Georgia,serif;
+}
+.sk-gallery .pg-head{border-bottom:none;justify-content:flex-start}
+.sk-gallery .pg-head .pg-num{margin-left:auto}
+.sk-gallery .cap-hero h2{font-size:25px;font-weight:400;letter-spacing:.03em}
+.sk-gallery .cap-hero p{opacity:.72}
+.sk-gallery .art{box-shadow:0 0 0 1px #EDEDED;border:0}
+.sk-gallery .art-hero{height:404px}
+.sk-gallery .cap-hero h2::before{
+  content:"作 品";display:block;font-size:9.5px;letter-spacing:.34em;color:#9C9C9C;
+  margin-bottom:12px;font-weight:400;font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+}
+.sk-gallery .cv-title{font-size:46px;font-weight:300;letter-spacing:.04em;line-height:1.35}
+
+/* ---------- 皮肤 4：国风雅致 ---------- */
+.sk-ink{
+  --bg:#F6F2E6;--ink:#2A2722;--sub:#7D7463;--accent:#A33C22;
+  --soft:#EDE4CE;--card:#FBF8F0;--line:#DED2B6;--rad:6px;
+  --font:"KaiTi","Kaiti SC","STKaiti","PingFang SC",serif;
+}
+.sk-ink .decor{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(70% 44% at 12% 6%, rgba(214,196,158,.34), transparent 66%),
+    radial-gradient(60% 40% at 96% 96%, rgba(214,196,158,.30), transparent 66%);
+}
+.sk-ink .seal{
+  position:absolute;right:26px;bottom:74px;z-index:3;width:42px;height:42px;
+  border:2px solid #A33C22;border-radius:3px;color:#A33C22;
+  display:grid;place-items:center;font-size:11px;line-height:1.15;text-align:center;
+  letter-spacing:.05em;transform:rotate(-3deg);opacity:.88;
+}
+.sk-ink .art{border:1px solid rgba(160,140,100,.28)}
+.sk-ink .cv-title{font-size:42px}
+
+/* ---------- 页脚说明 ---------- */
+.notes{margin-top:100px;padding-top:36px;border-top:1px solid #D8D9DF}
+.notes h3{font-size:15px;font-weight:600;margin-bottom:16px}
+.notes ol{margin-left:20px;font-size:13.5px;line-height:2.1;color:#4E515A}
+.notes ol b{color:#17181C;font-weight:600}
+.notes p{margin-top:22px;font-size:12.5px;color:#8A8C94;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="doc-hd">
+    <div class="doc-kicker">H5 报告 · 静态样张 v1</div>
+    <h1>同一份素材，不同的排法和皮肤</h1>
+    <p class="lead">下面每一张都是 390×844 的手机页，内容完全一样——8 岁的林小雨画了一栋"会飞的房子"。区别只在两件事：<b>这一页怎么摆</b>（排法）和<b>整体长什么样</b>（皮肤）。你看到的所有灰色字都是真实会出现在报告里的内容，没有一句是"我保存了 N 个作品版本"这类套话。</p>
+    <div class="legend">
+      <span><i>排法</i> <b>8 种</b>，开发一次永久复用</span>
+      <span><i>皮肤</i> <b>任意增加</b>，换肤不动页面</span>
+      <span><i>换风格</i> <b>不重新生成、不花钱</b></span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><span class="sec-idx">A</span><h2>同一页，四套皮肤</h2></div>
+    <p class="sec-desc">四个页面用的是同一种排法、同一段文字、同一张画。你只需要看：气质差得够不够远，选起来够不够快。以后加风格，就是在这里加一张脸。</p>
+    <div class="grid" id="gridA"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><span class="sec-idx">B</span><h2>同一皮肤下，八种排法</h2></div>
+    <p class="sec-desc">孩子的内容是变化的：只有一张画、写了三百字、有四张草稿、或者还没有成品。系统根据"图几张、字多少、记录了什么"，自动挑一种能装下的排法，永远不留空位、不切断句子、不弹"请先调整模板"。</p>
+    <div class="grid" id="gridB"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><span class="sec-idx">C</span><h2>封面：家长点开的第一眼</h2></div>
+    <p class="sec-desc">封面决定"这份报告值不值得往家长群里发"。同一个项目名，三种气质。</p>
+    <div class="grid" id="gridC"></div>
+  </div>
+
+  <div class="notes">
+    <h3>你可以直接用眼睛验收这四条</h3>
+    <ol>
+      <li><b>没有一步需要孩子去调模板。</b> 上面 15 页里，没有任何一页出现"高度不足""请调整"。</li>
+      <li><b>没有空图位。</b> 只有一张画时用一图排法，有四张草稿时用拼贴，页面永远填满。</li>
+      <li><b>句子没被切断。</b> 长文用便签页或过程页承接，不是把一段话按字数劈成三页同版式。</li>
+      <li><b>装饰只做装饰。</b> 胶带、印章、纸纹都在文字下面，内容改成什么都不会被挡住。</li>
+    </ol>
+    <p>说明：画作用矢量示意（真实报告里是孩子上传的原图）；字体依赖本机字体，Windows 上楷体来自系统 KaiTi、宋体来自 SimSun，实际开发会内嵌字体保证一致。</p>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+/* ============ 画作（矢量示意，代替孩子上传的原图） ============ */
+const ART = {
+  house: `
+  <svg viewBox="0 0 220 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="220" fill="#E8F3FA"/>
+    <circle cx="176" cy="46" r="17" fill="#FFD469"/>
+    <g stroke="#F7C34E" stroke-width="3" stroke-linecap="round">
+      <path d="M176 18v-9M176 83v9M147 46h-9M205 46h9M155 25l-6-6M197 67l6 6M155 67l-6 6M197 25l6-6"/>
+    </g>
+    <path d="M150 196q-14-9 0-17q-13-10 1-18q-11-10 3-16" fill="none" stroke="#BBD9EA" stroke-width="3"/>
+    <path d="M40 178 L40 108 L110 56 L180 108 L180 178 Z" fill="#FFF8EE" stroke="#46586A" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M84 178v-45h34v45" fill="#F7C877" stroke="#46586A" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="54" y="120" width="23" height="21" fill="#CDE7F5" stroke="#46586A" stroke-width="4"/>
+    <rect x="143" y="120" width="23" height="21" fill="#CDE7F5" stroke="#46586A" stroke-width="4"/>
+    <path d="M110 56 C104 40 94 32 86 26" fill="none" stroke="#46586A" stroke-width="2"/>
+    <path d="M110 56 C112 38 116 30 122 24" fill="none" stroke="#46586A" stroke-width="2"/>
+    <path d="M110 56 C104 44 98 40 92 40" fill="none" stroke="#46586A" stroke-width="2"/>
+    <ellipse cx="84" cy="18" rx="11" ry="13" fill="#FF9E9E" stroke="#46586A" stroke-width="2.5"/>
+    <ellipse cx="126" cy="16" rx="11" ry="13" fill="#9ED2F0" stroke="#46586A" stroke-width="2.5"/>
+    <ellipse cx="96" cy="14" rx="9" ry="11" fill="#C8E6A0" stroke="#46586A" stroke-width="2.5"/>
+    <g stroke="#8FB47F" stroke-width="3" stroke-linecap="round">
+      <path d="M28 196v-16M34 196v-22M40 196v-14"/>
+    </g>
+  </svg>`,
+  houseFlat: `
+  <svg viewBox="0 0 220 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="220" fill="#EFEFE8"/>
+    <circle cx="176" cy="44" r="15" fill="#E4D28C"/>
+    <path d="M42 178 L42 106 L178 106 L178 178 Z" fill="#FBF6EC" stroke="#4E5A63" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M36 106 h148" stroke="#4E5A63" stroke-width="5" stroke-linecap="round"/>
+    <path d="M86 178v-44h32v44" fill="#EFC98C" stroke="#4E5A63" stroke-width="4"/>
+    <rect x="56" y="122" width="22" height="20" fill="#DCE3E6" stroke="#4E5A63" stroke-width="4"/>
+    <rect x="142" y="122" width="22" height="20" fill="#DCE3E6" stroke="#4E5A63" stroke-width="4"/>
+    <path d="M50 196h120" stroke="#8FB47F" stroke-width="4" stroke-linecap="round"/>
+  </svg>`,
+  cat: `
+  <svg viewBox="0 0 220 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="220" fill="#FCF1E6"/>
+    <ellipse cx="110" cy="158" rx="52" ry="40" fill="#F2C69B" stroke="#5C4632" stroke-width="3.5"/>
+    <circle cx="110" cy="94" r="33" fill="#F2C69B" stroke="#5C4632" stroke-width="3.5"/>
+    <path d="M86 70 L76 38 L102 56 Z" fill="#F2C69B" stroke="#5C4632" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M134 70 L144 38 L118 56 Z" fill="#F2C69B" stroke="#5C4632" stroke-width="3.5" stroke-linejoin="round"/>
+    <circle cx="99" cy="90" r="3.6" fill="#5C4632"/><circle cx="121" cy="90" r="3.6" fill="#5C4632"/>
+    <path d="M106 102 q4 5 8 0" fill="none" stroke="#5C4632" stroke-width="2.6" stroke-linecap="round"/>
+    <g stroke="#5C4632" stroke-width="2" stroke-linecap="round">
+      <path d="M76 96h-18M76 104h-18M144 96h18M144 104h18"/>
+    </g>
+    <path d="M110 194 q-24-14-24-30" fill="none" stroke="#5C4632" stroke-width="3"/>
+  </svg>`,
+  wash: `
+  <svg viewBox="0 0 220 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <rect width="220" height="220" fill="#FFFDF7"/>
+    <circle cx="78" cy="88" r="54" fill="#A6CBE8" opacity=".72"/>
+    <circle cx="138" cy="128" r="48" fill="#F6C79E" opacity=".68"/>
+    <circle cx="112" cy="66" r="32" fill="#CFE1A6" opacity=".58"/>
+    <circle cx="58" cy="160" r="26" fill="#E9AFC0" opacity=".5"/>
+    <path d="M46 176 q40-30 78-6 q36 22 58-10" fill="none" stroke="#7E9AA8" stroke-width="2.4" opacity=".6"/>
+  </svg>`
+};
+
+/* ============ 皮肤 ============ */
+const SKINS = [
+  ['water','清爽水彩','浅蓝白 + 水彩晕染。干净、透气、不出错，第一条面向全体家长的安全牌。'],
+  ['journal','手账拼贴','格纹纸 + 胶带 + 便签。孩子气最足，适合低年级和过程记录多的项目。'],
+  ['gallery','美术馆画廊','大留白 + 细框 + 衬线字。成熟度高，适合获奖作品和期末汇报。'],
+  ['ink','国风雅致','宣纸色 + 墨色 + 朱印。书法班、国画课可以直接共用一套。']
+];
+
+/* ============ 排法 ============ */
+const LAYOUTS = [
+  ['hero','大图 + 一句话','只有一两张图，但故事说得清'],
+  ['compare','两图前后对照','有修改前 / 修改后两个版本'],
+  ['note','手写便签','文字多、图少，或孩子只想说几句话'],
+  ['steps','三步过程','记录了从草图到成品的顺序'],
+  ['collage','三图拼贴','草稿很多，想展示试过哪些'],
+  ['quote','一句话金句','孩子说了一句特别好的话'],
+  ['gallery','作品展','期末汇报、获奖作品，要庄重'],
+  ['list','材料与问题清单','项目刚开始，还没有成品图']
+];
+
+/* ============ 每页正文 ============ */
+const PAGES = {
+  hero: () => `
+    <div class="art art-hero">${ART.house}</div>
+    <div class="cap-hero">
+      <h2>我给它绑上了气球</h2>
+      <p>房子本来只会待在地上。我想让它飞，就在屋顶绑了六个气球。</p>
+    </div>`,
+  compare: () => `
+    <div class="cmp">
+      <div><div class="art">${ART.houseFlat}</div><span class="tag">第一次画的</span></div>
+      <div class="cmp-arrow">→</div>
+      <div><div class="art">${ART.house}</div><span class="tag">改完以后</span></div>
+    </div>
+    <p class="body-txt">屋顶原来是平的，我把它改成斜的。老师说斜的能接住雨水，水会顺着流下去，不会积在房顶上。</p>`,
+  note: () => `
+    <div class="note-card">
+      <p>我先画了一个方方的房子，后来想让它飞起来，就给它加了气球。<br>加了六个，因为六个看起来最像要飞走的样子。</p>
+    </div>
+    <p class="body-txt">—— 写在草图背面的那句话</p>`,
+  steps: () => `
+    <div class="steps">
+      <div class="step">
+        <div class="art">${ART.houseFlat}</div>
+        <div><span class="step-idx">01</span><p>先画一个方方的房子，屋顶是平的。</p></div>
+      </div>
+      <div class="step">
+        <div class="art">${ART.cat}</div>
+        <div><span class="step-idx">02</span><p>试过在旁边画一只猫，后来觉得太挤了。</p></div>
+      </div>
+      <div class="step">
+        <div class="art">${ART.house}</div>
+        <div><span class="step-idx">03</span><p>最后留下会飞的房子，猫咪放在下一张。</p></div>
+      </div>
+    </div>`,
+  collage: () => `
+    <div class="collage">
+      <div class="art cl1">${ART.wash}</div>
+      <div class="art cl2">${ART.cat}</div>
+      <div class="art cl3">${ART.house}</div>
+    </div>
+    <p class="body-txt center">我画了三张草稿，最后选了最下面那张。</p>`,
+  quote: () => `
+    <div class="quote">
+      <p>“我最喜欢气球那一块。<br>它看起来真的要飞走了。”</p>
+      <span>林小雨 · 8 岁</span>
+    </div>`,
+  gallery: () => `
+    <div class="frame"><div class="art">${ART.house}</div></div>
+    <div class="meta">《会飞的房子》 · 水彩、油画棒 · 2026 春</div>
+    <p class="body-txt center">入选本学期校区作品墙</p>`,
+  list: () => `
+    <div class="kw-hd">这次用到的材料</div>
+    <ul class="kw"><li>水彩</li><li>油画棒</li><li>旧杂志</li><li>六个气球</li><li>白乳胶</li></ul>
+    <div class="kw-hd" style="margin-top:26px">我想解决的三个问题</div>
+    <ul class="kw"><li>怎么让房子飞起来</li><li>屋顶要不要改</li><li>气球绑在哪</li></ul>
+    <p class="body-txt" style="margin-top:26px">最后我选了气球，因为它最轻，而且我看得见它飘。</p>`,
+  cover: () => `
+    <div class="cv">
+      <div class="cv-badge">2026 春季 · 创作档案</div>
+      <div class="cv-title">会飞的<br>房子</div>
+      <div class="art cv-art">${ART.house}</div>
+      <div class="cv-meta"><b>林小雨</b> · 8 岁 · 综合材料</div>
+      <div class="cv-org">美佳美画 · 庆云校区</div>
+    </div>`
+};
+
+/* ============ 渲染 ============ */
+function seal(skin){
+  return skin === 'ink' ? '<div class="seal">美佳<br>美画</div>' : '';
+}
+function decor(skin){
+  return (skin === 'water' || skin === 'ink') ? '<div class="decor"></div>' : '';
+}
+function pageHTML(skin, layout){
+  const body = PAGES[layout]();
+  const CENTER = {steps:1, gallery:1, list:1, compare:1, note:1};
+  const bcls = CENTER[layout] ? 'pg-body center-v' : 'pg-body';
+  if (layout === 'cover'){
+    return `<div class="phone sk-${skin}">${decor(skin)}${seal(skin)}${body}</div>`;
+  }
+  return `<div class="phone sk-${skin}">${decor(skin)}${seal(skin)}
+    <div class="pg">
+      <div class="pg-head"><span>02 &nbsp;我的草图</span><span class="pg-num">2</span></div>
+      <div class="${bcls}">${body}</div>
+      <div class="pg-foot"><span>美佳美画 · 庆云校区</span><span>林小雨 · 8 岁</span></div>
+    </div>
+  </div>`;
+}
+
+function cell(capTitle, capDesc, inner){
+  return `<div class="cell"><div class="cell-cap"><b>${capTitle}</b>${capDesc}</div>${inner}</div>`;
+}
+
+/* A：四套皮肤 · hero */
+document.getElementById('gridA').innerHTML = SKINS.map(([k,name,desc]) =>
+  cell(name, desc, pageHTML(k,'hero'))
+).join('');
+
+/* B：同一皮肤 · 八种排法 */
+document.getElementById('gridB').innerHTML = LAYOUTS.map(([k,name,desc]) =>
+  cell(name, desc, pageHTML('water', k))
+).join('');
+
+/* C：封面三版 */
+document.getElementById('gridC').innerHTML = [
+  ['water','清爽水彩封面','第一条给家长看的默认封面'],
+  ['journal','手账拼贴封面','低年级、过程记录多的项目'],
+  ['gallery','美术馆画廊封面','获奖、期末汇报、对外展示']
+].map(([k,name,desc]) => cell(name, desc, pageHTML(k,'cover'))).join('');
+</script>
+</body>
+</html>

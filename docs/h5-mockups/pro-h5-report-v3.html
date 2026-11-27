@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>高级版 H5 报告页 · 静态效果图 v3（右栏收敛）</title>
+<style>
+  :root{
+    --blue:#2860e8; --blue-l:#eef3ff; --blue-d:#1b45b8;
+    --orange:#f26b2a; --orange-l:#fff3ec;
+    --ink:#152036; --ink2:#5a6a82; --ink3:#94a2b6;
+    --line:#e6ecf5; --bg:#eef2f8; --card:#fff;
+    --r:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;overflow:hidden;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg); color:var(--ink); display:flex; flex-direction:column;
+    overflow:hidden; -webkit-font-smoothing:antialiased; font-size:13px;
+  }
+
+  /* ================= 顶栏 ================= */
+  .top{
+    flex:0 0 auto; height:56px; background:#fff; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; padding:0 18px; gap:12px;
+  }
+  .logo{
+    width:30px;height:30px;border-radius:9px;background:var(--orange);
+    display:grid;place-items:center;flex:0 0 auto;
+  }
+  .logo svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:1.9;}
+  .t-main{font-size:15px;font-weight:800;letter-spacing:-.2px;white-space:nowrap;}
+  .t-div{width:1px;height:16px;background:var(--line);}
+  .t-proj{font-size:13px;color:var(--ink2);font-weight:600;white-space:nowrap;max-width:230px;
+    overflow:hidden;text-overflow:ellipsis;}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto;}
+  .saved{flex:0 0 auto;font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:4px;white-space:nowrap;}
+  .saved svg{width:13px;height:13px;stroke:#18a06a;fill:none;stroke-width:2;}
+
+  .steps{margin-left:auto;display:flex;align-items:center;gap:0;flex:0 0 auto;}
+  .step{display:flex;flex-direction:column;align-items:center;gap:5px;width:76px;position:relative;flex:0 0 auto;}
+  .step i{
+    width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+    font-size:11.5px;font-style:normal;font-weight:700;
+    background:#f2f5fa;color:var(--ink3);border:1px solid var(--line);
+  }
+  .step span{font-size:11px;color:var(--ink3);white-space:nowrap;}
+  .step.done i{background:var(--blue-l);color:var(--blue);border-color:#cfdffb;}
+  .step.done i svg{width:12px;height:12px;stroke:var(--blue);fill:none;stroke-width:2.6;}
+  .step.on i{background:var(--blue);color:#fff;border-color:var(--blue);
+    box-shadow:0 4px 10px rgba(40,96,232,.3);}
+  .step.on span{color:var(--blue);font-weight:700;}
+  .step:not(:last-child)::after{
+    content:"";position:absolute;top:11px;left:56px;width:44px;height:1px;background:var(--line);
+  }
+  .step.done:not(:last-child)::after{background:#c9dcfb;}
+  .btn-ghost{
+    margin-left:14px;height:32px;padding:0 15px;border-radius:9px;background:#fff;
+    border:1px solid #d5dfec;color:var(--ink);font-size:12.5px;font-weight:600;
+    display:grid;place-items:center;white-space:nowrap;
+  }
+
+  /* ================= 三栏 ================= */
+  .grid{
+    flex:1 1 auto; min-height:0; display:grid;
+    grid-template-columns:20% 40% 40%; gap:10px; padding:10px 12px 12px;
+  }
+  .panel{
+    min-width:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  }
+
+  /* ---------- 左：素材 ---------- */
+  .tabs{flex:0 0 auto;height:44px;display:grid;grid-template-columns:repeat(3,1fr);
+    border-bottom:1px solid var(--line);}
+  .tabs b{display:grid;place-items:center;font-size:12.5px;font-weight:600;color:var(--ink2);
+    border-bottom:2px solid transparent;position:relative;top:1px;}
+  .tabs b.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700;}
+
+  .left-body{flex:1 1 auto;min-height:0;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:11px;}
+
+  .ratio{flex:0 0 auto;padding:10px 12px;border-radius:11px;background:#f7f9fd;border:1px solid #eaf0f8;}
+  .ratio-t{display:flex;align-items:baseline;justify-content:space-between;}
+  .ratio-t span{font-size:11.5px;color:var(--ink2);font-weight:600;}
+  .ratio-t b{font-size:16px;font-weight:800;color:var(--blue);}
+  .ratio-t b em{font-size:10.5px;font-style:normal;color:var(--ink3);font-weight:500;margin-left:3px;}
+  .bar{height:5px;margin-top:8px;border-radius:99px;background:#e2eaf6;overflow:hidden;}
+  .bar i{display:block;height:100%;width:83%;border-radius:99px;
+    background:linear-gradient(90deg,#5b9bff,var(--blue));}
+
+  .grp{flex:0 0 auto;display:flex;flex-direction:column;min-height:0;}
+  .grp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+  .grp-h span{font-size:12px;font-weight:700;color:var(--ink);}
+  .grp-h span i{font-style:normal;font-size:11px;color:var(--ink3);font-weight:500;margin-left:3px;}
+  .grp-h em{font-size:10.5px;color:var(--ink3);font-style:normal;display:flex;align-items:center;gap:3px;}
+  .grp-h em svg{width:11px;height:11px;stroke:#18a06a;fill:none;stroke-width:2.4;}
+
+  .thumbs{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .th{
+    position:relative;aspect-ratio:1/1;border-radius:9px;overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(16,32,64,.07);
+  }
+  .th::after{content:"";position:absolute;inset:52% 0 0;background:linear-gradient(transparent,rgba(8,20,40,.6));}
+  .th u{position:absolute;z-index:1;left:6px;bottom:5px;font-size:9.5px;color:#fff;
+    font-style:normal;text-decoration:none;font-weight:600;}
+  .g1{background:linear-gradient(150deg,#eef2f8,#cfd9e8);}
+  .g2{background:linear-gradient(150deg,#e6eefb,#b3c9ec);}
+  .g3{background:linear-gradient(150deg,#dae6ff,#7ba1ee 62%,#3f6ede);}
+  .g4{background:linear-gradient(150deg,#d6eade,#7cc2a8 62%,#2f9c76);}
+  .g5{background:linear-gradient(150deg,#ffe8d8,#ffb27e 62%,#ef7c4e);}
+  .g6{background:linear-gradient(150deg,#e8f3da,#abd57d 58%,#5e9d2f);}
+
+  .add{
+    flex:0 0 auto;margin-top:auto;height:34px;border-radius:9px;border:1px dashed #c3d4ec;
+    background:#fbfcff;color:var(--blue);font-size:12px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;gap:5px;
+  }
+  .add svg{width:13px;height:13px;stroke:var(--blue);fill:none;stroke-width:2.2;}
+  .tips{flex:0 0 auto;padding:11px 12px;border-radius:10px;
+    background:#f8fafe;border:1px solid #ecf1f9;}
+  .tips b{display:block;font-size:11px;color:var(--ink);margin-bottom:5px;}
+  .tips p{margin:0;font-size:10.5px;line-height:1.75;color:var(--ink3);}
+
+  /* ---------- 中：叙事 ---------- */
+  .mid{padding:14px 16px;gap:12px;display:flex;flex-direction:column;min-height:0;}
+  .mid-h{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;}
+  .mid-h h2{margin:0;font-size:16px;font-weight:800;}
+  .mid-h .badge{font-size:10.5px;color:var(--blue);background:var(--blue-l);
+    border-radius:6px;padding:3px 8px;font-weight:600;}
+
+  .chapters{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);
+    border:1px solid var(--line);border-radius:11px;background:#fbfcfe;overflow:hidden;}
+  .ch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 4px;
+    border-right:1px solid var(--line);}
+  .ch:last-child{border-right:0;}
+  .ch i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#f0f4fa;}
+  .ch i svg{width:15px;height:15px;stroke:var(--ink2);fill:none;stroke-width:1.8;}
+  .ch span{font-size:11px;color:var(--ink2);white-space:nowrap;}
+  .ch b{font-size:9.5px;font-weight:600;color:var(--ink3);}
+  .ch.on{background:#fff;}
+  .ch.on i{background:var(--blue);}
+  .ch.on i svg{stroke:#fff;}
+  .ch.on span{color:var(--blue);font-weight:700;}
+  .ch.on b{color:var(--blue);}
+
+  .editor{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:12px;
+    display:flex;flex-direction:column;overflow:hidden;position:relative;}
+  .editor-h{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:11px 14px 0;}
+  .editor-h strong{font-size:13px;font-weight:700;}
+  .editor-h .tip{font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:4px;}
+  .editor-h .tip svg{width:12px;height:12px;stroke:var(--ink3);fill:none;stroke-width:2;}
+  .editor .body{flex:1 1 auto;min-height:0;overflow:hidden;padding:9px 14px 0;
+    font-size:13px;line-height:1.95;color:var(--ink2);}
+  .editor .body p{margin:0 0 8px;}
+  .editor .body p:last-child{margin-bottom:0;}
+  .editor .foot{flex:0 0 auto;padding:0 14px 10px;display:flex;justify-content:flex-end;}
+  .editor .foot span{font-size:10.5px;color:var(--ink3);}
+  .ai-caret{display:inline-block;width:2px;height:14px;background:var(--blue);
+    vertical-align:-2px;margin-left:2px;}
+
+  .ai-row{flex:0 0 auto;display:flex;align-items:center;gap:7px;}
+  .ai-row .lbl{font-size:11.5px;font-weight:700;color:var(--ink);}
+  .ai-row .note{font-size:10.5px;color:var(--ink3);}
+  .ai-row .spacer{flex:1 1 auto;}
+  .ai-btn{height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;font-size:11.5px;font-weight:600;color:var(--ink2);
+    display:flex;align-items:center;gap:5px;white-space:nowrap;}
+  .ai-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.9;}
+  .ai-btn.pri{border-color:#c9dbfb;color:var(--blue);background:var(--blue-l);}
+
+  /* ---------- 右：设置（v3 收敛版） ---------- */
+  .right{padding:14px 16px 14px;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  .right-h{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .right-h h2{margin:0;font-size:16px;font-weight:800;}
+  .right-h p{margin:3px 0 0;font-size:11px;color:var(--ink3);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .right-h .badge{flex:0 0 auto;font-size:10.5px;color:#0e8a5f;background:#eaf7f1;border-radius:6px;
+    padding:3px 8px;font-weight:600;white-space:nowrap;}
+
+  /* ① 模板选择：一排 4 张，直接可点 */
+  .pick{flex:0 0 auto;margin-top:13px;display:flex;align-items:center;justify-content:space-between;}
+  .pick span{font-size:12px;font-weight:700;color:var(--ink);}
+  .pick em{font-size:10.5px;color:var(--ink3);font-style:normal;}
+  .tpl{flex:0 0 auto;margin-top:9px;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  .tc{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .tc-cov{position:relative;aspect-ratio:3/3.6;border-radius:10px;overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(16,32,64,.08);}
+  .tc-cov::after{content:"";position:absolute;left:9px;right:9px;bottom:9px;height:12px;
+    border-radius:3px;background:rgba(255,255,255,.7);}
+  .tc.on .tc-cov{box-shadow:0 0 0 2px var(--blue),0 8px 18px rgba(40,96,232,.2);}
+  .tc-n{font-size:11.5px;font-weight:700;color:var(--ink2);text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tc.on .tc-n{color:var(--blue);}
+  .chk{position:absolute;right:6px;top:6px;width:17px;height:17px;border-radius:50%;
+    background:var(--blue);display:grid;place-items:center;border:2px solid #fff;}
+  .chk svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3.2;}
+  .rec{position:absolute;left:6px;top:6px;font-size:9px;font-weight:700;color:#fff;
+    background:var(--orange);border-radius:4px;padding:1.5px 5px;}
+
+  /* 选中后一句话说明（替代原四宫格明细） */
+  .hint{flex:0 0 auto;margin-top:10px;display:flex;align-items:center;gap:6px;
+    padding:8px 11px;border-radius:9px;background:#f7f9fd;border:1px solid #eaf0f8;}
+  .hint svg{width:12px;height:12px;stroke:var(--blue);fill:none;stroke-width:2;flex:0 0 auto;}
+  .hint span{font-size:11px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hint b{font-weight:700;color:var(--ink);}
+
+  /* ② 预览 */
+  .prev-h{flex:0 0 auto;margin-top:12px;display:flex;align-items:center;justify-content:space-between;}
+  .prev-h span{font-size:12px;font-weight:700;color:var(--ink);}
+  .prev-h em{font-size:10.5px;color:var(--ink3);font-style:normal;}
+  .phone-wrap{flex:1 1 auto;min-height:150px;position:relative;margin-top:9px;
+    border-radius:12px;overflow:hidden;background:#e9eff8;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;gap:16px;padding:10px 12px;}
+  .phone{
+    flex:0 0 auto;
+    height:calc(100% - 20px);aspect-ratio:9/16.5;
+    border-radius:18px;border:4px solid #14203a;
+    overflow:hidden;background:#fff;box-shadow:0 10px 24px rgba(18,40,80,.18);
+  }
+  .phone-top{height:42%;position:relative;
+    background:linear-gradient(160deg,#2b4f9e,#4d7fe0 55%,#8fb4f2);}
+  .phone-top::after{content:"";position:absolute;left:10px;right:10px;bottom:9px;height:22px;
+    border-radius:4px;background:rgba(255,255,255,.8);}
+  .phone-bd{padding:8px 10px;}
+  .ph-l{height:6px;border-radius:3px;background:#e4ebf5;margin-bottom:5px;}
+  .ph-l.s{width:62%;}
+  .ph-g{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px;}
+  .ph-g i{display:block;aspect-ratio:1/1.2;border-radius:4px;background:#dbe6f4;}
+  .phone-tag{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);
+    font-size:9.5px;color:var(--ink3);white-space:nowrap;background:rgba(255,255,255,.92);
+    border-radius:5px;padding:2px 7px;}
+
+  /* 页码缩略列：把预览右侧的空白用起来 */
+  .pgs{flex:0 0 auto;align-self:center;display:grid;grid-template-columns:repeat(2,38px);
+    align-content:center;gap:6px;}
+  .pg{position:relative;width:38px;aspect-ratio:3/4;border-radius:5px;background:#fff;
+    border:1px solid #dde6f3;display:grid;place-items:center;
+    box-shadow:0 1px 3px rgba(20,40,80,.06);}
+  .pg i{font-style:normal;font-size:9.5px;color:var(--ink3);font-weight:600;}
+  .pg.on{border-color:var(--blue);box-shadow:0 0 0 2px rgba(40,96,232,.22);}
+  .pg.on i{color:var(--blue);}
+  .pg.on::before{content:"";position:absolute;inset:0;border-radius:5px;
+    background:linear-gradient(160deg,#eaf1ff,#cfdefb);}
+  .pg.on i{z-index:1;}
+
+  /* ③ 两个动作 */
+  .acts{flex:0 0 auto;margin-top:12px;display:flex;gap:9px;}
+  .a-prev,.a-go{height:42px;border-radius:10px;display:flex;align-items:center;
+    justify-content:center;gap:6px;font-size:12.5px;font-weight:700;white-space:nowrap;}
+  .a-prev{flex:0 0 40%;border:1px solid #c9dbfb;color:var(--blue);background:#fff;}
+  .a-prev svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:2;}
+  .a-go{flex:1 1 auto;background:var(--orange);color:#fff;
+    box-shadow:0 7px 16px rgba(242,107,42,.28);}
+  .a-go svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.1;}
+  .note-line{flex:0 0 auto;margin-top:8px;display:flex;align-items:flex-start;gap:5px;}
+  .note-line svg{width:11px;height:11px;stroke:var(--ink3);fill:none;stroke-width:2;margin-top:2px;flex:0 0 auto;}
+  .note-line span{font-size:10.5px;color:var(--ink3);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<!-- ================= 顶栏 ================= -->
+<div class="top">
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M12 3c3.5 0 6 2.6 6 6 0 2-1.2 3.2-1.2 4.4 0 .9.5 1.3.5 2.3 0 1.3-1 2.3-2.4 2.3H8.9c-1.3 0-2.3-1-2.3-2.3 0-1 .5-1.4.5-2.3C7.1 12.2 6 11 6 9c0-3.4 2.5-6 6-6Z"/><path d="M9.5 20.5h5"/></svg>
+  </div>
+  <div class="brand"><div class="t-main">高级创作报告</div>
+  <div class="t-div"></div>
+  <div class="t-proj">未来城市生态空间</div>
+  <div class="saved">
+    <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+    已自动保存
+  </div></div>
+
+  <div class="steps">
+    <div class="step done"><i><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></i><span>资料整理</span></div>
+    <div class="step on"><i>2</i><span>叙事编辑</span></div>
+    <div class="step"><i>3</i><span>独立预览</span></div>
+    <div class="step"><i>4</i><span>提交审核</span></div>
+  </div>
+  <div class="btn-ghost">保存草稿</div>
+</div>
+
+<!-- ================= 三栏 ================= -->
+<div class="grid">
+
+  <!-- ---------- 左：素材 ---------- -->
+  <section class="panel">
+    <div class="tabs"><b class="on">素材库</b><b>创作时间线</b><b>章节结构</b></div>
+    <div class="left-body">
+      <div class="ratio">
+        <div class="ratio-t"><span>已放入报告</span><b>5<em>/ 6 张</em></b></div>
+        <div class="bar"><i></i></div>
+      </div>
+
+      <div class="grp">
+        <div class="grp-h"><span>草图<i>2</i></span><em><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>已全部选用</em></div>
+        <div class="thumbs">
+          <div class="th g1"><u>构图草图</u></div>
+          <div class="th g2"><u>细节草图</u></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="grp-h"><span>AI 生成<i>4</i></span><em><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>已选 3 张</em></div>
+        <div class="thumbs">
+          <div class="th g3"><u>首版</u></div>
+          <div class="th g4"><u>改第一次</u></div>
+          <div class="th g5"><u>改第二次</u></div>
+          <div class="th g6"><u>定稿</u></div>
+        </div>
+      </div>
+
+      <div class="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>从创作项目添加</div>
+
+      <div class="tips">
+        <b>会怎么用这些图</b>
+        <p>草图进「灵感起点」，AI 生成图按先后顺序进「探索过程」，定稿放封面和「我的作品」。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 中：叙事 ---------- -->
+  <section class="panel mid">
+    <div class="mid-h">
+      <h2>创作叙事</h2>
+      <span class="badge">4 个章节各自独立保存</span>
+    </div>
+
+    <div class="chapters">
+      <div class="ch">
+        <i><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4.9 1 .9 1.7V16h5.2v-.4c0-.7.3-1.3.9-1.7A6 6 0 0 0 12 3Z"/></svg></i>
+        <span>灵感起点</span><b>独立·已填</b>
+      </div>
+      <div class="ch on">
+        <i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.3-4.3"/></svg></i>
+        <span>探索过程</span><b>独立·正在写</b>
+      </div>
+      <div class="ch">
+        <i><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3"/></svg></i>
+        <span>关键突破</span><b>独立·已填</b>
+      </div>
+      <div class="ch">
+        <i><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="m4 15 4.5-4 3 2.5L15 9l5 5"/></svg></i>
+        <span>我的作品</span><b>独立·已填</b>
+      </div>
+    </div>
+
+    <div class="editor">
+      <div class="editor-h">
+        <strong>探索过程</strong>
+        <div class="tip">这次修改解决了什么问题？<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+      </div>
+      <div class="body">
+        <p>我一开始的想法是：做一个能自动给植物浇水的城市阳台。因为班里同学经常忘记浇水，植物就枯了。</p>
+        <p>我先画了三个水箱的位置，试下来只有挂在栏杆外侧最省地方。后来发现水箱太重，就把水改成两格分开装，每次只放一半。</p>
+        <p>最难的是管子。一开始想让水自己流下去，可管子太粗，看着丑；改成很细的棉线又不够快。最后我用了一根像吸管一样的细管，里面塞满棉线，慢是慢一点，但阳台本来也不用浇很多水。<span class="ai-caret"></span></p>
+      </div>
+      <div class="foot"><span>236 / 800</span></div>
+    </div>
+
+    <div class="ai-row">
+      <span class="lbl">AI 写作助手</span>
+      <span class="note">只改表达，不动你的意思</span>
+      <span class="spacer"></span>
+      <div class="ai-btn pri"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8Z"/></svg>AI 帮我整理</div>
+      <div class="ai-btn"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/></svg>缩短一点</div>
+      <div class="ai-btn"><svg viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 1 8-8"/><path d="M20 4v4h-4"/></svg>恢复我的原话</div>
+    </div>
+  </section>
+
+  <!-- ---------- 右：设置（只有 模板 / 预览 / 生成） ---------- -->
+  <section class="panel right">
+    <div class="right-h">
+      <div>
+        <h2>报告设置</h2>
+        <p>选一个模板，看一眼效果，就可以生成</p>
+      </div>
+      <span class="badge">可自主选择</span>
+    </div>
+
+    <!-- ① 模板选择 -->
+    <div class="pick"><span>选模板</span><em>共 4 种</em></div>
+    <div class="tpl">
+      <div class="tc on">
+        <div class="tc-cov g3">
+          <span class="rec">推荐</span>
+          <span class="chk"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+        </div>
+        <div class="tc-n">AI科技</div>
+      </div>
+      <div class="tc">
+        <div class="tc-cov g5"></div>
+        <div class="tc-n">童趣课堂</div>
+      </div>
+      <div class="tc">
+        <div class="tc-cov g4"></div>
+        <div class="tc-n">小小艺术展</div>
+      </div>
+      <div class="tc">
+        <div class="tc-cov g2"></div>
+        <div class="tc-n">成长档案</div>
+      </div>
+    </div>
+    <div class="hint">
+      <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      <span>已选 <b>AI科技</b> · 共 8 页 · 封面用作品大图</span>
+    </div>
+
+    <!-- ② 预览 -->
+    <div class="prev-h"><span>效果预览</span><em>第 1 页 / 共 8 页</em></div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-top"></div>
+        <div class="phone-bd">
+          <div class="ph-l"></div>
+          <div class="ph-l s"></div>
+          <div class="ph-g"><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="pgs">
+        <div class="pg on"><i>1</i></div>
+        <div class="pg"><i>2</i></div>
+        <div class="pg"><i>3</i></div>
+        <div class="pg"><i>4</i></div>
+        <div class="pg"><i>5</i></div>
+        <div class="pg"><i>6</i></div>
+        <div class="pg"><i>7</i></div>
+        <div class="pg"><i>8</i></div>
+      </div>
+    </div>
+
+    <!-- ③ 两个动作 -->
+    <div class="acts">
+      <div class="a-prev"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2.5"/><path d="M11 18h2"/></svg>独立预览</div>
+      <div class="a-go"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></svg>生成 H5 报告</div>
+    </div>
+    <div class="note-line">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span>预览不扣次数；点「生成」才真正出图，约 3 分钟。</span>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

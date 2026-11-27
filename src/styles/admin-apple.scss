@@ -1,0 +1,280 @@
+/* ==========================================================================
+   后台第三版外观：苹果「系统设置」风格（2026-11-26 夜）
+   放在 admin-ui.scss 之后加载，只改外观，不改页面结构、接口和逻辑。
+   - 纯色：浅灰窗口底 #f5f5f7 + 白色分组卡片，发丝分隔线代替厚阴影；不用毛玻璃卡片、光斑和渐变。
+   - 按钮学 macOS：圆角矩形，主按钮系统蓝，次按钮白底细边；开关学 iOS（绿色、弹性滑块）。
+   - 动效用苹果常用的减速曲线 cubic-bezier(0.32, 0.72, 0, 1)：页面淡入上移、弹窗轻微放大出现。
+   - 只用系统字体栈和自己画的线条图标，不打包苹果的字体和 SF Symbols。
+   ========================================================================== */
+:root {
+  --ax-bg: #f5f5f7;
+  --ax-ink: #1d1d1f;
+  --ax-text: #3a3a3c;
+  --ax-muted: #86868b;
+  --ax-faint: #c7c7cc;
+  --ax-surface: #ffffff;
+  --ax-surface-solid: #ffffff;
+  --ax-surface-2: #f5f5f7;
+  --ax-fill: rgba(118, 118, 128, 0.1);
+  --ax-fill-strong: rgba(118, 118, 128, 0.17);
+  --ax-line: rgba(60, 60, 67, 0.11);
+  --ax-line-strong: rgba(60, 60, 67, 0.18);
+  --ax-glass-edge: transparent;
+  --ax-blur: none;
+  --ax-ok: #248a3d;
+  --ax-ok-soft: rgba(52, 199, 89, 0.14);
+  --ax-warn: #c45500;
+  --ax-warn-soft: rgba(255, 149, 0, 0.14);
+  --ax-bad: #d70015;
+  --ax-bad-soft: rgba(255, 59, 48, 0.1);
+  --ax-radius-sm: 8px;
+  --ax-radius: 10px;
+  --ax-radius-lg: 12px;
+  --ax-hairline: 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  --ax-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ax-shadow-pop: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 24px 64px rgba(0, 0, 0, 0.2);
+  --ax-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ---------- 页面骨架 ---------- */
+.ax-page { gap: 20px; font-size: 14px; }
+.ax-head { align-items: flex-end; padding: 2px 0 0; }
+.ax-head h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.015em; }
+.ax-head p { margin-top: 5px; font-size: 13.5px; line-height: 1.55; }
+/* 窄屏时页头改成上下排：标题靠左铺满（上面那条 flex-end 会把标题整块推到右边） */
+@media (max-width: 900px) {
+  .ax-head { align-items: stretch; }
+}
+
+/* ---------- 分段控件 ---------- */
+.ax-tabs { gap: 0; padding: 2px; border-radius: 9px; background: rgba(118, 118, 128, 0.12); }
+.ax-tab {
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s var(--ax-ease), box-shadow 0.2s var(--ax-ease), color 0.15s ease;
+}
+.ax-tab.is-active { font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04); }
+.ax-tab-count { font-weight: 500; }
+
+/* ---------- 卡片：白色分组框 ---------- */
+.ax-card,
+.ax-stat {
+  border: 0;
+  background: #fff;
+  box-shadow: var(--ax-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.ax-card { padding: 18px 20px; border-radius: 12px; }
+.ax-card.is-flush > .ax-card-head { padding: 16px 20px 0; }
+.ax-card-head { margin-bottom: 14px; }
+.ax-card-head h3 { font-size: 15px; font-weight: 600; letter-spacing: 0; }
+.ax-card-head p { font-size: 12.5px; }
+.ax-grid-2,
+.ax-grid-3 { gap: 16px; }
+
+/* ---------- 统计卡：干净的数字卡（去掉角上的彩色光斑） ---------- */
+.ax-stats { gap: 12px; }
+.ax-stat { gap: 3px; padding: 14px 16px; border-radius: 12px; }
+.ax-stat::after { display: none; }
+.ax-stat > span { gap: 6px; color: var(--ax-muted); font-size: 12.5px; font-weight: 500; }
+.ax-stat > span::before { width: 7px; height: 7px; box-shadow: none; }
+.ax-stat > strong { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.ax-stat > small { font-size: 12px; }
+button.ax-stat { transition: background 0.15s ease; }
+button.ax-stat:hover { transform: none; background: #fbfbfd; box-shadow: var(--ax-shadow); }
+button.ax-stat:active { background: #f5f5f7; }
+
+/* ---------- 工具条 / 输入控件 ---------- */
+.ax-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--ax-line); }
+.ax-input,
+.ax-select,
+.ax-textarea,
+.ax-search > input,
+.ax-field > input:not([type='checkbox']):not([type='radio']),
+.ax-field > select,
+.ax-field > textarea {
+  min-height: 34px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.ax-select,
+.ax-field > select { padding-right: 30px; }
+.ax-input:focus,
+.ax-select:focus,
+.ax-textarea:focus,
+.ax-search > input:focus,
+.ax-field > input:focus,
+.ax-field > select:focus,
+.ax-field > textarea:focus {
+  background-color: #fff;
+  box-shadow: 0 0 0 3.5px var(--ax-brand-ring);
+}
+
+/* ---------- 按钮：macOS 圆角矩形 ---------- */
+.ax-btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1.5px rgba(0, 0, 0, 0.07);
+  color: var(--ax-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.12s var(--ax-ease);
+}
+.ax-btn:hover { background: #fafafa; }
+.ax-btn:active { background: #f0f0f2; transform: scale(0.98); }
+.ax-btn:focus-visible { box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.14), 0 0 0 3.5px var(--ax-brand-ring); }
+.ax-btn.is-primary { background: #007aff; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06), 0 1px 1.5px rgba(0, 0, 0, 0.1); color: #fff; }
+.ax-btn.is-primary:hover { background: #0a84ff; }
+.ax-btn.is-primary:active { background: #0066d6; }
+.ax-btn.is-soft { background: rgba(0, 122, 255, 0.1); box-shadow: none; color: #0066d6; }
+.ax-btn.is-soft:hover { background: rgba(0, 122, 255, 0.15); }
+.ax-btn.is-ghost { background: transparent; box-shadow: none; color: #007aff; }
+.ax-btn.is-ghost:hover { background: rgba(0, 0, 0, 0.05); }
+.ax-btn.is-danger { background: #fff; color: #d70015; }
+.ax-btn.is-danger:hover { background: #fff5f5; }
+.ax-btn.is-danger.is-solid { background: #ff3b30; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06); color: #fff; }
+.ax-btn.is-sm { height: 28px; padding: 0 11px; border-radius: 7px; font-size: 12.5px; }
+.ax-btn:disabled,
+.ax-btn.is-disabled { opacity: 0.45; }
+.ax-link { color: #007aff; font-weight: 500; }
+
+/* ---------- 列表式表格 ---------- */
+.ax-table { font-size: 13.5px; }
+.ax-table th { padding: 9px 16px 7px; background: #fff; font-size: 12px; font-weight: 500; }
+.ax-table td { padding: 11px 16px; }
+.ax-table tbody tr:hover { background: #f9f9fb; }
+.ax-table input[type='checkbox'] { width: 16px; height: 16px; accent-color: #007aff; }
+.ax-person:hover strong { color: #007aff; }
+
+/* 头像：一律是线条人像图标（AdminAvatar.vue），不再用名字的第一个字 */
+.ax-avatar {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #c7c7cc 0%, #a1a1a8 100%);
+  color: #fff;
+  font-size: 0;
+}
+.ax-avatar > svg { width: 64%; height: 64%; fill: currentColor; stroke: none; }
+.ax-avatar.is-blue { background: linear-gradient(180deg, #5aa9ff 0%, #007aff 100%); }
+.ax-avatar.is-teal { background: linear-gradient(180deg, #5fd3c4 0%, #30b0a6 100%); }
+.ax-avatar.is-orange { background: linear-gradient(180deg, #ffbe5c 0%, #ff9500 100%); }
+.ax-avatar.is-purple { background: linear-gradient(180deg, #c58cf0 0%, #af52de 100%); }
+.ax-avatar.is-lg { width: 56px; height: 56px; }
+
+/* ---------- 状态标、标签 ---------- */
+.ax-pill { gap: 5px; height: 22px; padding: 0 9px; font-size: 12px; font-weight: 500; }
+.ax-pill::before { width: 6px; height: 6px; }
+.ax-tag { height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+
+/* ---------- iOS 开关：绿色，滑块按下会拉长、松开带一点弹性 ---------- */
+.ax-switch > i {
+  transition: background 0.25s var(--ax-ease);
+}
+.ax-switch > i::after {
+  transition: transform 0.3s var(--ax-ease), width 0.2s var(--ax-ease);
+}
+.ax-switch:active > i::after { width: 26px; }
+.ax-switch:active > input:checked + i::after { transform: translateX(14px); }
+
+/* ---------- 模型标签式开关 ---------- */
+.ax-chip-check > span { border-radius: 7px; font-weight: 500; transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
+.ax-chip-check > input:checked + span { background: rgba(0, 122, 255, 0.12); box-shadow: inset 0 0 0 0.5px rgba(0, 122, 255, 0.3); color: #0066d6; font-weight: 600; }
+.ax-chip-check > input:checked + span::before { border-color: #0066d6; }
+
+/* ---------- 分组行（iOS 设置的一行一项） ---------- */
+.ax-row { min-height: 44px; border-bottom-color: var(--ax-line); }
+.ax-row-main > strong { font-size: 13.5px; font-weight: 500; }
+.ax-row-main > small { font-size: 12px; }
+.ax-list-item { border-radius: 8px; }
+.ax-list-item.is-active { background: #007aff; box-shadow: none; }
+
+/* ---------- 提示条 ---------- */
+.ax-note { border-radius: 10px; font-size: 13px; }
+
+/* ---------- 弹窗与抽屉：白色、细边，出现时轻微放大 ----------
+   只认后台弹窗自己的 .ax-dialog 类：Element Plus 的全局样式（遮罩、消息框）一律不碰，免得影响用户端。 */
+.el-overlay:has(> .el-overlay-dialog > .ax-dialog) { background-color: rgba(0, 0, 0, 0.24); }
+.ax-dialog.el-dialog { border-radius: 14px; box-shadow: var(--ax-shadow-pop); }
+.dialog-fade-enter-active .ax-dialog.el-dialog { animation: ax-sheet-in 0.34s var(--ax-ease) both; }
+.dialog-fade-leave-active .ax-dialog.el-dialog { animation: ax-sheet-out 0.2s ease both; }
+@keyframes ax-sheet-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ax-sheet-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: scale(0.98); }
+}
+.ax-drawer {
+  border: 0;
+  background: #fff;
+  box-shadow: var(--ax-shadow-pop);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog-fade-enter-active .ax-dialog.el-dialog,
+  .dialog-fade-leave-active .ax-dialog.el-dialog { animation: none; }
+  .ax-switch > i::after { transition: none; }
+}
+
+/* ---------- API 配置页（2026-11-26 按功能重写） ---------- */
+.api-guard { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 24px; }
+.api-guard-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.api-guard-main .ax-row-main { gap: 3px; }
+.api-guard-main .ax-row-main > strong { font-size: 15px; font-weight: 600; }
+.api-guard-main .ax-row-main > small { max-width: 640px; line-height: 1.55; }
+.api-guard-ctl { display: flex; align-items: center; gap: 8px; }
+.api-guard-select { min-width: 260px; max-width: 380px; }
+.api-guard-note { grid-column: 1 / -1; margin: 0; }
+
+.api-list { margin: 0; padding: 0; list-style: none; }
+.api-item { padding: 14px 18px; border-bottom: 1px solid var(--ax-line); transition: background 0.15s ease; }
+.api-item:last-child { border-bottom: 0; }
+.api-item.is-selected { background: rgba(0, 122, 255, 0.04); }
+.api-item-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.api-item-head > input[type='checkbox'] { flex-shrink: 0; width: 16px; height: 16px; accent-color: #007aff; cursor: pointer; }
+.api-item-title { flex: 0 1 auto; min-width: 120px; }
+.api-item-title > strong { font-size: 14.5px; }
+.api-item-tags { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.api-item-actions { flex-shrink: 0; }
+/* 内容和名字左对齐：勾选框 16 + 间距 12 + 图标 40 + 间距 12 */
+.api-item-body { display: grid; gap: 8px; margin: 10px 0 0 80px; }
+.api-item-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; color: var(--ax-muted); font-size: 12.5px; }
+.api-item-url { max-width: 420px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.api-item-note { margin: 0; }
+.api-health-note { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.api-item-models { display: grid; gap: 6px; }
+.api-item-models-head { color: var(--ax-text); font-size: 12.5px; font-weight: 500; }
+.api-item-models-head small { margin-left: 4px; color: var(--ax-muted); font-weight: 400; }
+
+.api-model-list { display: grid; overflow: hidden; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--ax-line); }
+.api-model-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--ax-line); }
+.api-model-item:last-child { border-bottom: 0; }
+.api-model-item.is-default { background: rgba(0, 122, 255, 0.04); }
+.api-model-item-main { display: grid; flex: 1 1 auto; gap: 6px; min-width: 0; }
+.api-model-item-main > .api-model-name { overflow: hidden; color: var(--ax-ink); font-size: 13px; white-space: nowrap; text-overflow: ellipsis; }
+.api-model-item .ax-input.api-model-label { max-width: 320px; min-height: 30px; padding: 5px 10px; font-size: 13px; }
+.api-model-item-ctl { display: flex; flex-shrink: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.api-imageinput-form { margin-top: 14px; }
+.api-details-body { margin-top: 12px; }
+
+@media (max-width: 1180px) {
+  .api-guard { grid-template-columns: minmax(0, 1fr); }
+  .api-item-head { flex-wrap: wrap; }
+  .api-item-body { margin-left: 0; }
+  .api-model-item { flex-wrap: wrap; }
+  .api-model-item-ctl { justify-content: flex-start; }
+}

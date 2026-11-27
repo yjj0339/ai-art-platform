@@ -1,0 +1,2985 @@
+[
+  {
+    "id": "skill_4GHbiWsqZZYwIL7iXSVRlQkb",
+    "organization_id": "org_btYToE4QaGpMIgWngwvIqumI",
+    "scope_type": "organization",
+    "source_skill_id": null,
+    "skill_type": "image",
+    "title": "童话绘本封面",
+    "summary": "",
+    "status": "published",
+    "sort_order": 0,
+    "draft_configuration": {
+      "limits": {
+        "dailyLimit": 5
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "3:4",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "agnes",
+        "testedAt": "2026-11-05T05:18:06.807Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "为儿童创作《{{subject}}》主题的插画，{{style}}风格，画面正中央是上传的形象，色彩明亮温暖，主体清晰，构图完整，适合小学美术课堂展示，高质量儿童插画。画面中不要出现任何文字、标题、字母或签名。"
+      },
+      "bindings": {
+        "ratio": "runtime.ratio",
+        "style": "text-1793808369706-a5jwr4",
+        "subject": "text-1793808369706-a5jwr4",
+        "reference_image": "upload-1793848351988"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-text-image",
+            "type": "default",
+            "source": "text-1793808369706-a5jwr4",
+            "target": "image-1793808418123-2le1vo"
+          },
+          {
+            "id": "edge-upload-image",
+            "type": "default",
+            "source": "upload-1793848351988",
+            "target": "image-1793808418123-2le1vo"
+          },
+          {
+            "id": "edge-image-result",
+            "type": "default",
+            "source": "image-1793808418123-2le1vo",
+            "target": "result-1793811407239-dt65ru"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1793848351988",
+            "data": {
+              "image": "",
+              "title": "上传形象图"
+            },
+            "type": "upload",
+            "position": {
+              "x": 329.55268735718903,
+              "y": 70.21238366710483
+            }
+          },
+          {
+            "id": "text-1793808369706-a5jwr4",
+            "data": {
+              "mode": "text-generation",
+              "text": "把这个形象放到贴纸上，纸胶带上，挂绳上，短袖和徽章上，这些物料都放在明亮的书桌上",
+              "title": "文字生成",
+              "config": {
+                "model": "gpt-4.1-mini"
+              },
+              "prompt": "为儿童创作《{{subject}}》主题的插画，{{style}}风格，画面正中央是上传的形象，色彩明亮温暖，主体清晰，构图完整，适合小学美术课堂展示，高质量儿童插画。画面中不要出现任何文字、标题、字母或签名。",
+              "status": "idle"
+            },
+            "type": "text",
+            "position": {
+              "x": 263.058733064438,
+              "y": -177.09312691984252
+            }
+          },
+          {
+            "id": "image-1793808418123-2le1vo",
+            "data": {
+              "mode": "image-generation",
+              "error": "",
+              "title": "图像生成",
+              "config": {
+                "model": "agnes-image-2.1-flash",
+                "ratio": "9:16",
+                "resolution": "1080P"
+              },
+              "output": {
+                "url": "https://cos-platform-outputs.agnes-ai.cn/images/i2i/task_mAKcVyIB2QaCuSSGaEMLWuz200JtyowY/output.png",
+                "model": "agnes-image-2.1-flash",
+                "assetId": "",
+                "provider": "agnes",
+                "imageData": "https://cos-platform-outputs.agnes-ai.cn/images/i2i/task_mAKcVyIB2QaCuSSGaEMLWuz200JtyowY/output.png",
+                "originalName": "画布生成-1793808520391-1.png"
+              },
+              "prompt": "",
+              "status": "succeeded",
+              "outputVariants": [],
+              "outputAspectRatio": 0.5609756097560976
+            },
+            "type": "image",
+            "position": {
+              "x": 683.2075799800475,
+              "y": -124.10350350857068
+            }
+          },
+          {
+            "id": "result-1793811407239-dt65ru",
+            "data": {
+              "state": "idle",
+              "title": "结果展示"
+            },
+            "type": "result",
+            "position": {
+              "x": 932.2299023346143,
+              "y": -36.62686823854237
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "3:4",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "agnes",
+        "testedAt": "2026-11-05T05:18:06.807Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "为儿童创作《{{subject}}》主题的插画，{{style}}风格，画面正中央是上传的形象，色彩明亮温暖，主体清晰，构图完整，适合小学美术课堂展示，高质量儿童插画。画面中不要出现任何文字、标题、字母或签名。"
+      },
+      "h5Workflow": {
+        "pageCount": 0,
+        "flowSummary": [
+          "AI 图像生成",
+          "图片结果",
+          "图像生成",
+          "图像生成"
+        ],
+        "estimatedMinutes": 0,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "上传你的形象",
+          "options": [],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "点击上传正面清晰的照片或画作",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "text",
+          "label": "绘本主题",
+          "options": [],
+          "required": true,
+          "maxLength": 40,
+          "placeholder": "例如：小熊的生日派对",
+          "defaultValue": ""
+        },
+        {
+          "key": "style",
+          "type": "select",
+          "label": "画风",
+          "options": [
+            {
+              "label": "水彩",
+              "value": "水彩"
+            },
+            {
+              "label": "蜡笔",
+              "value": "蜡笔"
+            },
+            {
+              "label": "剪纸",
+              "value": "剪纸"
+            },
+            {
+              "label": "国潮",
+              "value": "国潮"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "竖版 3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "方形 1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "竖屏 9:16",
+              "value": "9:16"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "block-heading",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "童话绘本封面",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "上传一个形象，选好主题和画风，生成专属的绘本封面。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-ref-image",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "上传你的形象",
+            "binding": "upload-1793848351988",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击上传正面清晰的照片或画作",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-subject",
+            "key": "subject",
+            "span": 6,
+            "type": "text",
+            "label": "绘本主题",
+            "binding": "text-1793808369706-a5jwr4",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 40,
+            "description": "",
+            "placeholder": "例如：小熊的生日派对",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-style",
+            "key": "style",
+            "span": 6,
+            "type": "select",
+            "label": "画风",
+            "binding": "text-1793808369706-a5jwr4",
+            "options": [
+              {
+                "label": "水彩",
+                "value": "水彩"
+              },
+              {
+                "label": "蜡笔",
+                "value": "蜡笔"
+              },
+              {
+                "label": "剪纸",
+                "value": "剪纸"
+              },
+              {
+                "label": "国潮",
+                "value": "国潮"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-ratio",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "竖版 3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "方形 1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "竖屏 9:16",
+                "value": "9:16"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-submit",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成绘本封面",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-result",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "生成结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "启蒙",
+        "coverUrl": "",
+        "exampleUrl": "",
+        "coverSource": "",
+        "coverGeneratedAt": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_configuration": {
+      "limits": {
+        "dailyLimit": 5
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "3:4",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "agnes",
+        "testedAt": "2026-11-05T05:18:06.807Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "为儿童创作《{{subject}}》主题的插画，{{style}}风格，画面正中央是上传的形象，色彩明亮温暖，主体清晰，构图完整，适合小学美术课堂展示，高质量儿童插画。画面中不要出现任何文字、标题、字母或签名。"
+      },
+      "bindings": {
+        "ratio": "runtime.ratio",
+        "style": "text-1793808369706-a5jwr4",
+        "subject": "text-1793808369706-a5jwr4",
+        "reference_image": "upload-1793848351988"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-text-image",
+            "type": "default",
+            "source": "text-1793808369706-a5jwr4",
+            "target": "image-1793808418123-2le1vo"
+          },
+          {
+            "id": "edge-upload-image",
+            "type": "default",
+            "source": "upload-1793848351988",
+            "target": "image-1793808418123-2le1vo"
+          },
+          {
+            "id": "edge-image-result",
+            "type": "default",
+            "source": "image-1793808418123-2le1vo",
+            "target": "result-1793811407239-dt65ru"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1793848351988",
+            "data": {
+              "image": "",
+              "title": "上传形象图"
+            },
+            "type": "upload",
+            "position": {
+              "x": 329.55268735718903,
+              "y": 70.21238366710483
+            }
+          },
+          {
+            "id": "text-1793808369706-a5jwr4",
+            "data": {
+              "mode": "text-generation",
+              "text": "把这个形象放到贴纸上，纸胶带上，挂绳上，短袖和徽章上，这些物料都放在明亮的书桌上",
+              "title": "文字生成",
+              "config": {
+                "model": "gpt-4.1-mini"
+              },
+              "prompt": "为儿童创作《{{subject}}》主题的插画，{{style}}风格，画面正中央是上传的形象，色彩明亮温暖，主体清晰，构图完整，适合小学美术课堂展示，高质量儿童插画。画面中不要出现任何文字、标题、字母或签名。",
+              "status": "idle"
+            },
+            "type": "text",
+            "position": {
+              "x": 263.058733064438,
+              "y": -177.09312691984252
+            }
+          },
+          {
+            "id": "image-1793808418123-2le1vo",
+            "data": {
+              "mode": "image-generation",
+              "error": "",
+              "title": "图像生成",
+              "config": {
+                "model": "agnes-image-2.1-flash",
+                "ratio": "9:16",
+                "resolution": "1080P"
+              },
+              "output": {
+                "url": "https://cos-platform-outputs.agnes-ai.cn/images/i2i/task_mAKcVyIB2QaCuSSGaEMLWuz200JtyowY/output.png",
+                "model": "agnes-image-2.1-flash",
+                "assetId": "",
+                "provider": "agnes",
+                "imageData": "https://cos-platform-outputs.agnes-ai.cn/images/i2i/task_mAKcVyIB2QaCuSSGaEMLWuz200JtyowY/output.png",
+                "originalName": "画布生成-1793808520391-1.png"
+              },
+              "prompt": "",
+              "status": "succeeded",
+              "outputVariants": [],
+              "outputAspectRatio": 0.5609756097560976
+            },
+            "type": "image",
+            "position": {
+              "x": 683.2075799800475,
+              "y": -124.10350350857068
+            }
+          },
+          {
+            "id": "result-1793811407239-dt65ru",
+            "data": {
+              "state": "idle",
+              "title": "结果展示"
+            },
+            "type": "result",
+            "position": {
+              "x": 932.2299023346143,
+              "y": -36.62686823854237
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "3:4",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "agnes",
+        "testedAt": "2026-11-05T05:18:06.807Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "为儿童创作《{{subject}}》主题的插画，{{style}}风格，画面正中央是上传的形象，色彩明亮温暖，主体清晰，构图完整，适合小学美术课堂展示，高质量儿童插画。画面中不要出现任何文字、标题、字母或签名。"
+      },
+      "h5Workflow": {
+        "pageCount": 0,
+        "flowSummary": [
+          "AI 图像生成",
+          "图片结果",
+          "图像生成",
+          "图像生成"
+        ],
+        "estimatedMinutes": 0,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "上传你的形象",
+          "options": [],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "点击上传正面清晰的照片或画作",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "text",
+          "label": "绘本主题",
+          "options": [],
+          "required": true,
+          "maxLength": 40,
+          "placeholder": "例如：小熊的生日派对",
+          "defaultValue": ""
+        },
+        {
+          "key": "style",
+          "type": "select",
+          "label": "画风",
+          "options": [
+            {
+              "label": "水彩",
+              "value": "水彩"
+            },
+            {
+              "label": "蜡笔",
+              "value": "蜡笔"
+            },
+            {
+              "label": "剪纸",
+              "value": "剪纸"
+            },
+            {
+              "label": "国潮",
+              "value": "国潮"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "竖版 3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "方形 1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "竖屏 9:16",
+              "value": "9:16"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "block-heading",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "童话绘本封面",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "上传一个形象，选好主题和画风，生成专属的绘本封面。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-ref-image",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "上传你的形象",
+            "binding": "upload-1793848351988",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击上传正面清晰的照片或画作",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-subject",
+            "key": "subject",
+            "span": 6,
+            "type": "text",
+            "label": "绘本主题",
+            "binding": "text-1793808369706-a5jwr4",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 40,
+            "description": "",
+            "placeholder": "例如：小熊的生日派对",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-style",
+            "key": "style",
+            "span": 6,
+            "type": "select",
+            "label": "画风",
+            "binding": "text-1793808369706-a5jwr4",
+            "options": [
+              {
+                "label": "水彩",
+                "value": "水彩"
+              },
+              {
+                "label": "蜡笔",
+                "value": "蜡笔"
+              },
+              {
+                "label": "剪纸",
+                "value": "剪纸"
+              },
+              {
+                "label": "国潮",
+                "value": "国潮"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-ratio",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "竖版 3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "方形 1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "竖屏 9:16",
+                "value": "9:16"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-submit",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成绘本封面",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block-result",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "生成结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "启蒙",
+        "coverUrl": "",
+        "exampleUrl": "",
+        "coverSource": "",
+        "coverGeneratedAt": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_version_id": "skillv_IhAfF2jYmgs7MLxcGGEG8zQd",
+    "created_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "updated_by_user_id": "usr__bItoKl6NfH9b6nWfMuIGmgH",
+    "created_at": "2026-08-12T13:16:55.713Z",
+    "updated_at": "2026-11-05T05:18:06.820Z",
+    "draft_revision": 40
+  },
+  {
+    "id": "skill_Pu3IsqRIbL9IRaxzge7tZOW5",
+    "organization_id": "org_btYToE4QaGpMIgWngwvIqumI",
+    "scope_type": "organization",
+    "source_skill_id": null,
+    "skill_type": "image",
+    "title": "方案2：无限画布工作流报告工作流",
+    "summary": "H5 报告方案 2 的无限画布配图与文字整理工作流。",
+    "status": "draft",
+    "sort_order": 0,
+    "draft_configuration": {
+      "limits": {
+        "dailyLimit": 0
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "bindings": {
+        "count": "runtime.count",
+        "ratio": "runtime.ratio",
+        "subject": "prompt-1",
+        "reference_image": "upload-1"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-upload-prompt",
+            "type": "default",
+            "source": "upload-1",
+            "target": "prompt-1"
+          },
+          {
+            "id": "edge-prompt-video",
+            "type": "default",
+            "source": "prompt-1",
+            "target": "video-1"
+          },
+          {
+            "id": "edge-video-result",
+            "type": "default",
+            "source": "video-1",
+            "target": "result-1"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1",
+            "data": {
+              "image": "",
+              "title": "参考图片输入"
+            },
+            "type": "upload",
+            "position": {
+              "x": 40,
+              "y": 250
+            }
+          },
+          {
+            "id": "prompt-1",
+            "data": {
+              "title": "创作提示词",
+              "prompt": "描述希望生成的画面"
+            },
+            "type": "prompt",
+            "position": {
+              "x": 330,
+              "y": 305
+            }
+          },
+          {
+            "id": "video-1",
+            "data": {
+              "title": "AI 图像生成",
+              "description": "根据提示词与参考图生成图片"
+            },
+            "type": "image",
+            "position": {
+              "x": 600,
+              "y": 260
+            }
+          },
+          {
+            "id": "result-1",
+            "data": {
+              "state": "idle",
+              "title": "图片结果"
+            },
+            "type": "result",
+            "position": {
+              "x": 860,
+              "y": 310
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "参考图片",
+          "options": [],
+          "required": false,
+          "maxLength": 200,
+          "placeholder": "点击或拖拽上传图片",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "textarea",
+          "label": "画面描述",
+          "options": [],
+          "required": true,
+          "maxLength": 1000,
+          "placeholder": "描述你想生成的画面",
+          "defaultValue": ""
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "16:9",
+              "value": "16:9"
+            },
+            {
+              "label": "9:16",
+              "value": "9:16"
+            },
+            {
+              "label": "4:3",
+              "value": "4:3"
+            },
+            {
+              "label": "3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "21:9",
+              "value": "21:9"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "count",
+          "type": "select",
+          "label": "生成张数",
+          "options": [
+            {
+              "label": "1",
+              "value": "1"
+            },
+            {
+              "label": "2",
+              "value": "2"
+            },
+            {
+              "label": "3",
+              "value": "3"
+            },
+            {
+              "label": "4",
+              "value": "4"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "block_mt4k9vuz_mibzw9",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "AI 图像创作",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "上传参考图并描述画面，生成你的创意作品。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mt4k9vuz_9pcq2f",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "参考图片",
+            "binding": "upload-1",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击或拖拽上传图片",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mt4k9vuz_2h4kdy",
+            "key": "subject",
+            "span": 6,
+            "type": "textarea",
+            "label": "画面描述",
+            "binding": "prompt-1",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 1000,
+            "description": "",
+            "placeholder": "描述你想生成的画面",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mt4k9vuz_rxyizh",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "16:9",
+                "value": "16:9"
+              },
+              {
+                "label": "9:16",
+                "value": "9:16"
+              },
+              {
+                "label": "4:3",
+                "value": "4:3"
+              },
+              {
+                "label": "3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "21:9",
+                "value": "21:9"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mt4k9vuz_8q4ka0",
+            "key": "count",
+            "span": 6,
+            "type": "count",
+            "label": "生成张数",
+            "binding": "runtime.count",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mt4k9vuz_7981y8",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成图片",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mt4k9vuz_ja8mcq",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "图片结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "coverUrl": "",
+        "exampleUrl": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_configuration": {},
+    "published_version_id": null,
+    "created_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "updated_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "created_at": "2026-08-22T15:56:56.091Z",
+    "updated_at": "2026-08-22T15:56:56.091Z",
+    "draft_revision": 0
+  },
+  {
+    "id": "skill_HdoAujHwEzHsa32kbajkTu8h",
+    "organization_id": "org_btYToE4QaGpMIgWngwvIqumI",
+    "scope_type": "organization",
+    "source_skill_id": null,
+    "skill_type": "image",
+    "title": "方案2：无限画布工作流报告",
+    "summary": "",
+    "status": "draft",
+    "sort_order": 0,
+    "draft_configuration": {
+      "limits": {
+        "dailyLimit": 0
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "bindings": {
+        "subject": "prompt-1",
+        "reference_image": "upload-1"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-upload-image",
+            "type": "default",
+            "source": "upload-1",
+            "target": "image-1"
+          },
+          {
+            "id": "edge-prompt-image",
+            "type": "default",
+            "source": "prompt-1",
+            "target": "image-1"
+          },
+          {
+            "id": "edge-image-result",
+            "type": "default",
+            "source": "image-1",
+            "target": "result-1"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1",
+            "data": {
+              "image": "",
+              "title": "参考图片输入"
+            },
+            "type": "upload",
+            "position": {
+              "x": 40,
+              "y": 250
+            }
+          },
+          {
+            "id": "prompt-1",
+            "data": {
+              "title": "创作提示词",
+              "prompt": "整理报告内容并生成配图"
+            },
+            "type": "prompt",
+            "position": {
+              "x": 330,
+              "y": 305
+            }
+          },
+          {
+            "id": "image-1",
+            "data": {
+              "title": "AI报告配图"
+            },
+            "type": "image",
+            "position": {
+              "x": 600,
+              "y": 260
+            }
+          },
+          {
+            "id": "result-1",
+            "data": {
+              "title": "报告图片结果"
+            },
+            "type": "result",
+            "position": {
+              "x": 860,
+              "y": 310
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 8,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "h5Workflow": {
+        "pageCount": 0,
+        "flowSummary": [
+          "参考图片输入",
+          "创作提示词",
+          "AI报告配图",
+          "报告图片结果"
+        ],
+        "estimatedMinutes": 0,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "参考图片",
+          "options": [],
+          "required": false,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "textarea",
+          "label": "报告内容",
+          "options": [],
+          "required": true,
+          "maxLength": 1000,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "heading-1",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "H5报告配图",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "image-input",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "参考图片",
+            "binding": "upload-1",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "subject-input",
+            "key": "subject",
+            "span": 6,
+            "type": "textarea",
+            "label": "报告内容",
+            "binding": "prompt-1",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 1000,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "submit-1",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成图片",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "result-block",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "生成结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "",
+        "coverUrl": "/api/ai-skill-covers/org_btYToE4QaGpMIgWngwvIqumI/h5-cover-1793460082670-bca444eb03d6.webp",
+        "exampleUrl": "",
+        "coverSource": "ai",
+        "coverGeneratedAt": "2026-10-31T15:21:22.678Z"
+      },
+      "schemaVersion": 2
+    },
+    "published_configuration": {},
+    "published_version_id": null,
+    "created_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "updated_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "created_at": "2026-08-22T15:57:06.930Z",
+    "updated_at": "2026-10-31T15:22:52.649Z",
+    "draft_revision": 240
+  },
+  {
+    "id": "skill_Z3vz4ptT27MfJWInL2y1aF0q",
+    "organization_id": "org_btYToE4QaGpMIgWngwvIqumI",
+    "scope_type": "organization",
+    "source_skill_id": null,
+    "skill_type": "image",
+    "title": "新建报告风格工作流",
+    "summary": "",
+    "status": "draft",
+    "sort_order": 0,
+    "draft_configuration": {
+      "limits": {
+        "dailyLimit": 0
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "2026-10-31T15:25:03.686Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "bindings": {
+        "count": "runtime.count",
+        "ratio": "runtime.ratio",
+        "subject": "prompt-1",
+        "reference_image": "upload-1"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-upload-prompt",
+            "type": "default",
+            "source": "upload-1",
+            "target": "prompt-1"
+          },
+          {
+            "id": "edge-prompt-video",
+            "type": "default",
+            "source": "prompt-1",
+            "target": "video-1"
+          },
+          {
+            "id": "edge-video-result",
+            "type": "default",
+            "source": "video-1",
+            "target": "result-1"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1",
+            "data": {
+              "image": "",
+              "title": "参考图片输入"
+            },
+            "type": "upload",
+            "position": {
+              "x": 40,
+              "y": 250
+            }
+          },
+          {
+            "id": "prompt-1",
+            "data": {
+              "title": "创作提示词",
+              "prompt": "描述希望生成的画面"
+            },
+            "type": "prompt",
+            "position": {
+              "x": 330,
+              "y": 305
+            }
+          },
+          {
+            "id": "video-1",
+            "data": {
+              "title": "AI 图像生成",
+              "description": "根据提示词与参考图生成图片"
+            },
+            "type": "image",
+            "position": {
+              "x": 600,
+              "y": 260
+            }
+          },
+          {
+            "id": "result-1",
+            "data": {
+              "state": "idle",
+              "title": "图片结果"
+            },
+            "type": "result",
+            "position": {
+              "x": 860,
+              "y": 310
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "2026-10-31T15:25:03.686Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "h5Workflow": {
+        "pageCount": 4,
+        "flowSummary": [
+          "参考图片输入",
+          "创作提示词",
+          "AI 图像生成",
+          "图片结果"
+        ],
+        "estimatedMinutes": 6,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "参考图片",
+          "options": [],
+          "required": false,
+          "maxLength": 200,
+          "placeholder": "点击或拖拽上传图片",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "textarea",
+          "label": "画面描述",
+          "options": [],
+          "required": true,
+          "maxLength": 1000,
+          "placeholder": "描述你想生成的画面",
+          "defaultValue": ""
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "16:9",
+              "value": "16:9"
+            },
+            {
+              "label": "9:16",
+              "value": "9:16"
+            },
+            {
+              "label": "4:3",
+              "value": "4:3"
+            },
+            {
+              "label": "3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "21:9",
+              "value": "21:9"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "count",
+          "type": "select",
+          "label": "生成张数",
+          "options": [
+            {
+              "label": "1",
+              "value": "1"
+            },
+            {
+              "label": "2",
+              "value": "2"
+            },
+            {
+              "label": "3",
+              "value": "3"
+            },
+            {
+              "label": "4",
+              "value": "4"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "block_mvwjvrrr_hw93ve",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "AI 图像创作",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "上传参考图并描述画面，生成你的创意作品。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjvrrr_dk1t9q",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "参考图片",
+            "binding": "upload-1",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击或拖拽上传图片",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjvrrr_mj36ny",
+            "key": "subject",
+            "span": 6,
+            "type": "textarea",
+            "label": "画面描述",
+            "binding": "prompt-1",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 1000,
+            "description": "",
+            "placeholder": "描述你想生成的画面",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjvrrr_47pny7",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "16:9",
+                "value": "16:9"
+              },
+              {
+                "label": "9:16",
+                "value": "9:16"
+              },
+              {
+                "label": "4:3",
+                "value": "4:3"
+              },
+              {
+                "label": "3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "21:9",
+                "value": "21:9"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjvrrr_coa7p3",
+            "key": "count",
+            "span": 6,
+            "type": "count",
+            "label": "生成张数",
+            "binding": "runtime.count",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjvrrr_5o5i63",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成图片",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjvrrr_h6om6q",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "图片结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "",
+        "coverUrl": "/api/ai-skill-covers/org_btYToE4QaGpMIgWngwvIqumI/cover-1793460235401-cc5f43c83f1c.webp",
+        "exampleUrl": "",
+        "coverSource": "upload",
+        "coverGeneratedAt": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_configuration": {},
+    "published_version_id": null,
+    "created_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "updated_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "created_at": "2026-10-31T15:22:55.207Z",
+    "updated_at": "2026-10-31T15:25:03.687Z",
+    "draft_revision": 3
+  },
+  {
+    "id": "skill_jzwALjrD9dTKAA1i2MkUJ4M4",
+    "organization_id": "org_btYToE4QaGpMIgWngwvIqumI",
+    "scope_type": "organization",
+    "source_skill_id": null,
+    "skill_type": "image",
+    "title": "新建报告风格工作流",
+    "summary": "",
+    "status": "draft",
+    "sort_order": 0,
+    "draft_configuration": {
+      "limits": {
+        "dailyLimit": 0
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "bindings": {
+        "count": "runtime.count",
+        "ratio": "runtime.ratio",
+        "subject": "prompt-1",
+        "reference_image": "upload-1"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-upload-prompt",
+            "type": "default",
+            "source": "upload-1",
+            "target": "prompt-1"
+          },
+          {
+            "id": "edge-prompt-video",
+            "type": "default",
+            "source": "prompt-1",
+            "target": "video-1"
+          },
+          {
+            "id": "edge-video-result",
+            "type": "default",
+            "source": "video-1",
+            "target": "result-1"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1",
+            "data": {
+              "image": "",
+              "title": "参考图片输入"
+            },
+            "type": "upload",
+            "position": {
+              "x": 40,
+              "y": 250
+            }
+          },
+          {
+            "id": "prompt-1",
+            "data": {
+              "title": "创作提示词",
+              "prompt": "描述希望生成的画面"
+            },
+            "type": "prompt",
+            "position": {
+              "x": 330,
+              "y": 305
+            }
+          },
+          {
+            "id": "video-1",
+            "data": {
+              "title": "AI 图像生成",
+              "description": "根据提示词与参考图生成图片"
+            },
+            "type": "image",
+            "position": {
+              "x": 600,
+              "y": 260
+            }
+          },
+          {
+            "id": "result-1",
+            "data": {
+              "state": "idle",
+              "title": "图片结果"
+            },
+            "type": "result",
+            "position": {
+              "x": 860,
+              "y": 310
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "h5Workflow": {
+        "pageCount": 4,
+        "flowSummary": [
+          "参考图片输入",
+          "创作提示词",
+          "AI 图像生成",
+          "图片结果"
+        ],
+        "estimatedMinutes": 6,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "参考图片",
+          "options": [],
+          "required": false,
+          "maxLength": 200,
+          "placeholder": "点击或拖拽上传图片",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "textarea",
+          "label": "画面描述",
+          "options": [],
+          "required": true,
+          "maxLength": 1000,
+          "placeholder": "描述你想生成的画面",
+          "defaultValue": ""
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "16:9",
+              "value": "16:9"
+            },
+            {
+              "label": "9:16",
+              "value": "9:16"
+            },
+            {
+              "label": "4:3",
+              "value": "4:3"
+            },
+            {
+              "label": "3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "21:9",
+              "value": "21:9"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "count",
+          "type": "select",
+          "label": "生成张数",
+          "options": [
+            {
+              "label": "1",
+              "value": "1"
+            },
+            {
+              "label": "2",
+              "value": "2"
+            },
+            {
+              "label": "3",
+              "value": "3"
+            },
+            {
+              "label": "4",
+              "value": "4"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "block_mvwjzxpr_2jrl11",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "AI 图像创作",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "上传参考图并描述画面，生成你的创意作品。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjzxpr_jfrezh",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "参考图片",
+            "binding": "upload-1",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击或拖拽上传图片",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjzxpr_6wwqsj",
+            "key": "subject",
+            "span": 6,
+            "type": "textarea",
+            "label": "画面描述",
+            "binding": "prompt-1",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 1000,
+            "description": "",
+            "placeholder": "描述你想生成的画面",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjzxpr_rspngf",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "16:9",
+                "value": "16:9"
+              },
+              {
+                "label": "9:16",
+                "value": "9:16"
+              },
+              {
+                "label": "4:3",
+                "value": "4:3"
+              },
+              {
+                "label": "3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "21:9",
+                "value": "21:9"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjzxpr_cpw3ww",
+            "key": "count",
+            "span": 6,
+            "type": "count",
+            "label": "生成张数",
+            "binding": "runtime.count",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjzxpr_h6cenz",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成图片",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "block_mvwjzxpr_4gh8ez",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "图片结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "",
+        "coverUrl": "",
+        "exampleUrl": "",
+        "coverSource": "",
+        "coverGeneratedAt": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_configuration": {},
+    "published_version_id": null,
+    "created_by_user_id": "usr_sGnSbWQ_sXh7w6FFoOoZO3_k",
+    "updated_by_user_id": "usr__bItoKl6NfH9b6nWfMuIGmgH",
+    "created_at": "2026-10-31T15:26:09.533Z",
+    "updated_at": "2026-10-31T16:22:50.853Z",
+    "draft_revision": 4
+  },
+  {
+    "id": "skill_0jQvZKaJYB0SZJxTgHMElmVE",
+    "organization_id": "org_btYToE4QaGpMIgWngwvIqumI",
+    "scope_type": "organization",
+    "source_skill_id": null,
+    "skill_type": "image",
+    "title": "测试玩法｜小动物插画",
+    "summary": "说说画什么、选个风格，一键生成小动物插画。",
+    "status": "published",
+    "sort_order": 0,
+    "draft_configuration": {
+      "limits": {
+        "dailyLimit": 0
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "2026-11-04T14:27:17.117Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "bindings": {
+        "count": "runtime.count",
+        "ratio": "runtime.ratio",
+        "reference_image": "upload-1"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-upload-prompt",
+            "type": "default",
+            "source": "upload-1",
+            "target": "prompt-1"
+          },
+          {
+            "id": "edge-prompt-image",
+            "type": "default",
+            "source": "prompt-1",
+            "target": "image-1"
+          },
+          {
+            "id": "edge-image-result",
+            "type": "default",
+            "source": "image-1",
+            "target": "result-1"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1",
+            "data": {
+              "image": "",
+              "title": "参考图片输入"
+            },
+            "type": "upload",
+            "position": {
+              "x": 40,
+              "y": 250
+            }
+          },
+          {
+            "id": "prompt-1",
+            "data": {
+              "title": "创作提示词",
+              "prompt": "把主体画成适合小学生欣赏的插画：{{subject}}，{{style}}风格，色彩明亮温暖，主体清晰居中，留白干净，画面完整不残缺。"
+            },
+            "type": "prompt",
+            "position": {
+              "x": 330,
+              "y": 305
+            }
+          },
+          {
+            "id": "image-1",
+            "data": {
+              "count": 1,
+              "ratio": "1:1",
+              "title": "AI 图像生成",
+              "provider": "volcengine",
+              "description": "根据提示词与参考图生成图片"
+            },
+            "type": "image",
+            "position": {
+              "x": 600,
+              "y": 260
+            }
+          },
+          {
+            "id": "result-1",
+            "data": {
+              "state": "idle",
+              "title": "图片结果"
+            },
+            "type": "result",
+            "position": {
+              "x": 860,
+              "y": 310
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "2026-11-04T14:27:17.117Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "h5Workflow": {
+        "pageCount": 0,
+        "flowSummary": [
+          "参考图片输入",
+          "创作提示词",
+          "AI 图像生成",
+          "图片结果"
+        ],
+        "estimatedMinutes": 0,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "参考图片（可选）",
+          "options": [],
+          "required": false,
+          "maxLength": 200,
+          "placeholder": "点击或拖拽上传图片",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "textarea",
+          "label": "画什么",
+          "options": [],
+          "required": true,
+          "maxLength": 1000,
+          "placeholder": "例如：一只在森林里弹吉他的小狐狸",
+          "defaultValue": ""
+        },
+        {
+          "key": "style",
+          "type": "select",
+          "label": "风格",
+          "options": [
+            {
+              "label": "水彩",
+              "value": "水彩"
+            },
+            {
+              "label": "蜡笔",
+              "value": "蜡笔"
+            },
+            {
+              "label": "国风",
+              "value": "国风"
+            },
+            {
+              "label": "卡通",
+              "value": "卡通"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": "水彩"
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "4:3",
+              "value": "4:3"
+            },
+            {
+              "label": "16:9",
+              "value": "16:9"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "count",
+          "type": "select",
+          "label": "生成张数",
+          "options": [
+            {
+              "label": "1",
+              "value": "1"
+            },
+            {
+              "label": "2",
+              "value": "2"
+            },
+            {
+              "label": "3",
+              "value": "3"
+            },
+            {
+              "label": "4",
+              "value": "4"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "b1",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "小动物插画",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "说说你想画什么，选个风格，一键生成。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b2",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "参考图片（可选）",
+            "binding": "upload-1",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击或拖拽上传图片",
+            "defaultValue": ""
+          },
+          {
+            "id": "b3",
+            "key": "subject",
+            "span": 6,
+            "type": "textarea",
+            "label": "画什么",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 1000,
+            "description": "",
+            "placeholder": "例如：一只在森林里弹吉他的小狐狸",
+            "defaultValue": ""
+          },
+          {
+            "id": "b4",
+            "key": "style",
+            "span": 6,
+            "type": "select",
+            "label": "风格",
+            "binding": "",
+            "options": [
+              {
+                "label": "水彩",
+                "value": "水彩"
+              },
+              {
+                "label": "蜡笔",
+                "value": "蜡笔"
+              },
+              {
+                "label": "国风",
+                "value": "国风"
+              },
+              {
+                "label": "卡通",
+                "value": "卡通"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": "水彩"
+          },
+          {
+            "id": "b5",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "4:3",
+                "value": "4:3"
+              },
+              {
+                "label": "16:9",
+                "value": "16:9"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b6",
+            "key": "count",
+            "span": 6,
+            "type": "count",
+            "label": "生成张数",
+            "binding": "runtime.count",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b7",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成图片",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b8",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "生成结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "",
+        "coverUrl": "",
+        "exampleUrl": "",
+        "coverSource": "",
+        "coverGeneratedAt": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_configuration": {
+      "limits": {
+        "dailyLimit": 0
+      },
+      "runtime": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "2026-11-04T14:27:17.117Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "bindings": {
+        "count": "runtime.count",
+        "ratio": "runtime.ratio",
+        "reference_image": "upload-1"
+      },
+      "workflow": {
+        "edges": [
+          {
+            "id": "edge-upload-prompt",
+            "type": "default",
+            "source": "upload-1",
+            "target": "prompt-1"
+          },
+          {
+            "id": "edge-prompt-image",
+            "type": "default",
+            "source": "prompt-1",
+            "target": "image-1"
+          },
+          {
+            "id": "edge-image-result",
+            "type": "default",
+            "source": "image-1",
+            "target": "result-1"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "upload-1",
+            "data": {
+              "image": "",
+              "title": "参考图片输入"
+            },
+            "type": "upload",
+            "position": {
+              "x": 40,
+              "y": 250
+            }
+          },
+          {
+            "id": "prompt-1",
+            "data": {
+              "title": "创作提示词",
+              "prompt": "把主体画成适合小学生欣赏的插画：{{subject}}，{{style}}风格，色彩明亮温暖，主体清晰居中，留白干净，画面完整不残缺。"
+            },
+            "type": "prompt",
+            "position": {
+              "x": 330,
+              "y": 305
+            }
+          },
+          {
+            "id": "image-1",
+            "data": {
+              "count": 1,
+              "ratio": "1:1",
+              "title": "AI 图像生成",
+              "provider": "volcengine",
+              "description": "根据提示词与参考图生成图片"
+            },
+            "type": "image",
+            "position": {
+              "x": 600,
+              "y": 260
+            }
+          },
+          {
+            "id": "result-1",
+            "data": {
+              "state": "idle",
+              "title": "图片结果"
+            },
+            "type": "result",
+            "position": {
+              "x": 860,
+              "y": 310
+            }
+          }
+        ],
+        "version": 1,
+        "settings": {
+          "model": "",
+          "ratio": "1:1",
+          "prompt": "",
+          "duration": 5,
+          "creativity": 65,
+          "resolution": "720P"
+        },
+        "edgesVisible": true
+      },
+      "generation": {
+        "count": 1,
+        "model": "",
+        "ratio": "1:1",
+        "quality": "standard",
+        "duration": "5s",
+        "provider": "volcengine",
+        "testedAt": "2026-11-04T14:27:17.117Z",
+        "frameRate": 24,
+        "capability": "text-to-image",
+        "resolution": "720P",
+        "negativePrompt": "",
+        "promptTemplate": "{{subject}}"
+      },
+      "h5Workflow": {
+        "pageCount": 0,
+        "flowSummary": [
+          "参考图片输入",
+          "创作提示词",
+          "AI 图像生成",
+          "图片结果"
+        ],
+        "estimatedMinutes": 0,
+        "studentSelectable": false
+      },
+      "inputFields": [
+        {
+          "key": "reference_image",
+          "type": "image",
+          "label": "参考图片（可选）",
+          "options": [],
+          "required": false,
+          "maxLength": 200,
+          "placeholder": "点击或拖拽上传图片",
+          "defaultValue": ""
+        },
+        {
+          "key": "subject",
+          "type": "textarea",
+          "label": "画什么",
+          "options": [],
+          "required": true,
+          "maxLength": 1000,
+          "placeholder": "例如：一只在森林里弹吉他的小狐狸",
+          "defaultValue": ""
+        },
+        {
+          "key": "style",
+          "type": "select",
+          "label": "风格",
+          "options": [
+            {
+              "label": "水彩",
+              "value": "水彩"
+            },
+            {
+              "label": "蜡笔",
+              "value": "蜡笔"
+            },
+            {
+              "label": "国风",
+              "value": "国风"
+            },
+            {
+              "label": "卡通",
+              "value": "卡通"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": "水彩"
+        },
+        {
+          "key": "ratio",
+          "type": "select",
+          "label": "画面比例",
+          "options": [
+            {
+              "label": "1:1",
+              "value": "1:1"
+            },
+            {
+              "label": "3:4",
+              "value": "3:4"
+            },
+            {
+              "label": "4:3",
+              "value": "4:3"
+            },
+            {
+              "label": "16:9",
+              "value": "16:9"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        },
+        {
+          "key": "count",
+          "type": "select",
+          "label": "生成张数",
+          "options": [
+            {
+              "label": "1",
+              "value": "1"
+            },
+            {
+              "label": "2",
+              "value": "2"
+            },
+            {
+              "label": "3",
+              "value": "3"
+            },
+            {
+              "label": "4",
+              "value": "4"
+            }
+          ],
+          "required": true,
+          "maxLength": 200,
+          "placeholder": "",
+          "defaultValue": ""
+        }
+      ],
+      "studentPage": {
+        "blocks": [
+          {
+            "id": "b1",
+            "key": "",
+            "span": 12,
+            "type": "heading",
+            "label": "小动物插画",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "说说你想画什么，选个风格，一键生成。",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b2",
+            "key": "reference_image",
+            "span": 6,
+            "type": "image",
+            "label": "参考图片（可选）",
+            "binding": "upload-1",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "点击或拖拽上传图片",
+            "defaultValue": ""
+          },
+          {
+            "id": "b3",
+            "key": "subject",
+            "span": 6,
+            "type": "textarea",
+            "label": "画什么",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 1000,
+            "description": "",
+            "placeholder": "例如：一只在森林里弹吉他的小狐狸",
+            "defaultValue": ""
+          },
+          {
+            "id": "b4",
+            "key": "style",
+            "span": 6,
+            "type": "select",
+            "label": "风格",
+            "binding": "",
+            "options": [
+              {
+                "label": "水彩",
+                "value": "水彩"
+              },
+              {
+                "label": "蜡笔",
+                "value": "蜡笔"
+              },
+              {
+                "label": "国风",
+                "value": "国风"
+              },
+              {
+                "label": "卡通",
+                "value": "卡通"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": "水彩"
+          },
+          {
+            "id": "b5",
+            "key": "ratio",
+            "span": 6,
+            "type": "ratio",
+            "label": "画面比例",
+            "binding": "runtime.ratio",
+            "options": [
+              {
+                "label": "1:1",
+                "value": "1:1"
+              },
+              {
+                "label": "3:4",
+                "value": "3:4"
+              },
+              {
+                "label": "4:3",
+                "value": "4:3"
+              },
+              {
+                "label": "16:9",
+                "value": "16:9"
+              }
+            ],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b6",
+            "key": "count",
+            "span": 6,
+            "type": "count",
+            "label": "生成张数",
+            "binding": "runtime.count",
+            "options": [],
+            "imageUrl": "",
+            "required": true,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b7",
+            "key": "",
+            "span": 12,
+            "type": "submit",
+            "label": "生成图片",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          },
+          {
+            "id": "b8",
+            "key": "",
+            "span": 12,
+            "type": "result",
+            "label": "生成结果",
+            "binding": "",
+            "options": [],
+            "imageUrl": "",
+            "required": false,
+            "maxLength": 200,
+            "description": "",
+            "placeholder": "",
+            "defaultValue": ""
+          }
+        ],
+        "columns": 12,
+        "layoutVersion": 1
+      },
+      "presentation": {
+        "badge": "",
+        "grade": "",
+        "coverUrl": "",
+        "exampleUrl": "",
+        "coverSource": "",
+        "coverGeneratedAt": ""
+      },
+      "schemaVersion": 2
+    },
+    "published_version_id": "skillv_JKx9N0MwAhWVL1eVU829kp-S",
+    "created_by_user_id": "usr__bItoKl6NfH9b6nWfMuIGmgH",
+    "updated_by_user_id": "usr__bItoKl6NfH9b6nWfMuIGmgH",
+    "created_at": "2026-11-04T11:57:11.230Z",
+    "updated_at": "2026-11-04T15:34:21.037Z",
+    "draft_revision": 6
+  }
+]

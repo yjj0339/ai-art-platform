@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>画布节点 · 前端卡槽绑定 效果图 v1</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #efedea; color: #2b2a28; width: 1440px; height: 900px; overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+
+  /* 顶栏 */
+  .topbar {
+    height: 52px; background: #fff; border-bottom: 1px solid #e3e0db;
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+  }
+  .topbar .back { font-size: 13px; color: #6d6a64; }
+  .topbar .title { font-size: 14px; font-weight: 600; }
+  .topbar .tag {
+    font-size: 11px; color: #b1601c; background: #fdf1e4; border: 1px solid #f4d8b8;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .topbar .spacer { flex: 1; }
+  .topbar .btn {
+    font-size: 13px; color: #4a4741; border: 1px solid #dcd8d2; border-radius: 8px;
+    padding: 6px 14px; background: #fff;
+  }
+  .topbar .btn.primary { background: #2b2a28; color: #fff; border-color: #2b2a28; }
+
+  /* 主体 */
+  .stage { display: flex; height: calc(900px - 52px); }
+  .canvas {
+    position: relative; flex: 1; overflow: hidden;
+    background-color: #efedea;
+    background-image: radial-gradient(circle, #d8d4cd 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .canvas-hint {
+    position: absolute; left: 20px; top: 16px; font-size: 12px; color: #8f8a83;
+    background: rgba(255,255,255,.85); border: 1px solid #e3e0db; border-radius: 8px; padding: 6px 10px;
+  }
+
+  /* 连线 */
+  svg.wires { position: absolute; inset: 0; pointer-events: none; }
+  svg.wires path { fill: none; stroke: #b6b1a9; stroke-width: 1.8; }
+  svg.wires circle { fill: #fff; stroke: #b6b1a9; stroke-width: 1.8; }
+
+  /* 节点 */
+  .node { position: absolute; }
+  .node-kind-label {
+    position: absolute; bottom: calc(100% + 5px); left: 2px;
+    font-size: 11px; color: #6d6a64; white-space: nowrap;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .node-kind-label .dot { width: 6px; height: 6px; border-radius: 50%; background: #8f8a83; }
+
+  /* 卡槽胶囊：本轮新增的东西 */
+  .slot-pill {
+    position: absolute; top: -10px; right: 8px; z-index: 6;
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 22px; padding: 0 9px 0 7px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; line-height: 1;
+    background: #fff; border: 1.5px solid #cfc9c1; color: #6d6a64;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .slot-pill .ico { font-size: 11px; }
+  .slot-pill.is-image { background: #fff3e6; border-color: #e79a4d; color: #a85a12; }
+  .slot-pill.is-text  { background: #eaf2ff; border-color: #7aa6e8; color: #2b5fa8; }
+  .slot-pill.is-result{ background: #eaf7ee; border-color: #79bd92; color: #2b7a4b; }
+  .slot-pill.is-none  { background: #f1efec; border-color: #d3cec7; color: #8f8a83; }
+  .slot-pill.is-open  { box-shadow: 0 0 0 3px rgba(231,154,77,.28); }
+  .slot-pill .caret { font-size: 8px; opacity: .7; margin-left: 1px; }
+
+  /* 图像节点卡 */
+  .image-generation-node {
+    width: 196px; height: 148px; position: relative;
+    background: #e9e7e2; border: 1.5px solid #8f8a83; border-radius: 17px;
+    padding: 10px; display: flex; flex-direction: column;
+  }
+  .image-generation-node.selected { border-color: #e08a2e; box-shadow: 0 0 0 2px rgba(224,138,46,.22); }
+  .ig-thumb {
+    flex: 1; border-radius: 10px; background: #dcd8d1;
+    background-size: cover; background-position: center;
+    border: 1px dashed #b6b1a9;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #8f8a83;
+  }
+  .ig-thumb.filled { border: 0; }
+  .ig-foot {
+    display: flex; align-items: center; gap: 6px; margin-top: 8px;
+    font-size: 11px; color: #6d6a64;
+  }
+  .ig-foot .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+
+  /* 文字节点 */
+  .prompt-node {
+    width: 196px; height: 108px; background: #fff; border: 1.5px solid #8f8a83;
+    border-radius: 17px; padding: 11px 12px; font-size: 11.5px; line-height: 1.6; color: #4a4741;
+  }
+  .prompt-node b { display: block; font-size: 11px; color: #8f8a83; font-weight: 600; margin-bottom: 4px; }
+  /* 结果节点 */
+  .result-node {
+    width: 196px; height: 96px; background: #eaf7ee; border: 1.5px solid #79bd92;
+    border-radius: 17px; padding: 12px; font-size: 12px; color: #2b7a4b;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* 弹出菜单 */
+  .slot-menu {
+    position: absolute; z-index: 20; width: 232px;
+    background: #fff; border: 1px solid #e3e0db; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(40,36,30,.16); padding: 8px;
+  }
+  .slot-menu .hd {
+    font-size: 10.5px; color: #9a958d; padding: 4px 8px 8px; letter-spacing: .2px;
+  }
+  .slot-menu .opt {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: 8px; border-radius: 8px; text-align: left;
+  }
+  .slot-menu .opt:hover { background: #f6f4f1; }
+  .slot-menu .opt .sw {
+    width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #d3cec7; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slot-menu .opt.on .sw { border-color: #e08a2e; background: #e08a2e; }
+  .slot-menu .opt.on .sw::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #fff; }
+  .slot-menu .opt .lb { font-size: 12.5px; color: #2b2a28; }
+  .slot-menu .opt .desc { font-size: 10.5px; color: #9a958d; margin-top: 1px; }
+  .slot-menu .opt .txt { flex: 1; }
+  .slot-menu .sep { height: 1px; background: #efece8; margin: 6px 4px; }
+  .slot-menu .seq { display: flex; align-items: center; gap: 8px; padding: 6px 8px 4px; }
+  .slot-menu .seq label { font-size: 11.5px; color: #6d6a64; flex: 1; }
+  .slot-menu .seq input {
+    width: 52px; height: 26px; border: 1px solid #dcd8d2; border-radius: 7px;
+    text-align: center; font-size: 12px; font-family: inherit; color: #2b2a28;
+  }
+  .slot-menu .ft {
+    font-size: 10.5px; color: #9a958d; padding: 8px 8px 2px; line-height: 1.5;
+    border-top: 1px solid #efece8; margin-top: 6px;
+  }
+
+  /* 右栏：学生端预览 */
+  .rail {
+    width: 300px; background: #fff; border-left: 1px solid #e3e0db;
+    display: flex; flex-direction: column;
+  }
+  .rail .rhd { padding: 14px 16px 10px; border-bottom: 1px solid #f0ede9; }
+  .rail .rhd h3 { margin: 0 0 3px; font-size: 13px; }
+  .rail .rhd p { margin: 0; font-size: 11px; color: #9a958d; line-height: 1.5; }
+  .rail .rbody { flex: 1; padding: 14px 16px; overflow: hidden; }
+  .pg {
+    border: 1px solid #e8e4df; border-radius: 10px; overflow: hidden; margin-bottom: 9px;
+    display: flex; align-items: center; gap: 9px; padding: 8px;
+  }
+  .pg .no {
+    width: 20px; height: 20px; border-radius: 6px; background: #f4f1ed; color: #8f8a83;
+    font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .pg .thumb { width: 46px; height: 34px; border-radius: 6px; background: #ddd9d2; flex: 0 0 auto; background-size: cover; }
+  .pg .meta { flex: 1; min-width: 0; }
+  .pg .meta .t { font-size: 11.5px; color: #2b2a28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pg .meta .s { font-size: 10px; color: #9a958d; margin-top: 2px; }
+  .pg.empty .thumb { border: 1px dashed #cfc9c1; background: #faf9f7; }
+  .pg.empty .meta .t { color: #b6b1a9; }
+  .rail .rft {
+    padding: 11px 16px; border-top: 1px solid #f0ede9; font-size: 10.5px; color: #9a958d; line-height: 1.6;
+  }
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">‹ 报告工作流库</span>
+  <span class="title">大班 pro · 我的成长故事</span>
+  <span class="tag">画布模板编辑</span>
+  <span class="spacer"></span>
+  <button class="btn">学生端页面</button>
+  <button class="btn">保存草稿</button>
+  <button class="btn primary">发布</button>
+</div>
+
+<div class="stage">
+  <div class="canvas">
+    <div class="canvas-hint">点节点右上角的卡槽徽标 → 选它在学生端占哪一格</div>
+
+    <svg class="wires" width="1140" height="848">
+      <path d="M 236 390 C 264 390 264 390 292 390" />
+      <path d="M 488 390 C 524 390 524 224 560 224" />
+      <path d="M 488 390 C 524 390 524 404 560 404" />
+      <path d="M 488 390 C 524 390 524 584 560 584" />
+      <path d="M 756 224 C 808 224 808 384 860 384" />
+      <path d="M 756 404 C 808 404 808 384 860 384" />
+      <path d="M 756 584 C 808 584 808 384 860 384" />
+      <circle cx="292" cy="390" r="3.2" />
+      <circle cx="560" cy="224" r="3.2" />
+      <circle cx="560" cy="404" r="3.2" />
+      <circle cx="560" cy="584" r="3.2" />
+      <circle cx="860" cy="384" r="3.2" />
+    </svg>
+
+    <!-- 上传节点 -->
+    <div class="node" style="left:40px; top:340px;">
+      <div class="node-kind-label"><span class="dot"></span>学生素材入口</div>
+      <div class="prompt-node" style="height:100px;">
+        <b>上传 / 素材</b>
+        学生勾选的图从这里进入流程
+      </div>
+    </div>
+
+    <!-- 提示词节点 -->
+    <div class="node" style="left:292px; top:336px;">
+      <div class="node-kind-label"><span class="dot"></span>创作提示词</div>
+      <div class="slot-pill is-text" style="top:-32px; right:6px;">T 文字素材 <span class="caret">▾</span></div>
+      <div class="prompt-node">
+        <b>统一风格描述</b>
+        儿童水彩绘本风，柔和暖色，纸张质感…
+      </div>
+    </div>
+
+    <!-- 三个图像节点 -->
+    <div class="node" style="left:560px; top:150px;">
+      <div class="node-kind-label"><span class="dot"></span>图像生成 ①</div>
+      <div class="slot-pill is-image">图 1 · 第 1 页 <span class="caret">▾</span></div>
+      <div class="image-generation-node">
+        <div class="ig-thumb filled" style="background:#c9d7e8;"></div>
+        <div class="ig-foot"><span class="name">草图 → 水彩定稿</span><span>1:1</span></div>
+      </div>
+    </div>
+
+    <div class="node" style="left:560px; top:330px;">
+      <div class="node-kind-label"><span class="dot"></span>图像生成 ②</div>
+      <div class="slot-pill is-image is-open">图 2 · 第 2 页 <span class="caret">▾</span></div>
+      <div class="image-generation-node selected">
+        <div class="ig-thumb filled" style="background:#e3cdbd;"></div>
+        <div class="ig-foot"><span class="name">细节特写</span><span>1:1</span></div>
+      </div>
+    </div>
+
+    <div class="node" style="left:560px; top:510px;">
+      <div class="node-kind-label"><span class="dot"></span>图像生成 ③</div>
+      <div class="slot-pill is-none">不上前端 <span class="caret">▾</span></div>
+      <div class="image-generation-node">
+        <div class="ig-thumb">老师的加工节点</div>
+        <div class="ig-foot"><span class="name">去背景 · 局部重绘</span><span>1:1</span></div>
+      </div>
+    </div>
+
+    <!-- 菜单 -->
+    <div class="slot-menu" style="left:790px; top:452px;">
+      <div class="hd">这个节点在学生端是什么</div>
+      <button class="opt on">
+        <span class="sw"></span>
+        <span class="txt"><span class="lb">图像素材</span><div class="desc">学生勾的图按顺序填进这一格</div></span>
+      </button>
+      <button class="opt">
+        <span class="sw"></span>
+        <span class="txt"><span class="lb">文字素材</span><div class="desc">学生的创作自述接到这个节点后面</div></span>
+      </button>
+      <button class="opt">
+        <span class="sw"></span>
+        <span class="txt"><span class="lb">结果返回</span><div class="desc">跑完的图回到报告这一页</div></span>
+      </button>
+      <button class="opt">
+        <span class="sw"></span>
+        <span class="txt"><span class="lb">不上前端</span><div class="desc">只做中间加工，不占学生端格子</div></span>
+      </button>
+      <div class="sep"></div>
+      <div class="seq">
+        <label>排第几格</label>
+        <input value="2" />
+      </div>
+      <div class="ft">留空就按画布位置自动排（从上到下、从左到右）</div>
+    </div>
+
+    <!-- 结果节点 -->
+    <div class="node" style="left:860px; top:336px;">
+      <div class="node-kind-label"><span class="dot"></span>结果汇总</div>
+      <div class="slot-pill is-result" style="top:-32px; right:6px;">结果返回 <span class="caret">▾</span></div>
+      <div class="result-node">✓ 汇总以上全部图片，回填学生报告</div>
+    </div>
+  </div>
+
+  <!-- 右栏 -->
+  <div class="rail">
+    <div class="rhd">
+      <h3>学生端会变成这样</h3>
+      <p>格子数跟着「图像素材」节点走，不是写死 12 格</p>
+    </div>
+    <div class="rbody">
+      <div class="pg">
+        <span class="no">1</span>
+        <div class="thumb" style="background:#c9d7e8;"></div>
+        <div class="meta"><div class="t">草图 → 水彩定稿</div><div class="s">来自 图像生成 ①</div></div>
+      </div>
+      <div class="pg">
+        <span class="no">2</span>
+        <div class="thumb" style="background:#e3cdbd;"></div>
+        <div class="meta"><div class="t">细节特写</div><div class="s">来自 图像生成 ②</div></div>
+      </div>
+      <div class="pg empty">
+        <span class="no">3</span>
+        <div class="thumb"></div>
+        <div class="meta"><div class="t">（空着）</div><div class="s">学生素材不够就跳过，不报错</div></div>
+      </div>
+      <div class="pg">
+        <span class="no">文</span>
+        <div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:14px;color:#8f8a83;">字</div>
+        <div class="meta"><div class="t">统一风格描述</div><div class="s">学生自述接在老师提示词后面</div></div>
+      </div>
+      <div class="pg" style="border-color:#bfe0cb; background:#f7fcf9;">
+        <span class="no" style="background:#eaf7ee; color:#2b7a4b;">果</span>
+        <div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:14px;color:#2b7a4b;">✓</div>
+        <div class="meta"><div class="t">结果返回</div><div class="s">按节点顺序排，不按跑完先后</div></div>
+      </div>
+    </div>
+    <div class="rft">
+      <div class="legend">
+        <span><i style="background:#e79a4d"></i>图像素材</span>
+        <span><i style="background:#7aa6e8"></i>文字素材</span>
+        <span><i style="background:#79bd92"></i>结果返回</span>
+        <span><i style="background:#d3cec7"></i>不上前端</span>
+      </div>
+      <div style="margin-top:8px;">「图像生成 ③」被标了「不上前端」，所以不占学生端格子。</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

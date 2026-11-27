@@ -1,0 +1,27 @@
+# 统一换行符：仓库与工作区一律使用 LF。
+# 目的：让「版本存档 / 一键回退」恢复出来的文件与存档时逐字节一致，
+# 避免 Windows 全局 core.autocrlf=true 把 LF 改成 CRLF 造成假改动。
+* text=auto eol=lf
+
+# 例外：Windows 批处理脚本必须是 CRLF，否则 cmd.exe 解析多字节中文会错位。
+# （注意：本规则写在 * 之后，后面的规则优先级更高）
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# 二进制文件不做换行符转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.bmp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.pdf binary
+*.zip binary

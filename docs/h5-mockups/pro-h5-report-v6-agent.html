@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>高级创作报告 · v6 布局（含卡通向导位）</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, sans-serif;
+    color: #10243e;
+    background:
+      radial-gradient(circle at 78% 39%, rgba(55, 119, 255, .10), transparent 25%),
+      linear-gradient(135deg, #f5f9ff 0%, #edf5ff 54%, #f7fbff 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  .mock-note {
+    position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
+    padding: 5px 14px; border-radius: 99px;
+    background: rgba(16, 36, 62, .72); color: #fff;
+    font-size: 11.5px; letter-spacing: .3px; z-index: 99;
+    pointer-events: none;
+  }
+
+  /* ============ 顶栏 ============ */
+  .top {
+    height: 68px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 20px;
+    border-bottom: 1px solid #dbe8fb;
+    background: rgba(255, 255, 255, .66);
+    backdrop-filter: blur(8px);
+  }
+  .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .brand-mark {
+    width: 40px; height: 40px; flex: 0 0 auto;
+    display: grid; place-items: center;
+    border-radius: 50%; background: #ff6a00; color: #fff;
+    font-size: 20px; box-shadow: 0 8px 18px rgba(255, 106, 0, .22);
+  }
+  .brand h1 { margin: 0; font-size: 21px; letter-spacing: -.4px; white-space: nowrap; }
+  .divider-v { width: 1px; height: 22px; background: #cbd8ea; flex: 0 0 auto; }
+  .proj-title {
+    max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 15px; font-weight: 700; color: #172a45;
+  }
+  .icon-btn {
+    width: 26px; height: 26px; min-height: 0; flex: 0 0 auto;
+    display: grid; place-items: center;
+    border: 0; border-radius: 7px; background: transparent; color: #3977ff; font-size: 14px;
+  }
+  .saved { display: flex; align-items: center; gap: 4px; color: #7b91ad; font-size: 12px; white-space: nowrap; }
+  .saved i { color: #15a86c; font-style: normal; }
+
+  .steps { display: flex; align-items: flex-start; gap: 0; margin: 0 0 0 auto; padding: 0; list-style: none; }
+  .steps li { position: relative; width: 86px; display: grid; justify-items: center; gap: 5px; color: #7f93ae; font-size: 11px; font-weight: 700; }
+  .steps li b {
+    position: relative; z-index: 1;
+    width: 21px; height: 21px; display: grid; place-items: center;
+    border: 1.5px solid #b6c8e0; border-radius: 50%; background: #fff; font-size: 11.5px;
+  }
+  .steps li:not(:last-child)::after {
+    content: ""; position: absolute; top: 10px; left: 60px; width: 52px; height: 1.5px; background: #d3e1f3;
+  }
+  .steps li.done b, .steps li.on b { border-color: #147beb; background: #147beb; color: #fff; }
+  .steps li.done:not(:last-child)::after { background: #7cb4f7; }
+  .steps li.on { color: #1477ec; }
+
+  .save-draft {
+    height: 34px; min-height: 0; padding: 0 16px;
+    border: 1px solid #b9cae3; border-radius: 8px; background: #fff;
+    color: #152b48; font-size: 13px; font-weight: 700; white-space: nowrap;
+  }
+
+  /* ============ 主区三栏 ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 268px;
+    /* 第 2 行留给向导卡：卡片变高时自动挤上排，不会盖住内容 */
+    grid-template-rows: minmax(320px, 1fr) auto;
+    gap: 12px;
+    padding: 12px 20px;
+    height: calc(100vh - 68px);
+    min-height: 560px;
+  }
+  .panel {
+    min-width: 0; min-height: 0;
+    display: flex; flex-direction: column;
+    border: 1px solid #dbe8fb; border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(34, 86, 152, .05);
+  }
+
+  /* ---- 左：素材 ---- */
+  .left { padding: 14px 13px 12px; grid-column: 1; grid-row: 1; }
+  .panel-h { display: flex; align-items: baseline; gap: 8px; }
+  .panel-h h2 { margin: 0; font-size: 15px; font-weight: 800; white-space: nowrap; }
+  .panel-h em { color: #7b91ad; font-size: 11.5px; font-style: normal; margin-left: auto; white-space: nowrap; }
+  .pick-all {
+    height: 22px; min-height: 0; padding: 0 9px;
+    border: 1px solid #dbe5f2; border-radius: 99px; background: #f6f9fe;
+    color: #1768d4; font-size: 11.5px; font-weight: 700; line-height: 20px; white-space: nowrap;
+  }
+  .src { margin: 4px 0 0; color: #93a3b8; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .left-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 13px; padding-top: 12px; padding-bottom: 4px; }
+  .left-body::-webkit-scrollbar { width: 4px; }
+  .left-body::-webkit-scrollbar-thumb { background: #dbe6f4; border-radius: 4px; }
+  .grp-h { display: flex; align-items: center; gap: 5px; margin-bottom: 7px; }
+  .grp-h span { font-size: 12.5px; font-weight: 700; }
+  .grp-h i { color: #94a2b6; font-size: 11px; font-style: normal; }
+  .thumbs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  /* 手绘草图组：单张 4:3，别占满整屏高度 */
+  .th.land { aspect-ratio: 4 / 3; }
+  .th {
+    position: relative; aspect-ratio: 1 / 1; overflow: hidden;
+    border-radius: 9px; box-shadow: inset 0 0 0 1px rgba(16, 32, 64, .07);
+    background-size: cover; background-position: center;
+  }
+  /* 统一压一层渐变，保证标签字可读 */
+  .th::before {
+    content: ""; position: absolute; z-index: 1; inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 46%, rgba(6, 16, 32, .52) 100%);
+    pointer-events: none;
+  }
+  .th em {
+    position: absolute; z-index: 2; left: 6px; bottom: 5px; max-width: calc(100% - 12px);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: #fff; font-size: 9.5px; font-style: normal; font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
+  }
+  .th .chk {
+    position: absolute; z-index: 3; right: 5px; top: 5px;
+    width: 17px; height: 17px; display: grid; place-items: center;
+    border-radius: 50%; background: #1768d4; color: #fff; font-size: 10px;
+    box-shadow: 0 1px 3px rgba(5, 25, 60, .3);
+  }
+  .th.wide { aspect-ratio: 16 / 10; }
+  .tips {
+    flex: 0 0 auto; padding: 9px 11px;
+    border: 1px solid #ecf1f9; border-radius: 10px; background: #f8fafe;
+  }
+  .tips b { display: block; margin-bottom: 3px; font-size: 11.5px; }
+  .tips p { margin: 0; color: #7c8ba1; font-size: 10.5px; line-height: 1.6; }
+
+  /* ---- 中：叙事 ---- */
+  .mid { padding: 16px 0; grid-column: 2; grid-row: 1; }
+  .mid-in { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 0 24px; }
+  .mid-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mid-h h2 { margin: 0; font-size: 16.5px; font-weight: 800; }
+  .badge { padding: 3px 9px; border-radius: 6px; background: #eef3ff; color: #1477ec; font-size: 11px; font-weight: 600; }
+  .editor {
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    overflow: hidden; border: 1px solid #dbe8fb; border-radius: 12px;
+  }
+  .editor-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 13px 16px 0; }
+  .editor-h strong { font-size: 13.5px; }
+  .editor-h span { color: #94a2b6; font-size: 11px; }
+  .editor-body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    padding: 9px 16px 0; color: #3a4b62; font-size: 13.5px; line-height: 2;
+  }
+  .editor-body p { margin: 0 0 6px; }
+  .editor-f { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 11px; color: #94a2b6; font-size: 10.5px; }
+  .ai-row { display: flex; align-items: center; gap: 8px; }
+  .ai-row b { font-size: 11.5px; white-space: nowrap; }
+  .ai-row span { color: #94a2b6; font-size: 11px; }
+  .ai-row .spacer { flex: 1 1 auto; }
+  .ai-btn {
+    height: 30px; min-height: 0; padding: 0 12px;
+    display: flex; align-items: center; gap: 5px;
+    border: 1px solid #c9dbfb; border-radius: 8px; background: #eef3ff;
+    color: #1477ec; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  }
+  .ai-meta { color: #9aa8bb; font-size: 10.5px; }
+
+  /* ---- 右：风格 ---- */
+  .right { padding: 14px 13px 12px; grid-column: 3; grid-row: 1 / span 2; }
+  .right-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .right-h h2 { margin: 0; font-size: 15px; font-weight: 800; }
+  .right-h em { color: #7b91ad; font-size: 11.5px; font-style: normal; }
+  .scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: 11px; display: flex; flex-direction: column; gap: 12px; }
+  .scroll::-webkit-scrollbar { width: 4px; }
+  .scroll::-webkit-scrollbar-thumb { background: #dbe6f4; border-radius: 4px; }
+  .style-card {
+    padding: 0; border: 0; background: none; text-align: left;
+    display: flex; flex-direction: column; gap: 7px;
+  }
+  .style-tp { position: relative; width: 100%; aspect-ratio: 3 / 1; border-radius: 9px; overflow: hidden; background: #eef3fa; background-size: cover; background-position: center; }
+  .style-tp .rec { position: absolute; left: 6px; top: 6px; padding: 2px 6px; border-radius: 5px; background: #ff6500; color: #fff; font-size: 9px; font-weight: 700; }
+  .style-card.on .style-tp { box-shadow: 0 0 0 2px #1477ec, 0 8px 16px rgba(40, 96, 232, .2); }
+  .style-n b { display: block; font-size: 12px; color: #10243e; }
+  .style-n em { color: #94a2b6; font-size: 10.5px; font-style: normal; }
+  .empty-style {
+    padding: 16px 13px; border: 1px dashed #dbe8fb; border-radius: 10px;
+    color: #8a9ab0; font-size: 11.5px; line-height: 1.75; text-align: center;
+  }
+
+  /* ---- ★ 卡通向导卡片：贴齐左栏 + 中栏（与上方两块卡片对齐） ---- */
+  /* 网格列宽与 .grid 完全一致，左右边缘自动和上排卡片齐平 */
+  .guide-card {
+    grid-column: 1 / span 2; grid-row: 2;
+    justify-self: stretch;
+    display: grid; grid-template-columns: 300px minmax(0, 1fr);
+    column-gap: 12px; align-items: stretch;
+    min-height: 0;
+  }
+  /* 左块：卡通形象 + 模式开关（与左栏同宽，左右内边距与左栏一致 13px） */
+  .guide-side {
+    min-width: 0; align-self: stretch;
+    display: grid; grid-template-columns: 44px minmax(0, 1fr);
+    align-items: start; column-gap: 10px; row-gap: 10px;
+    align-content: center;
+    padding: 12px 13px;
+    border: 1px solid #e2ecfa; border-radius: 12px;
+    background: linear-gradient(160deg, #f8fbff 0%, #edf4ff 100%);
+    box-shadow: 0 8px 20px rgba(16, 44, 88, .07);
+  }
+  .guide-top {
+    grid-column: 1 / span 2;
+    display: contents;
+  }
+  .guide-switch-row {
+    grid-column: 1 / span 2;
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 11px; border-top: 1px solid #e3eefb;
+    min-width: 0;
+  }
+  .guide-switch-row span { color: #5d7189; font-size: 10.5px; white-space: nowrap; }
+  /* 右块：提示 / 对话 / 输入框（与中栏同宽同高） */
+  .guide-main {
+    min-width: 0; display: flex; flex-direction: column; justify-content: center;
+    padding: 10px 13px;
+    border: 1px solid #e2ecfa; border-radius: 12px;
+    background: linear-gradient(160deg, #f8fbff 0%, #eef5ff 100%);
+    box-shadow: 0 8px 20px rgba(16, 44, 88, .07);
+  }
+  /* 卡通形象位（后面换成 Agent 形象 PNG，建议 160×160 透明底） */
+  .guide-avatar {
+    position: relative;
+    width: 44px; height: 44px; flex: 0 0 auto;
+    border-radius: 13px;
+    background: radial-gradient(circle at 50% 38%, #cfe6ff 0%, #e9f2ff 62%, #f6faff 100%);
+    display: grid; place-items: center;
+    box-shadow: inset 0 0 0 1px rgba(20, 119, 236, .14);
+  }
+  .guide-avatar img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .guide-avatar .ghost { font-size: 21px; opacity: .62; }
+  .guide-avatar .dot {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: #15a86c; border: 2px solid #fff;
+  }
+  .guide-copy { min-width: 0; padding-top: 4px; }
+  .guide-copy b { display: block; font-size: 12.5px; font-weight: 800; color: #10243e; white-space: nowrap; }
+  .guide-copy span { display: block; margin-top: 3px; color: #7b91ad; font-size: 10px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .guide-copy span.on { color: #1477ec; }
+  /* 开关 */
+  .switch {
+    position: relative; flex: 0 0 auto;
+    width: 36px; height: 20px; min-height: 0; padding: 0;
+    border: 0; border-radius: 99px;
+    background: #cdd9e8; transition: background .18s ease;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(16, 36, 62, .22);
+    transition: transform .18s ease;
+  }
+  .switch.on { background: #1477ec; }
+  .switch.on::after { transform: translateX(16px); }
+  .guide-msg {
+    margin: 0; padding: 0 0 8px;
+    color: #5d7189; font-size: 11px; line-height: 1.6;
+  }
+  /* ★ 智能体对话列表（开关打开后出现） */
+  .guide-thread { padding: 0 0 8px; display: flex; flex-direction: column; gap: 6px; }
+  .guide-thread[hidden] { display: none; }
+  .bub { border-radius: 9px; padding: 6px 9px; font-size: 10.5px; line-height: 1.55; }
+  .bub.a { background: #fff; color: #34485f; box-shadow: inset 0 0 0 1px #e4edf9; border-bottom-left-radius: 3px; }
+  .bub.u { align-self: flex-end; max-width: 88%; background: #1477ec; color: #fff; border-bottom-right-radius: 3px; }
+
+  /* ★ 智能体提示词输入框 */
+  .guide-compose {
+    display: flex; align-items: flex-end; gap: 6px;
+    margin: 0; padding: 7px 7px 7px 11px;
+    border: 1px solid #d7e6fa; border-radius: 10px; background: #fff;
+    transition: border-color .16s ease, box-shadow .16s ease;
+  }
+  .guide-card.is-on .guide-compose { border-color: #8fbdf7; box-shadow: 0 0 0 3px rgba(20, 119, 236, .09); }
+  .guide-compose textarea {
+    flex: 1 1 auto; min-width: 0; height: 26px; min-height: 0;
+    padding: 4px 0 0; border: 0; outline: 0; resize: none; background: none;
+    color: #1d2f45; font-family: inherit; font-size: 11px; line-height: 1.5;
+  }
+  .guide-compose textarea::placeholder { color: #9cadc2; }
+  .guide-send {
+    flex: 0 0 auto; width: 26px; height: 26px; min-height: 0; padding: 0;
+    border: 0; border-radius: 8px; background: #e8eff9; color: #9cadc2;
+    display: grid; place-items: center; font-size: 12px;
+    transition: background .16s ease, color .16s ease;
+  }
+  .guide-card.is-on .guide-send { background: #1477ec; color: #fff; }
+
+  /* ★ 快捷指令 */
+  .guide-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 0; }
+  .guide-chips[hidden] { display: none; }
+  .guide-chips button {
+    height: 22px; min-height: 0; padding: 0 9px;
+    border: 1px solid #d9e7fa; border-radius: 99px; background: #fff;
+    color: #5a7392; font-size: 10px; white-space: nowrap;
+  }
+  .guide-card.is-on .guide-side,
+  .guide-card.is-on .guide-main { border-color: #b7d5ff; background: linear-gradient(160deg, #eff7ff 0%, #e4f0ff 100%); }
+  .guide-card.is-on .guide-msg { color: #1477ec; }
+
+  /* ---- 右下：动作 ---- */
+  .acts { flex: 0 0 auto; margin-top: 12px; padding-top: 12px; border-top: 1px solid #edf3fa; display: flex; gap: 9px; }
+  .btn-prev {
+    flex: 0 0 36%; height: 42px; min-height: 0;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    border: 1px solid #c9dbfb; border-radius: 10px; background: #fff;
+    color: #1477ec; font-size: 12.5px; font-weight: 700;
+  }
+  .btn-go {
+    flex: 1 1 auto; height: 42px; min-height: 0;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: 0; border-radius: 10px; background: #ff6500; color: #fff;
+    font-size: 12.5px; font-weight: 700; white-space: nowrap;
+    box-shadow: 0 7px 16px rgba(242, 107, 42, .26);
+  }
+
+  @media (max-width: 1180px) {
+    .grid { grid-template-columns: 250px minmax(0, 1fr) 240px; }
+    .proj-title { max-width: 130px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 顶栏 ================= -->
+<header class="top">
+  <div class="brand">
+    <span class="brand-mark">✦</span>
+    <h1>高级创作报告</h1>
+    <span class="divider-v"></span>
+    <span class="proj-title">我的作品</span>
+    <button class="icon-btn" type="button" title="改项目名">✎</button>
+    <span class="saved"><i>●</i> 已自动保存</span>
+  </div>
+
+  <ol class="steps">
+    <li class="done"><b>✓</b><span>资料整理</span></li>
+    <li class="on"><b>2</b><span>叙事编辑</span></li>
+    <li><b>3</b><span>选风格</span></li>
+    <li><b>4</b><span>提交审核</span></li>
+  </ol>
+
+  <button class="save-draft" type="button">保存草稿</button>
+</header>
+
+<!-- ================= 三栏 ================= -->
+<div class="grid">
+
+  <!-- 左：素材 + 向导位 -->
+  <aside class="panel left">
+    <div class="panel-h">
+      <h2>创作素材</h2>
+      <em>已选 5 / 共 5 张</em>
+      <button class="pick-all" type="button">全不选</button>
+    </div>
+    <p class="src">来自「新的AI绘画项目」· 点缩略图可取消参与</p>
+
+    <div class="left-body">
+      <section data-g="sketch">
+        <div class="grp-h"><span>手绘草图</span><i>1</i></div>
+        <div class="thumbs" style="grid-template-columns:1fr">
+          <div class="th land" style="background-image:linear-gradient(150deg,#dfe9f7 0%,#c6d8ee 55%,#eaf1fb 100%); background-position: 50% 42%;">
+            <span class="chk">✓</span><em>最初草图</em>
+          </div>
+        </div>
+      </section>
+
+      <section data-g="ref">
+        <div class="grp-h"><span>灵感参考</span><i>2</i></div>
+        <div class="thumbs">
+          <div class="th" style="background-image:linear-gradient(150deg,#e3eef9 0%,#bfd6ea 60%,#eef5fc 100%); background-position: 50% 38%;"><span class="chk">✓</span><em>参考 2</em></div>
+          <div class="th" style="background-image:linear-gradient(150deg,#e8e3f6 0%,#c9c0e6 60%,#f3f0fb 100%); background-position: 50% 38%;"><span class="chk">✓</span><em>参考 3</em></div>
+        </div>
+      </section>
+
+      <section data-g="ai">
+        <div class="grp-h"><span>AI 版本</span><i>2</i></div>
+        <div class="thumbs">
+          <div class="th" style="background-image:linear-gradient(150deg,#fbeee2 0%,#f0cfae 60%,#fdf6ef 100%); background-position: 50% 42%;"><span class="chk">✓</span><em>最终作品</em></div>
+          <div class="th" style="background-image:linear-gradient(150deg,#e0f1e8 0%,#b8ddc9 60%,#eff9f3 100%); background-position: 50% 42%;"><span class="chk">✓</span><em>AI2</em></div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- 中：叙事 -->
+  <section class="panel mid">
+    <div class="mid-in">
+      <div class="mid-h">
+        <h2>创作叙事</h2>
+        <span class="badge">写多少都行，AI 负责整理成完整报告</span>
+      </div>
+
+      <div class="editor">
+        <div class="editor-h">
+          <strong>这次创作，你是怎么想、怎么做的？</strong>
+          <span>想到什么写什么，不用讲究顺序</span>
+        </div>
+        <div class="editor-body">
+          <p>我先想做的是把三张参考图放到一起：让两张图里的人物进到第三张图的画面里，三个人都出现在同一个画面当中。画草图的时候我就是照这个想法安排的，然后把这些图交给 AI 去生成。AI 出了 V1 初稿和 V2 候选图两个版本，都有图。我现在在比较这两版，看三个人是不是都在画面里、画面是不是我想要的样子；最后选哪一张，我还没定。</p>
+        </div>
+        <div class="editor-f"><span>160 / 800</span></div>
+      </div>
+
+      <div class="ai-row">
+        <b>不知道怎么写？</b>
+        <span>点右边按钮，我按你的草图、作品和画图时写的要求整理一版，你再改成自己的话</span>
+        <span class="spacer"></span>
+        <button class="ai-btn" type="button">✦ 整理创作构思</button>
+      </div>
+      <div class="ai-meta">整理用 deepseek-v4.1-flash</div>
+    </div>
+  </section>
+
+  <!-- 右：风格 + 动作 -->
+  <aside class="panel right">
+    <div class="right-h">
+      <h2>选一个风格</h2>
+      <em>共 0 种</em>
+    </div>
+
+    <div class="scroll">
+      <div class="empty-style">老师还没有给高级版发布画布风格。<br>等老师在后台「报告工作流库」发布并勾上「学生可选」后，这里会多出对应的卡片。</div>
+    </div>
+
+    <div class="acts">
+      <button class="btn-prev" type="button">▢ 预览</button>
+      <button class="btn-go" type="button">✦ 生成 H5 报告</button>
+    </div>
+  </aside>
+
+  <!-- ★ 卡通向导 · 智能体开关：左块与左栏同宽，右块与「创作叙事」同宽 -->
+  <section class="guide-card" id="guideCard">
+    <div class="guide-side">
+      <!-- 卡通形象占位：后期换成 Agent 形象 PNG/SVG -->
+      <div class="guide-avatar">
+        <span class="ghost">🎨</span>
+        <i class="dot"></i>
+      </div>
+      <div class="guide-copy">
+        <b>小画同学</b>
+        <span id="guideStatus">向导模式 · 未开启</span>
+      </div>
+
+      <div class="guide-switch-row">
+        <button class="switch" id="agentSwitch" type="button" role="switch" aria-checked="false" aria-label="开启智能体向导"></button>
+        <span>智能体模式</span>
+      </div>
+    </div>
+
+    <div class="guide-main">
+      <p class="guide-msg" id="guideMsg">打开开关，我陪你一步步把这次创作用的话讲清楚。</p>
+
+      <!-- 开关打开后：对话记录 -->
+      <div class="guide-thread" id="guideThread" hidden>
+        <div class="bub a">我看你选了 5 张图，还留着「三个人在同一画面」的想法。先说说这次最想让人看到什么？</div>
+        <div class="bub u">我不太会写，想让它看起来像一次真的尝试</div>
+      </div>
+
+      <!-- ★ 智能体提示词输入框 -->
+      <div class="guide-compose">
+        <textarea id="guideInput" rows="1" placeholder="描述你想要的画面或直接问我…"></textarea>
+        <button class="guide-send" type="button" aria-label="发送">↑</button>
+      </div>
+
+      <!-- 开关打开后：快捷指令 -->
+      <div class="guide-chips" id="guideChips" hidden>
+        <button type="button">帮我起个头</button>
+        <button type="button">这段怎么说更好</button>
+        <button type="button">从草图说起</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="mock-note">静态版式稿 v6 · 左下角为卡通向导位（可接 Agent 开关）</div>
+
+<script>
+  const sw = document.getElementById('agentSwitch');
+  const card = document.getElementById('guideCard');
+  const status = document.getElementById('guideStatus');
+  const msg = document.getElementById('guideMsg');
+  const thread = document.getElementById('guideThread');
+  const chips = document.getElementById('guideChips');
+  const input = document.getElementById('guideInput');
+  sw.addEventListener('click', () => {
+    const on = !sw.classList.contains('on');
+    sw.classList.toggle('on', on);
+    card.classList.toggle('is-on', on);
+    sw.setAttribute('aria-checked', String(on));
+    status.textContent = on ? '智能体模式 · 已开启' : '向导模式 · 未开启';
+    status.classList.toggle('on', on);
+    msg.textContent = on ? '我已看过你选的 5 张图，想从哪说起？' : '打开开关，我陪你一步步把这次创作用的话讲清楚。';
+    thread.hidden = !on;
+    chips.hidden = !on;
+    input.placeholder = on ? '描述你想要的画面或直接问我…' : '打开开关后可以和我对话…';
+  });
+</script>
+</body>
+</html>

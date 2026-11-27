@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <rect width="1440" height="900" fill="#11151b"/>
+  <rect x="0" y="0" width="834" height="900" fill="#171d24"/>
+  <path d="M72 104H750M72 152H750M72 200H750M72 248H750M72 296H750M72 344H750M72 392H750M72 440H750M72 488H750M72 536H750M72 584H750M72 632H750M72 680H750M72 728H750M72 776H750" stroke="#26343e" stroke-width="1" opacity=".8"/>
+  <path d="M120 72V820M168 72V820M216 72V820M264 72V820M312 72V820M360 72V820M408 72V820M456 72V820M504 72V820M552 72V820M600 72V820M648 72V820M696 72V820" stroke="#26343e" stroke-width="1" opacity=".65"/>
+  <path d="M78 698C176 593 193 739 290 617C383 500 404 637 489 526C554 442 636 500 748 338" fill="none" stroke="#51d6d0" stroke-width="5" opacity=".9"/>
+  <path d="M88 718C184 624 200 766 300 641C390 529 410 660 500 549C568 465 651 522 760 365" fill="none" stroke="#f2b35d" stroke-width="2" opacity=".72"/>
+  <path d="M108 280C207 215 248 324 350 252C457 176 531 274 636 182C683 141 713 168 756 125" fill="none" stroke="#ec6b67" stroke-width="3" opacity=".82"/>
+  <circle cx="204" cy="218" r="8" fill="#f2b35d"/><circle cx="536" cy="275" r="7" fill="#ec6b67"/><circle cx="661" cy="182" r="6" fill="#51d6d0"/>
+  <path d="M112 134L294 134" stroke="#51d6d0" stroke-width="3"/><path d="M112 134L112 184" stroke="#51d6d0" stroke-width="3"/>
+  <text x="112" y="112" fill="#d9e7e8" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" letter-spacing="3">AI CREATIVE STUDIO</text>
+  <text x="112" y="398" fill="#f4f7f4" font-family="Arial, Microsoft YaHei, sans-serif" font-size="42" font-weight="700">让每一笔，都有自己的想法</text>
+  <text x="112" y="440" fill="#9cb1b5" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18">美术设计 · AI创作 · 平板课堂</text>
+  <text x="112" y="816" fill="#64777d" font-family="Arial, Microsoft YaHei, sans-serif" font-size="13" letter-spacing="2">DIGITAL CANVAS / 01</text>
+  <rect x="834" y="0" width="606" height="900" fill="#f4f6f3"/>
+  <text x="934" y="120" fill="#77848a" font-family="Arial, Microsoft YaHei, sans-serif" font-size="13" letter-spacing="2">AI创意设计思维平台</text>
+  <text x="934" y="174" fill="#182228" font-family="Arial, Microsoft YaHei, sans-serif" font-size="32" font-weight="700">欢迎回来</text>
+  <text x="934" y="207" fill="#7a878c" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">选择身份，继续你的创作</text>
+  <rect x="934" y="250" width="406" height="54" rx="8" fill="#e6ebea"/>
+  <rect x="941" y="257" width="96" height="40" rx="6" fill="#182228"/>
+  <text x="969" y="283" fill="#ffffff" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">学生⌄</text>
+  <text x="1080" y="283" fill="#5d6a70" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">老师</text>
+  <text x="1180" y="283" fill="#5d6a70" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">家长</text>
+  <text x="1272" y="283" fill="#5d6a70" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">管理员</text>
+  <text x="934" y="360" fill="#5d6a70" font-family="Arial, Microsoft YaHei, sans-serif" font-size="13">账号</text>
+  <rect x="934" y="374" width="406" height="52" rx="7" fill="#ffffff" stroke="#d7dfdd"/>
+  <text x="954" y="406" fill="#a2adaf" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">请输入账号</text>
+  <text x="934" y="466" fill="#5d6a70" font-family="Arial, Microsoft YaHei, sans-serif" font-size="13">密码</text>
+  <rect x="934" y="480" width="406" height="52" rx="7" fill="#ffffff" stroke="#d7dfdd"/>
+  <text x="954" y="512" fill="#a2adaf" font-family="Arial, Microsoft YaHei, sans-serif" font-size="15">请输入密码</text>
+  <rect x="934" y="570" width="406" height="54" rx="7" fill="#182228"/>
+  <text x="1080" y="604" fill="#ffffff" font-family="Arial, Microsoft YaHei, sans-serif" font-size="16" font-weight="700">进入学生工作台</text>
+  <text x="934" y="690" fill="#a0abad" font-family="Arial, Microsoft YaHei, sans-serif" font-size="13">学生版本：初级版　⌄</text>
+  <path d="M934 734H1340" stroke="#d9e0de"/>
+  <text x="934" y="774" fill="#9ba7a9" font-family="Arial, Microsoft YaHei, sans-serif" font-size="12">专注创作，保持好奇</text>
+</svg>

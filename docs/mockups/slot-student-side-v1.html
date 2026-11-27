@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SLOT · 学生端视角</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 32px 80px;
+    background: #f6f4f0; color: #33302b;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { border: 0; background: none; font-family: inherit; cursor: pointer; }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  .head { margin-bottom: 36px; }
+  .head h1 { font-size: 24px; margin: 0 0 10px; letter-spacing: -.3px; }
+  .head p { margin: 0; color: #7d7870; font-size: 13.5px; line-height: 1.8; }
+  .head b { color: #33302b; }
+
+  .sec { margin-bottom: 44px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .sec-no {
+    width: 24px; height: 24px; border-radius: 50%; background: #33302b; color: #fff;
+    font-size: 12.5px; font-weight: 600; display: flex; align-items: center;
+    justify-content: center; flex: 0 0 auto; transform: translateY(3px);
+  }
+  .sec-head h2 { font-size: 17px; margin: 0; font-weight: 600; }
+  .sec-head span.sub { font-size: 12.5px; color: #918c84; }
+  .sec-note { font-size: 13px; color: #7d7870; line-height: 1.85; margin: 14px 0 0; }
+  .sec-note b { color: #33302b; font-weight: 600; }
+
+  /* ---------- 学生端页面 ---------- */
+  .student {
+    display: grid; grid-template-columns: 236px 1fr; height: 620px;
+    border-radius: 18px; overflow: hidden; background: #fff;
+    border: 1px solid #e6e2da; box-shadow: 0 20px 44px -26px rgba(60,52,40,.4);
+    position: relative;
+  }
+
+  /* 顶栏 */
+  .stu-top {
+    grid-column: 1 / -1; height: 54px; display: flex; align-items: center; gap: 12px;
+    padding: 0 18px; border-bottom: 1px solid #efece6; background: #fdfcfa;
+  }
+  .stu-top .ttl { font-size: 13.5px; font-weight: 600; color: #33302b; }
+  .stu-top .tpl {
+    font-size: 11.5px; color: #7d7870; background: #f2efe9;
+    padding: 3px 9px; border-radius: 6px;
+  }
+  .stu-top .tpl b { color: #4a453e; font-weight: 600; }
+  .stu-top .go {
+    margin-left: auto; height: 32px; padding: 0 16px; border-radius: 9px;
+    background: #e0782f; color: #fff; font-size: 12.5px; font-weight: 600;
+  }
+  .stu-top .cnt { font-size: 11.5px; color: #a39d94; margin-left: 4px; }
+
+  /* 左栏素材 */
+  .stu-left { border-right: 1px solid #efece6; padding: 14px 12px; overflow: hidden; background: #fdfcfa; }
+  .stu-left h4 {
+    font-size: 11.5px; color: #918c84; font-weight: 600; margin: 0 0 4px 2px;
+    letter-spacing: .3px; display: flex; align-items: center;
+  }
+  .stu-left h4 em { margin-left: auto; font-style: normal; font-weight: 400; color: #b3ada4; }
+  .stu-left .hint { font-size: 10.5px; color: #b3ada4; margin: 0 0 10px 2px; line-height: 1.5; }
+  .mats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .mat {
+    aspect-ratio: 1; border-radius: 9px; position: relative;
+    border: 1px solid rgba(0,0,0,.05);
+  }
+  .mat.used { opacity: .45; }
+  .mat.used::after {
+    content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 700; background: rgba(47,158,111,.55); border-radius: 9px;
+  }
+  .m1 { background: linear-gradient(150deg,#cfe0d6,#9dbfae 60%,#7ea694); }
+  .m2 { background: linear-gradient(150deg,#dbe3ec,#a9c0d8 60%,#8aa6c4); }
+  .m3 { background: linear-gradient(150deg,#f0e3d2,#dfc3a4 60%,#c9a985); }
+  .m4 { background: linear-gradient(150deg,#e8dbe8,#c9aed0 60%,#ae8fb8); }
+  .m5 { background: linear-gradient(150deg,#e6e4d9,#c8c4ae 60%,#a8a48c); }
+  .m6 { background: linear-gradient(150deg,#dfe6e8,#b0c3c8 60%,#8fa6ac); }
+
+  /* 拖拽中的幽灵 */
+  .ghost {
+    position: absolute; width: 62px; height: 62px; border-radius: 9px; z-index: 30;
+    background: linear-gradient(150deg,#f0e3d2,#dfc3a4 60%,#c9a985);
+    transform: rotate(-4deg) scale(1.06);
+    box-shadow: 0 14px 28px -8px rgba(60,52,40,.5);
+    opacity: .92; pointer-events: none;
+  }
+  .ghost::after {
+    content: ""; position: absolute; inset: -3px; border-radius: 11px;
+    border: 2px solid #e0782f;
+  }
+  .drag-tip {
+    position: absolute; z-index: 31; font-size: 10.5px; color: #fff; background: #e0782f;
+    padding: 3px 8px; border-radius: 6px; pointer-events: none; white-space: nowrap;
+  }
+
+  /* 右栏报告格 */
+  .stu-right { padding: 16px 18px; overflow: hidden; background: #faf9f6; }
+  .rp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .rp-head b { font-size: 12.5px; color: #4a453e; }
+  .rp-head span { font-size: 11px; color: #a39d94; }
+  .rp-head .from { margin-left: auto; font-size: 10.5px; color: #b3ada4; }
+
+  .cells { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cell {
+    position: relative; border-radius: 12px; background: #fff;
+    border: 1px solid #eae6df; overflow: hidden; min-height: 92px;
+  }
+  .cell.filled { border-style: solid; }
+  .cell.empty {
+    border: 1.5px dashed #d9d4cb; background: #fdfcfa;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+  .cell.drop { border-color: #e0782f; background: #fdf3ec; border-style: dashed; }
+  .cell .cap {
+    display: flex; align-items: center; gap: 6px; padding: 6px 9px 5px;
+  }
+  .cell .cap .no { font-size: 9.5px; font-weight: 700; color: #a39d94; letter-spacing: .3px; }
+  .cell .cap .nm { font-size: 11.5px; color: #4a453e; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cell .ph { height: 62px; margin: 0 8px 8px; border-radius: 8px; }
+  .cell .ph.a { background: linear-gradient(150deg,#cfe0d6,#9dbfae 60%,#7ea694); }
+  .cell .ph.b { background: linear-gradient(150deg,#dbe3ec,#a9c0d8 60%,#8aa6c4); }
+  .cell.empty .ph { background: none; height: auto; }
+  .cell .plus { font-size: 17px; color: #cfc9bf; line-height: 1; }
+  .cell .hint2 { font-size: 10.5px; color: #b3ada4; }
+  .cell .skip { font-size: 9.5px; color: #c3bdb4; margin-top: 1px; }
+
+  .cell.text-cell { grid-column: 1 / -1; min-height: 0; }
+  .cell.text-cell .body { padding: 0 10px 10px; font-size: 11px; line-height: 1.7; color: #6f6a62; }
+  .cell.text-cell .body em { color: #b3ada4; font-style: normal; }
+  .cell.text-cell .body .caret {
+    display: inline-block; width: 1.5px; height: 12px; background: #e0782f;
+    vertical-align: -2px; margin-left: 1px; animation: blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .cell.result-cell { grid-column: 1 / -1; min-height: 0; }
+  .cell.result-cell .body {
+    margin: 0 8px 8px; height: 46px; border-radius: 8px;
+    background: repeating-linear-gradient(45deg,#f1f0ec,#f1f0ec 7px,#f6f5f2 7px,#f6f5f2 14px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10.5px; color: #a8a29a;
+  }
+
+  /* 右侧说明 */
+  .side { display: flex; flex-direction: column; gap: 14px; }
+  .side-card {
+    background: #fff; border: 1px solid #eae6df; border-radius: 14px; padding: 14px 15px;
+  }
+  .side-card h4 { margin: 0 0 8px; font-size: 12.5px; font-weight: 600; color: #3b3730; }
+  .side-card p { margin: 0; font-size: 11.5px; color: #8b857c; line-height: 1.7; }
+  .side-card p + p { margin-top: 7px; }
+
+  .mini-node {
+    background: #e9e7e2; border-radius: 13px; padding: 9px 10px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .mini-node .fd { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; }
+  .mini-node .fd.a { background: linear-gradient(150deg,#cfe0d6,#9dbfae 60%,#7ea694); }
+  .mini-node .fd.b { background: linear-gradient(150deg,#dbe3ec,#a9c0d8 60%,#8aa6c4); }
+  .mini-node .fd.c { background: #f3f1ec; border: 1px dashed #cfc9bf; }
+  .mini-node .nm { font-size: 11px; color: #4a453e; flex: 1 1 auto; }
+  .mini-node .tag2 {
+    font-size: 9.5px; font-weight: 600; color: #fff; padding: 2px 6px; border-radius: 5px; flex: 0 0 auto;
+  }
+  .t-img { background: #3f7cf0; }
+  .t-txt { background: #7a5cf0; }
+  .t-res { background: #2f9e6f; }
+
+  /* ---------- 对比表 ---------- */
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #eae6df; }
+  th, td { text-align: left; padding: 12px 15px; font-size: 12.5px; border-bottom: 1px solid #f2efe9; vertical-align: top; }
+  th { background: #faf9f6; color: #8b857c; font-weight: 500; font-size: 11.5px; }
+  tr:last-child td { border-bottom: 0; }
+  td .who { font-weight: 600; }
+  td .why { color: #8b857c; font-size: 11.5px; line-height: 1.6; margin-top: 3px; }
+
+  .flow {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: #fff; border: 1px solid #eae6df; border-radius: 14px; padding: 16px 18px;
+  }
+  .flow .st {
+    background: #f6f4f0; border-radius: 10px; padding: 8px 13px; font-size: 12px; color: #4a453e;
+  }
+  .flow .st b { display: block; font-size: 10px; color: #a39d94; font-weight: 600; margin-bottom: 2px; }
+  .flow .ar { color: #c9c3b9; font-size: 15px; }
+
+  @media (max-width: 1040px) { .student { height: auto; } .cells { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>SLOT 到底在哪一端操作</h1>
+    <p>
+      <b>两端都有，但管的不是一件事。</b><br>
+      后台节点决定「报告有几格、每一格是什么内容」（这是老师写死的，学生不能改）；<br>
+      学生端只在格子上做一件事——<b>把哪张图放进哪一格</b>。
+    </p>
+  </div>
+
+  <!-- ============ 学生端页面 ============ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-no">1</div>
+      <h2>学生端页面真实的样子</h2>
+      <span class="sub">左边是他画的图，右边是报告的格子</span>
+    </div>
+
+    <div class="student">
+      <div class="stu-top">
+        <span class="ttl">我的创作报告</span>
+        <span class="tpl">模板：<b>我的成长故事</b></span>
+        <span class="cnt">已填 3 / 5 格</span>
+        <button class="go">生成报告</button>
+      </div>
+
+      <!-- 左栏素材 -->
+      <div class="stu-left">
+        <h4>我的素材<em>12 张</em></h4>
+        <p class="hint">按住图片，拖到右边的格子里</p>
+        <div class="mats">
+          <div class="mat m1 used"></div>
+          <div class="mat m2 used"></div>
+          <div class="mat m4"></div>
+          <div class="mat m5"></div>
+          <div class="mat m6"></div>
+          <div class="mat m3"></div>
+          <div class="mat m2"></div>
+          <div class="mat m1"></div>
+          <div class="mat m5"></div>
+          <div class="mat m6"></div>
+          <div class="mat m4"></div>
+          <div class="mat m3"></div>
+        </div>
+      </div>
+
+      <!-- 右栏报告格 -->
+      <div class="stu-right">
+        <div class="rp-head">
+          <b>报告预览</b>
+          <span>格子标题和数量由老师搭好的模板决定</span>
+          <span class="from">模板 v2</span>
+        </div>
+
+        <div class="cells">
+          <div class="cell filled">
+            <div class="cap"><span class="no">第 1 格</span><span class="nm">门口的树</span></div>
+            <div class="ph a"></div>
+          </div>
+
+          <div class="cell filled">
+            <div class="cap"><span class="no">第 2 格</span><span class="nm">小溪边</span></div>
+            <div class="ph b"></div>
+          </div>
+
+          <div class="cell empty drop">
+            <div class="cap" style="width:100%"><span class="no">第 3 格</span><span class="nm">教室的窗</span></div>
+            <div style="flex:1"></div>
+            <div class="hint2" style="margin-bottom:8px">松手放到这里</div>
+          </div>
+
+          <div class="cell empty">
+            <div class="cap" style="width:100%"><span class="no">第 4 格</span><span class="nm">操场</span></div>
+            <div class="plus">+</div>
+            <div class="hint2">点这里选图</div>
+            <div class="skip">这一格可以空着</div>
+          </div>
+
+          <div class="cell text-cell filled">
+            <div class="cap"><span class="no">创作自述</span><span class="nm">说说你最想留住的那一幕</span></div>
+            <div class="body">我画的是爷爷家门口那棵树，夏天我们在树下乘凉，风一吹叶子沙沙响<span class="caret"></span></div>
+          </div>
+
+          <div class="cell result-cell">
+            <div class="cap"><span class="no">结果</span><span class="nm">报告成品</span></div>
+            <div class="body">点「生成报告」后出现在这里</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 拖拽幽灵 -->
+      <div class="ghost" style="left:120px;top:392px"></div>
+      <div class="drag-tip" style="left:190px;top:386px">把这张拖到「教室的窗」</div>
+    </div>
+
+    <p class="sec-note">
+      注意两个细节：<b>每格左上角写着这一格是什么</b>（门口的树 / 小溪边 / 教室的窗），这是从后台节点标题带过来的；<b>空着的格子可以跳过</b>，第 4 格没人放也照样能生成。
+    </p>
+  </div>
+
+  <!-- ============ 两端的职责 ============ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-no">2</div>
+      <h2>那后台的角标到底还要不要</h2>
+      <span class="sub">要，但它管的不是"指向前端第几格"</span>
+    </div>
+
+    <div class="flow" style="margin-bottom:16px">
+      <div class="st"><b>老师搭画布</b>第 1 页 · 门口的树</div>
+      <span class="ar">→</span>
+      <div class="st"><b>系统自动生成</b>学生端第 1 格，标题「门口的树」</div>
+      <span class="ar">→</span>
+      <div class="st"><b>学生拖一张图进来</b>这张图塞进该节点的参考图</div>
+      <span class="ar">→</span>
+      <div class="st"><b>跑工作流</b>出结果回传报告</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th style="width:130px">谁</th><th style="width:210px">他决定什么</th><th>为什么不能交给对方</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="who">后台节点</span><br><span style="font-size:11px;color:#a39d94">老师</span></td>
+          <td>有几格<br>每格做什么内容<br>每格的提示词</td>
+          <td><div class="why">节点里写的是「水彩画一棵门口的梧桐树」。如果让前端自己决定，学生随手把「海边照片」拖进这格，提示词和素材对不上，出图会很怪。</div></td>
+        </tr>
+        <tr>
+          <td><span class="who">学生端格子</span><br><span style="font-size:11px;color:#a39d94">学生</span></td>
+          <td>这一格放哪张图<br>自述写什么</td>
+          <td><div class="why">这是学生自己的作品和记忆，老师没法替他填。</div></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="sec-note">
+      所以后台那个角标，准确含义不是"<s>这个节点对应前端第 2 格</s>"，而是 <b>「我自己就是第 2 页」</b>。前端格子是<b>从后台长出来的</b>，不是前端先有格子再回去找节点。
+    </p>
+  </div>
+
+  <!-- ============ 你说的那个方向会怎样 ============ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-no">3</div>
+      <h2>如果反过来：学生端先有格子，再去挑节点</h2>
+    </div>
+
+    <div class="side" style="max-width:760px">
+      <div class="side-card">
+        <h4>会撞上三个问题</h4>
+        <p><b>1. 格子从哪来？</b>学生打开页面时，如果不知道模板有几格，就只能先显示一堆空白格，学生不知道每格该放什么图。</p>
+        <p><b>2. 提示词对不上。</b>老师写「教室的窗」，学生放了张操场照片，图能出，但跟报告主题脱节。</p>
+        <p><b>3. 加一页要改两端。</b>老师想在模板里加第 7 页，得同时去改学生端，两边容易错位。</p>
+      </div>
+      <div class="side-card">
+        <h4>现在的做法避开了这三个</h4>
+        <p>老师加一个图像节点 → 学生端自动多一格，标题跟着节点标题走。老师那边只有一个动作，不需要碰学生端。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 后台对照缩略 ============ -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-no">4</div>
+      <h2>同一份模板，后台长这样</h2>
+      <span class="sub">角标就是"我是第几格"的标签</span>
+    </div>
+
+    <div style="max-width:420px">
+      <div class="mini-node">
+        <div class="fd a"></div>
+        <span class="nm">第 1 页 · 门口的树</span>
+        <span class="tag2 t-img">图像 1</span>
+      </div>
+      <div class="mini-node">
+        <div class="fd b"></div>
+        <span class="nm">第 2 页 · 小溪边</span>
+        <span class="tag2 t-img">图像 2</span>
+      </div>
+      <div class="mini-node">
+        <div class="fd c"></div>
+        <span class="nm">第 3 页 · 教室的窗</span>
+        <span class="tag2 t-img">图像 3</span>
+      </div>
+      <div class="mini-node">
+        <div class="fd c"></div>
+        <span class="nm">创作自述</span>
+        <span class="tag2 t-txt">文字</span>
+      </div>
+      <div class="mini-node" style="margin-bottom:0">
+        <div class="fd c"></div>
+        <span class="nm">报告成品</span>
+        <span class="tag2 t-res">结果</span>
+      </div>
+    </div>
+
+    <p class="sec-note">
+      <b>两边不用手工对。</b>老师在后台加一个「操场」的图像节点，学生端第 4 格就自动叫「操场」。老师不用去学生端做任何事，学生也不用知道后台有节点这回事。
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

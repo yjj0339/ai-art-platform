@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提示词库面板 - 改造效果预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f5f0ff 50%, #f0f4ff 100%);
+    min-height: 100vh;
+    display: flex;
+    padding: 40px;
+    gap: 40px;
+  }
+
+  /* 左侧说明 */
+  .info {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  .info h1 {
+    font-size: 22px;
+    color: #3f4e91;
+    margin-bottom: 16px;
+  }
+  .info p {
+    font-size: 14px;
+    color: #6b7ab5;
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+  .info .tag {
+    display: inline-block;
+    background: #fff6ef;
+    color: #f17822;
+    border: 1px solid #ffd4b8;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    margin-right: 6px;
+    margin-bottom: 8px;
+  }
+
+  /* 提示词库面板 */
+  .panel {
+    width: 340px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.85);
+    border-radius: 16px;
+    padding: 18px 16px;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(123, 134, 205, 0.15);
+  }
+  .panel-header {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .panel-header h2 {
+    font-size: 18px;
+    color: #3f4e91;
+    font-weight: 700;
+  }
+  .panel-header p {
+    font-size: 11px;
+    color: #9aa5c5;
+    margin-top: 2px;
+  }
+
+  /* 分类 tab */
+  .category-strip {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .category-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border: 1px solid rgba(123, 134, 205, 0.18);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .category-btn.active {
+    border-color: #ff9771;
+    background: #fff6ef;
+    box-shadow: 0 3px 8px rgba(255, 137, 104, 0.13);
+  }
+  .category-btn img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+  .category-btn span {
+    font-size: 11px;
+    color: #3f4e91;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* 分组标题 */
+  .group-title {
+    font-size: 12px;
+    color: #3f4e91;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .group-title small {
+    font-size: 10px;
+    color: #9aa5c5;
+    font-weight: 500;
+  }
+
+  /* 图标网格 - 改造后 */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .item {
+    position: relative;
+    border: 1px solid rgba(123, 134, 205, 0.18);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.72);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .item:hover {
+    border-color: #ffb89a;
+    box-shadow: 0 4px 12px rgba(255, 137, 104, 0.12);
+    transform: translateY(-1px);
+  }
+  .item.selected {
+    border-color: #ff9771;
+    background: #fff6ef;
+    box-shadow: 0 4px 10px rgba(255, 137, 104, 0.14);
+  }
+  /* 图片撑满卡片上部 */
+  .item-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    overflow: hidden;
+  }
+  .item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* 文字在图片下方 */
+  .item-label {
+    padding: 6px 4px 7px;
+    text-align: center;
+    font-size: 12px;
+    color: #3f4e91;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: rgba(255,255,255,0.9);
+  }
+  .item.selected .item-label {
+    background: #fff6ef;
+    color: #f17822;
+  }
+  /* 选中对勾 */
+  .item-check {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    background: #ff9771;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(255, 137, 104, 0.3);
+  }
+
+  /* 底部摘要 */
+  .summary {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(123, 134, 205, 0.16);
+  }
+  .summary p {
+    font-size: 11px;
+    color: #7883b7;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .summary button {
+    width: 100%;
+    padding: 7px;
+    border: 1px solid rgba(123, 134, 205, 0.2);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.6);
+    color: #9aa5c5;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .summary button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* 对比说明 */
+  .compare {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .compare-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(123, 134, 205, 0.12);
+  }
+  .compare-card h3 {
+    font-size: 16px;
+    color: #3f4e91;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-card h3 .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .badge-old { background: #f1f5f9; color: #64748b; }
+  .badge-new { background: #fff6ef; color: #f17822; }
+  .compare-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .compare-item {
+    flex: 1;
+  }
+  .compare-item h4 {
+    font-size: 13px;
+    color: #6b7ab5;
+    margin-bottom: 8px;
+  }
+  .mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .mini-item {
+    border: 1px solid rgba(123, 134, 205, 0.15);
+    border-radius: 8px;
+    background: white;
+    text-align: center;
+    padding: 8px 4px;
+  }
+  .mini-item .old-icon {
+    font-size: 24px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .mini-item .new-icon {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .mini-item .new-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mini-item span {
+    font-size: 10px;
+    color: #3f4e91;
+  }
+</style>
+</head>
+<body>
+
+<!-- 左侧说明 -->
+<div class="info">
+  <h1>🎨 提示词库面板改造预览</h1>
+  <p><strong>改造目标：</strong></p>
+  <p><span class="tag">图像撑满卡片</span> 3D软糖图标占据卡片上部全部空间，视觉更饱满</p>
+  <p><span class="tag">文字在下方</span> 动物名称保留在图片下方，清晰可读</p>
+  <p><span class="tag">统一风格</span> 全部25个图标统一3D软糖质感，告别emoji混搭</p>
+  <p style="margin-top:20px;"><strong>中间是完整面板效果，右侧是新旧对比。</strong></p>
+</div>
+
+<!-- 中间：完整面板 -->
+<div class="panel">
+  <div class="panel-header">
+    <h2>提示词库</h2>
+    <p>点击图标组合画面</p>
+  </div>
+
+  <!-- 分类 tab -->
+  <div class="category-strip">
+    <div class="category-btn active">
+      <img src="/assets/prompt-icons/cat-subject.png" alt="画什么">
+      <span>画什么</span>
+    </div>
+    <div class="category-btn">
+      <img src="/assets/prompt-icons/cat-scene.png" alt="在哪里">
+      <span>在哪里</span>
+    </div>
+    <div class="category-btn">
+      <img src="/assets/prompt-icons/cat-background.png" alt="天空和背景">
+      <span>天空和背景</span>
+    </div>
+  </div>
+
+  <!-- 分组标题 -->
+  <div class="group-title">画什么 <small>上下滑动选择</small></div>
+
+  <!-- 图标网格 - 改造后效果 -->
+  <div class="grid">
+    <div class="item selected">
+      <div class="item-check">✓</div>
+      <div class="item-img"><img src="/assets/prompt-icons/dog.png" alt="小狗"></div>
+      <div class="item-label">小狗</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/cat.png" alt="小猫"></div>
+      <div class="item-label">小猫</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/rabbit.png" alt="小兔子"></div>
+      <div class="item-label">小兔子</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/dinosaur.png" alt="小恐龙"></div>
+      <div class="item-label">小恐龙</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/fox.png" alt="小狐狸"></div>
+      <div class="item-label">小狐狸</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/bear.png" alt="小熊"></div>
+      <div class="item-label">小熊</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/elephant.png" alt="大象"></div>
+      <div class="item-label">大象</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/panda.png" alt="熊猫"></div>
+      <div class="item-label">熊猫</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/bird.png" alt="小鸟"></div>
+      <div class="item-label">小鸟</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/fish.png" alt="小鱼"></div>
+      <div class="item-label">小鱼</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/grass.png" alt="草地"></div>
+      <div class="item-label">草地</div>
+    </div>
+    <div class="item">
+      <div class="item-img"><img src="/assets/prompt-icons/rainbow.png" alt="彩虹"></div>
+      <div class="item-label">彩虹</div>
+    </div>
+  </div>
+
+  <!-- 底部摘要 -->
+  <div class="summary">
+    <p>已选择：小狗</p>
+    <button disabled>清空选择</button>
+  </div>
+</div>
+
+<!-- 右侧：新旧对比 -->
+<div class="compare">
+  <div class="compare-card">
+    <h3>新旧对比 <span class="badge badge-old">改造前</span> <span class="badge badge-new">改造后</span></h3>
+    <div class="compare-row">
+      <div class="compare-item">
+        <h4>❌ 改造前（emoji小图标）</h4>
+        <div class="mini-grid">
+          <div class="mini-item"><div class="old-icon">🐶</div><span>小狗</span></div>
+          <div class="mini-item"><div class="old-icon">🐱</div><span>小猫</span></div>
+          <div class="mini-item"><div class="old-icon">🐰</div><span>小兔子</span></div>
+          <div class="mini-item"><div class="old-icon">🦕</div><span>小恐龙</span></div>
+          <div class="mini-item"><div class="old-icon">🦊</div><span>小狐狸</span></div>
+          <div class="mini-item"><div class="old-icon">🐻</div><span>小熊</span></div>
+        </div>
+      </div>
+      <div class="compare-item">
+        <h4>✅ 改造后（3D软糖撑满）</h4>
+        <div class="mini-grid">
+          <div class="mini-item"><div class="new-icon"><img src="/assets/prompt-icons/dog.png"></div><span>小狗</span></div>
+          <div class="mini-item"><div class="new-icon"><img src="/assets/prompt-icons/cat.png"></div><span>小猫</span></div>
+          <div class="mini-item"><div class="new-icon"><img src="/assets/prompt-icons/rabbit.png"></div><span>小兔子</span></div>
+          <div class="mini-item"><div class="new-icon"><img src="/assets/prompt-icons/dinosaur.png"></div><span>小恐龙</span></div>
+          <div class="mini-item"><div class="new-icon"><img src="/assets/prompt-icons/fox.png"></div><span>小狐狸</span></div>
+          <div class="mini-item"><div class="new-icon"><img src="/assets/prompt-icons/bear.png"></div><span>小熊</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare-card">
+    <h3>📐 布局说明</h3>
+    <div style="font-size:13px; color:#6b7ab5; line-height:2;">
+      <p><strong>卡片结构：</strong>上方图片区域（正方形，撑满）+ 下方文字条（固定高度）</p>
+      <p><strong>图片显示：</strong><code>object-fit: cover</code> 撑满整个图片区域，3D软糖图标饱满展示</p>
+      <p><strong>文字位置：</strong>图片下方独立区域，居中显示，不遮挡图片</p>
+      <p><strong>选中状态：</strong>橙色边框 + 浅橙背景 + 右上角对勾标记</p>
+      <p><strong>分类tab：</strong>同样升级为3D软糖小图标（调色板/地球/彩虹）</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

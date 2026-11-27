@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>连接电脑</title>
+<style>
+  :root { --brand:#7c3aed; --brand-2:#a78bfa; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; margin:0; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f6f5fb; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .card {
+    width:100%; max-width:560px; background:#fff; border-radius:20px;
+    box-shadow:0 12px 40px rgba(76,29,149,.12); padding:28px 26px 24px;
+  }
+  .logo {
+    width:56px; height:56px; border-radius:16px; margin-bottom:14px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:flex; align-items:center; justify-content:center;
+  }
+  .logo svg { width:30px; height:30px; }
+  h1 { font-size:22px; margin:0 0 6px; letter-spacing:.5px; }
+  .sub { color:var(--muted); font-size:13px; line-height:1.7; margin:0 0 20px; }
+  label { display:block; font-size:13px; font-weight:600; margin-bottom:8px; }
+  .row { display:flex; gap:10px; }
+  input {
+    flex:1 1 auto; min-width:0; height:50px; padding:0 14px; font-size:16px;
+    border:1.5px solid var(--line); border-radius:12px; outline:none;
+    color:var(--ink); background:#fbfaff;
+  }
+  input:focus { border-color:var(--brand); background:#fff; }
+  button {
+    height:50px; padding:0 22px; border:0; border-radius:12px; cursor:pointer;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2)); color:#fff;
+    font-size:16px; font-weight:700; white-space:nowrap;
+    box-shadow:0 6px 16px rgba(124,58,237,.28);
+  }
+  button:active { transform:translateY(1px); }
+  .steps { margin:22px 0 0; padding:16px 16px 14px; background:#f8f7fd; border-radius:14px; }
+  .steps h2 { font-size:13px; margin:0 0 10px; color:var(--brand); letter-spacing:.5px; }
+  ol { margin:0; padding-left:18px; color:#4b5563; font-size:13px; line-height:1.9; }
+  code { background:#ece9fb; color:#5b21b6; padding:1px 6px; border-radius:5px; font-size:12px; }
+  .tip { margin-top:14px; font-size:12px; color:var(--muted); line-height:1.7; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="#fff"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+    </div>
+    <h1>AI 美术课堂</h1>
+    <p class="sub">先连上电脑上的预览服务，之后每次打开都直接进入画纸。</p>
+
+    <label for="u">电脑的地址</label>
+    <div class="row">
+      <input id="u" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="192.168.0.106:5173" />
+      <button id="go">进入</button>
+    </div>
+
+    <div class="steps">
+      <h2>怎么找到这个地址</h2>
+      <ol>
+        <li>电脑上双击 <code>平板测试-启动预览.cmd</code></li>
+        <li>黑窗口里找 <code>Tablet/LAN</code> 那一行</li>
+        <li>把整行地址填到上面的输入框</li>
+      </ol>
+      <div class="tip">地址只需填一次，App 会记住。以后电脑 IP 变了，在“连不上”的页面点「修改地址」即可，不用重装。</div>
+    </div>
+  </div>
+
+<script>
+  var input = document.getElementById('u');
+  var api = window.AiClass;
+
+  function apply() {
+    if (!api) { document.querySelector('.tip').textContent = '请通过 App 打开本页'; return; }
+    var cur = api.currentUrl && api.currentUrl();
+    if (cur) { input.value = cur; }
+    else if (api.defaultUrl) { input.value = api.defaultUrl(); }
+  }
+
+  document.getElementById('go').addEventListener('click', function () {
+    var v = (input.value || '').trim();
+    if (!v) { input.focus(); return; }
+    if (!api) return;
+    api.setBaseUrl(v);
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('go').click();
+  });
+
+  apply();
+</script>
+</body>
+</html>

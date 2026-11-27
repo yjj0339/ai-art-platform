@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>效果图 A · 提示词卡片默认态（626px 宽 · 3行起 · 最多5行 · 6px 细滚动条）</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px 20px 48px;
+    background: #eef2f7;
+    color: #2c3240;
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  }
+  .head { max-width: 1180px; margin: 0 auto 14px; }
+  .head h1 { margin: 0 0 6px; font-size: 16px; font-weight: 800; letter-spacing: .2px; }
+  .head p { margin: 0; font-size: 12.5px; line-height: 1.85; color: #5c6b80; }
+  .head b { color: #12213a; }
+  .head code {
+    padding: 1px 5px; border-radius: 5px; background: #e3eaf5;
+    color: #1f4b8f; font-family: Consolas, Monaco, monospace; font-size: 11.5px;
+  }
+  .head .tag {
+    display: inline-block; margin-right: 6px; padding: 2px 8px; border-radius: 20px;
+    background: #1e6fd9; color: #fff; font-size: 11px; font-weight: 700; vertical-align: 1px;
+  }
+  /* 演示控件（不属于画布界面，仅用于自己试 3 行 / 5 行 / 超 5 行 三种状态） */
+  .demo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .demo-label { font-size: 12px; font-weight: 700; color: #12213a; }
+  .demo button {
+    height: 26px; padding: 0 10px; border: 1px solid #c9d6e6; border-radius: 13px;
+    background: #fff; color: #1f4b8f; font-size: 11.5px; font-weight: 700; cursor: pointer;
+  }
+  .demo button:hover { background: #eef6ff; border-color: #86b1f5; }
+  .demo-note { font-size: 11.5px; color: #7a8698; }
+
+  /* ── 画布舞台（= 现有画布底色与网点，1:1 真实尺寸） ── */
+  .stage {
+    position: relative;
+    width: 1180px;
+    height: 720px;
+    border-radius: 14px;
+    overflow: hidden;
+    background-color: #f8fafc;
+    background-image: radial-gradient(circle, #d7dee8 1.1px, transparent 1.1px);
+    background-size: 22px 22px;
+    box-shadow: 0 12px 34px rgba(23, 43, 77, .12);
+  }
+  .wires { position: absolute; inset: 0; pointer-events: none; }
+
+  /* ── 上游素材节点（未改动，仅作场景上下文） ── */
+  .ref-node {
+    position: absolute; left: 40px; top: 60px; width: 260px;
+    padding: 8px; border: 1.5px solid #8f8a83; border-radius: 17px;
+    background: #e9e7e2;
+  }
+  .ref-node .kind {
+    position: absolute; left: 10px; bottom: calc(100% + 5px);
+    display: inline-flex; align-items: center; gap: 4px;
+    color: #595650; font-size: 12px; line-height: 1; white-space: nowrap;
+  }
+  .ref-node .kind svg { width: 13px; height: 13px; }
+  .ref-frame {
+    width: 100%; height: 172px; border-radius: 15px; overflow: hidden;
+    background: #dfe6ef;
+  }
+  .ref-frame .photo {
+    width: 100%; height: 100%; display: block;
+    background:
+      radial-gradient(circle at 30% 28%, #ffd98a 0 34px, transparent 35px),
+      linear-gradient(160deg, #bcd9ff 0%, #dcecff 42%, #f3e2c7 43%, #e6c894 100%);
+  }
+
+  /* ── 图像生成节点（未改动：16:9 → 430 × 245） ── */
+  .gen-node {
+    position: absolute; left: 375px; top: 60px; width: 430px;
+    border: 1.5px solid #8f8a83; border-radius: 17px; background: #e9e7e2;
+  }
+  .gen-node .kind {
+    position: absolute; left: 10px; bottom: calc(100% + 5px);
+    display: inline-flex; align-items: center; gap: 4px;
+    color: #595650; font-size: 12px; line-height: 1; white-space: nowrap;
+  }
+  .gen-node .kind svg { width: 13px; height: 13px; }
+  .gen-preview {
+    height: 242px; border-radius: 15px; overflow: hidden;
+    display: grid; place-items: center; align-content: center; gap: 9px;
+    background: #e9e7e2; color: #827f79; font-size: 12px;
+  }
+  .gen-preview svg { width: 40px; height: 40px; }
+
+  .handle {
+    position: absolute; width: 12px; height: 12px; border: 2px solid #827b72;
+    border-radius: 50%; background: #fff;
+  }
+  .handle.l { left: -7px; top: 50%; margin-top: -6px; }
+  .handle.r { right: -7px; top: 50%; margin-top: -6px; }
+
+  /* ══════════ 提示词卡片 —— 本次改的就是这一块 ══════════ */
+  .card {
+    position: absolute; left: 277px; top: 315px; width: 626px;
+    padding: 16px;                       /* 内边距 16px */
+    border: 1px solid #d7d3cc;
+    border-radius: 16px;
+    background: #fffefa;
+    box-shadow: 0 16px 38px rgba(20, 38, 68, .16);
+  }
+  /* 首行：左 = 上游缩略卡（可换行），右 = 放大按钮（始终钉在右上角） */
+  .card-head { display: flex; align-items: flex-start; gap: 10px; min-height: 32px; margin-bottom: 10px; }
+  .thumbs { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: 10px; padding: 2px 0 0; }
+  .thumb { position: relative; width: 65px; height: 65px; flex: 0 0 auto; }
+  .thumb-open {
+    display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;
+    padding: 0; border: 1px solid rgba(22, 131, 255, .28); border-radius: 12px;
+    background: #eef6ff; color: #1260b3; cursor: zoom-in;
+  }
+  .thumb-open svg { width: 40px; height: 40px; }
+  .thumb-index {
+    position: absolute; top: -8px; left: -8px; min-width: 24px; height: 24px; padding: 0 6px;
+    border-radius: 12px; background: #334155; color: #fff;
+    font-size: 13px; font-weight: 700; line-height: 24px; text-align: center;
+  }
+  .thumb-mention {
+    position: absolute; right: -8px; bottom: -8px; display: flex; width: 24px; height: 24px;
+    align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 50%;
+    background: #1260b3; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; cursor: pointer;
+  }
+  /* ★ 新增：卡片右上角放大按钮 */
+  .expand-btn {
+    flex: 0 0 auto; display: flex; width: 32px; height: 32px;
+    align-items: center; justify-content: center; padding: 0;
+    border: 1px solid #e2dfd9; border-radius: 16px;
+    background: #f8f7f3; color: #45413c; cursor: pointer;
+  }
+  .expand-btn svg { width: 16px; height: 16px; }
+  .expand-btn:hover { border-color: #86b1f5; background: #eef6ff; color: #1260b3; }
+
+  /* 提示词输入框：内容区固定 3 行（96px）→ 文字变多时整卡自动长高，
+     最多长到 5 行（160px）；超过 5 行则框内上下滚动，滚动条 6px。 */
+  .prompt-shell {
+    width: 100%; padding: 8px 8px; 
+    border: 1px solid #dfe6ef; border-radius: 9px; background: #f8faff;
+  }
+  .prompt-inline { display: flex; align-items: flex-start; min-width: 0; }
+  .prompt-editor {
+    width: 100%; min-height: 96px; max-height: 160px; margin: 0; padding: 0 2px;
+    border: 0; background: transparent; outline: 0;
+    color: #302f2d;
+    font-size: 16px;
+    line-height: 32px;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+    overflow-y: hidden;
+  }
+  /* 细滚动条：6px（Chromium/Edge 只要写了 scrollbar-width 就会改用系统悬浮条，
+     所以这里只在 Firefox 走回退分支） */
+  .prompt-editor::-webkit-scrollbar { width: 6px; height: 6px; }
+  .prompt-editor::-webkit-scrollbar-track { background: transparent; }
+  .prompt-editor::-webkit-scrollbar-thumb { border-radius: 3px; background: #b9c5d4; }
+  .prompt-editor::-webkit-scrollbar-thumb:hover { background: #94a4b8; }
+  @supports not selector(::-webkit-scrollbar) {
+    .prompt-editor { scrollbar-width: thin; scrollbar-color: #b9c5d4 transparent; }
+  }
+
+  /* 底部控件：每个按钮/图标尺寸都不动 */
+  .controls { margin-top: 10px; }
+  .assets { display: flex; align-items: center; gap: 6px; }
+  .assets button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    height: 32px; padding: 0 12px; border: 1px solid #e2dfd9; border-radius: 16px;
+    background: #f8f7f3; color: #45413c; font-size: 12px; white-space: nowrap; cursor: pointer;
+  }
+  .assets button:hover { background: #f0eeea; }
+  .assets button svg { width: 14px; height: 14px; }
+  .param-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .param-row select {
+    height: 32px; padding: 0 12px; border: 1px solid #e2dfd9; border-radius: 16px;
+    background: #f8f7f3; color: #45413c; font-size: 12px; white-space: nowrap;
+  }
+  .param-row .model { width: 200px; }
+  .param-row .ratio { width: 84px; }
+  .run-btn {
+    margin-left: auto;
+    height: 32px; padding: 0 14px; border: 1px solid #242424; border-radius: 16px;
+    background: #242424; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+
+  /* 量尺标注 */
+  .dim-h, .dim-v { position: absolute; color: #1260b3; font-size: 11.5px; font-weight: 700; }
+  .dim-h { left: 277px; width: 626px; text-align: center; border-top: 1px dashed #7fb0e8; padding-top: 4px; }
+  .dim-v {
+    left: 917px; top: 315px; height: 100px;
+    writing-mode: vertical-rl; border-left: 1px dashed #7fb0e8; padding-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1><span class="tag">效果图 A</span>提示词卡片 · 默认态（626px）</h1>
+  <p>
+    改的就是这五处：<b>卡片宽 626px</b>（含 1px 边框）· <b>内边距 16px</b> ·
+    <b>字号 16px / 行高 32px</b> · <b>输入框固定 3 行高 96px</b>（内容变多时卡片自动长高，最多 5 行 160px，
+    超过 5 行框内上下滚动，<b>滚动条 6px</b>）· <b>右上角新增放大按钮</b>。<br />
+    下面三个按钮只是给你自己试「3 行 / 5 行 / 超 5 行」用的，<b>不属于画布界面</b>；直接点进输入框打字也会有同样效果。
+  </p>
+  <div class="demo">
+    <span class="demo-label">试一下：</span>
+    <button data-demo="3">3 行（默认）</button>
+    <button data-demo="5">5 行（长到上限）</button>
+    <button data-demo="9">超过 5 行（框内滚动）</button>
+    <span class="demo-note">← 演示控件，不属于画布</span>
+  </div>
+</div>
+
+<div class="stage">
+
+  <svg class="wires" viewBox="0 0 1180 720" fill="none">
+    <path d="M301 156 C 335 156, 340 182, 374 182" stroke="#4b8ef7" stroke-width="2" fill="none" />
+  </svg>
+
+  <!-- 上游素材节点 -->
+  <div class="ref-node">
+    <span class="kind">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.6 16 11 6 20"/></svg>
+      参考素材
+    </span>
+    <div class="ref-frame"><i class="photo"></i></div>
+    <div class="handle r" style="border-color:#4b8ef7"></div>
+  </div>
+
+  <!-- 图像生成节点 -->
+  <div class="gen-node">
+    <span class="kind">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.6 16 11 6 20"/></svg>
+      图像生成 3
+    </span>
+    <div class="handle l"></div>
+    <div class="handle r"></div>
+    <div class="gen-preview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="M21 15.5 16 11.2 6 19.5"/></svg>
+      空图片节点
+    </div>
+  </div>
+
+  <!-- ★ 提示词卡片 -->
+  <div class="card" id="card">
+    <div class="card-head">
+      <div class="thumbs">
+        <div class="thumb">
+          <button class="thumb-open" title="放大预览">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="M21 15.5 16 11.2 6 19.5"/></svg>
+          </button>
+          <span class="thumb-index">1</span>
+          <button class="thumb-mention" title="引用到提示词">@</button>
+        </div>
+      </div>
+      <!-- ★ 新增：右上角放大按钮 -->
+      <button class="expand-btn" id="expandBtn" title="放大提示词卡片" aria-label="放大提示词卡片">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg>
+      </button>
+    </div>
+
+    <div class="prompt-shell">
+      <div class="prompt-inline">
+        <div class="prompt-editor" id="editor" contenteditable="true" spellcheck="false"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="assets">
+        <button>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.6 16 11 6 20"/></svg>
+          参考图
+        </button>
+        <button>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 2v3.2M12 18.8V22M2 12h3.2M18.8 12H22"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+          标记
+        </button>
+        <button>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="13" height="10" rx="2.5"/><path d="M15.5 11.2 21 8.6v6.8l-5.5-2.6z"/></svg>
+          摄像机
+        </button>
+      </div>
+
+      <div class="param-row">
+        <select class="model">
+          <option>Agnes Image 2.1 Flash</option>
+          <option>火山方舟 · doubao-seedream</option>
+        </select>
+        <select class="ratio">
+          <option>16:9</option>
+          <option>1:1</option>
+          <option>9:16</option>
+        </select>
+        <button class="run-btn">生成图像</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dim-h" id="dimH">626 px（宽）× — px（高）｜含 1px 边框</div>
+  <div class="dim-v" id="dimV"></div>
+</div>
+
+<script>
+  const ed = document.getElementById('editor')
+  const card = document.getElementById('card')
+  const dimH = document.getElementById('dimH')
+  const dimV = document.getElementById('dimV')
+
+  // 演示用文案：从一句话开始逐字追加，直到正好写满目标行数（32px/行）
+  const SOURCE = '一只戴着黄色雨衣的小熊，在雨后的森林小路上散步，水洼里倒映着柔和的晨光；主体放在画面偏左位置，右侧留出空间放标题文字；整体为温暖童话插画风格，色彩柔和、光影自然；注意雨滴落在地面上的细小涟漪和路面湿漉漉的反光质感；远景做浅色虚化处理，让画面层次拉开；适合打印成 A3 尺寸的课堂展示作品；画面中景加一条被雨水打湿的木板小路，两侧点缀蕨类植物与蘑菇；天空保留一层薄薄的晨雾，光线从左上角斜射进来；整体色调控制在青绿与暖黄之间，避免过饱和；构图遵循三分法，不要出现文字、水印或多余人物。'
+
+  // 读“排完版后一共几行”（先临时撤掉 min-height，否则 3 行以下会被垫成 96px）
+  function lineCount() {
+    const keep = ed.style.minHeight
+    ed.style.minHeight = '0px'
+    ed.style.height = 'auto'
+    const n = Math.max(1, Math.round(ed.scrollHeight / 32))
+    ed.style.minHeight = keep
+    return n
+  }
+
+  // 一直追加到「再多一个字就会涨到第 target+1 行」为止 → 正好填满 target 行
+  function buildText(target) {
+    let s = ''
+    for (let i = 0; i < SOURCE.length; i++) {
+      const next = s + SOURCE.charAt(i)
+      ed.textContent = next
+      if (lineCount() > target) break
+      s = next
+    }
+    ed.textContent = s
+  }
+
+  function fit() {
+    ed.style.height = 'auto'
+    const need = ed.scrollHeight
+    const h = Math.max(96, Math.min(160, need))
+    ed.style.height = h + 'px'
+    ed.style.overflowY = need > 160 ? 'auto' : 'hidden'
+    requestAnimationFrame(updateDims)
+  }
+
+  function updateDims() {
+    const cw = card.offsetWidth
+    const ch = card.offsetHeight
+    const top = card.offsetTop
+    dimH.textContent = cw + ' px（宽）× ' + ch + ' px（高）｜含 1px 边框'
+    dimH.style.top = (top + ch + 14) + 'px'
+    dimV.style.top = top + 'px'
+    dimV.style.height = ch + 'px'
+    dimV.textContent = '高 ' + ch + ' px';
+  }
+
+  document.querySelectorAll('.demo button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      buildText(Number(b.dataset.demo))
+      fit()
+    })
+  })
+
+  ed.addEventListener('input', fit)
+
+  // 默认：正好 3 行 → 输入框 96px（固定 3 行高）、卡片不拉长
+  buildText(3)
+  fit()
+  window.addEventListener('resize', updateDims)
+</script>
+
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>绘画页右栏 · 布局调整效果图</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 28px 26px 60px;
+    background: #eef1f6;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  /* ---------- 页头 ---------- */
+  h1 { margin: 0 0 6px; font-size: 21px; letter-spacing: .2px; }
+  .lead { margin: 0 0 4px; font-size: 13.5px; line-height: 1.75; color: #5b6675; }
+  .lead b { color: #b45309; }
+  .meta { margin: 0 0 46px; font-size: 12px; color: #9ca3af; }
+
+  /* ---------- 对比区 ---------- */
+  .compare { display: flex; gap: 118px; justify-content: center; align-items: flex-start; }
+  .stage { position: relative; }
+  .stage-tag {
+    position: absolute; top: -30px; left: 0;
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 22px; padding: 0 10px;
+    border-radius: 7px; font-size: 12px; font-weight: 700; letter-spacing: .3px;
+  }
+  .stage-tag.is-old { background: #e5e8ee; color: #6b7684; }
+  .stage-tag.is-new { background: #ff7a00; color: #fff; box-shadow: 0 4px 12px rgba(255,122,0,.3); }
+
+  /* ---------- 面板外壳（对齐真页面 .paint-ai） ---------- */
+  .panel {
+    position: relative;
+    width: 496px;
+    height: 632px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid rgba(31,41,55,.07);
+    border-radius: 20px;
+    box-shadow: 0 12px 28px rgba(31,41,55,.08);
+  }
+
+  /* ---------- 顶部那一条渐变色 ---------- */
+  .rainbow {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 3;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, #ff7a00, #f472b6, #36bffa);
+  }
+
+  /* ---------- 现在：头部 ---------- */
+  .p-head {
+    position: relative;
+    height: 71px;
+    padding: 14px 16px 11px;
+    border-bottom: 1px solid #e5e7eb;
+    flex: 0 0 auto;
+  }
+  .p-title { display: flex; align-items: center; gap: 8px; height: 24px; }
+  .p-title strong { font-size: 14.5px; color: #1f2937; letter-spacing: .2px; }
+  .badge {
+    padding: 2px 6px; border-radius: 999px;
+    background: linear-gradient(135deg, #ff7a00, #ff9f1c);
+    color: #fff; font-size: 9.5px; font-weight: 700;
+  }
+  .ref-pill {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 24px; padding: 0 9px;
+    border: 1px solid rgba(255,122,0,.22); border-radius: 999px;
+    background: #fff6ec; color: #b45309;
+    font-size: 10.5px; font-weight: 600;
+  }
+  .ref-pill i { width: 6px; height: 6px; border-radius: 50%; background: #ff7a00; box-shadow: 0 0 0 3px rgba(255,122,0,.14); }
+  .p-sub { margin: 5px 0 0; height: 17px; font-size: 11px; color: #9ca3af; line-height: 1.5; }
+
+  /* ---------- 面板主体 ---------- */
+  .p-body { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 11px 16px 14px; }
+  .p-body.is-new { padding: 10px 16px 12px; }
+
+  /* 风格芯片 */
+  .styles { display: flex; gap: 5px; height: 28px; padding-bottom: 2px; overflow: hidden; flex: 0 0 auto; }
+  .styles.is-new { margin-bottom: 8px; }
+  .chip {
+    flex: 0 0 auto; display: inline-flex; align-items: center;
+    height: 26px; padding: 0 10px; border-radius: 8px;
+    background: #f5f7fb; color: #5b6675;
+    font-size: 10.5px; font-weight: 600; white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .chip.on {
+    color: #b45309; background: #fff3e6;
+    border-color: rgba(255,122,0,.34);
+    box-shadow: 0 2px 6px rgba(255,122,0,.12);
+  }
+  .styles:not(.is-new) { margin-bottom: 10px; }
+
+  /* 参考强度（现在：两行式，占 62px） */
+  .strength { flex: 0 0 auto; height: 62px; margin-bottom: 9px; }
+  .strength-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; height: 21px; }
+  .strength-head strong { font-size: 11px; font-weight: 700; color: #6b7684; }
+  .strength-head em { font-style: normal; font-size: 10px; color: #9ca3af; }
+  .seg {
+    display: flex; gap: 3px; padding: 3px;
+    border-radius: 9px; background: #f4f6fa;
+  }
+  .seg b {
+    flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center;
+    height: 26px; border-radius: 7px;
+    color: #5b6675; font-size: 10.5px; font-weight: 600; white-space: nowrap;
+  }
+  .seg b.on { background: #fff; color: #b45309; box-shadow: 0 1px 4px rgba(31,41,55,.13); }
+
+  /* 参考强度（改后：单行式，占 30px） */
+  .strength-row {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 9px;
+    height: 30px; margin-bottom: 8px;
+  }
+  .s-label { flex: 0 0 auto; font-size: 10.5px; font-weight: 700; color: #6b7684; letter-spacing: .2px; }
+  .strength-row .seg { flex: 0 0 auto; width: 300px; }
+  .s-hint {
+    flex: 1 1 0; min-width: 0;
+    font-size: 10px; color: #9ca3af; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* 生成结果小标题 */
+  .sec-label {
+    flex: 0 0 auto; height: 22px; margin: 0 0 7px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; font-weight: 700; color: #6b7684;
+  }
+  .sec-label em { font-style: normal; font-size: 10px; font-weight: 600; color: #9ca3af; }
+  .sec-label .pin { top: -8px; }
+
+  /* 结果区 */
+  .results { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 9px; }
+  .results.is-new { gap: 8px; }
+
+  .art {
+    background:
+      radial-gradient(58% 44% at 28% 26%, #ffdcae 0%, rgba(255,220,174,0) 72%),
+      radial-gradient(48% 38% at 74% 32%, #f7b9b9 0%, rgba(247,185,185,0) 72%),
+      radial-gradient(56% 46% at 38% 80%, #a9d9c2 0%, rgba(169,217,194,0) 74%),
+      radial-gradient(30% 24% at 86% 84%, #cdd6f5 0%, rgba(205,214,245,0) 76%),
+      linear-gradient(162deg, #fdf7ef, #f2e7da);
+  }
+
+  .main {
+    position: relative;
+    flex: 1 1 0; min-height: 0;
+    border: 2px solid #ff7a00; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 8px 22px rgba(255,122,0,.26);
+  }
+  .main .art { position: absolute; inset: 0; }
+  .rbadge {
+    position: absolute; top: 8px; left: 8px;
+    padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,122,0,.94); color: #fff;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .2px;
+  }
+  .rindex {
+    position: absolute; top: 8px; right: 8px;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(31,41,55,.62); color: #fff;
+    font-size: 10px; font-weight: 700;
+  }
+
+  /* 现在：hover 才出现的小工具条 */
+  .rtools {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; gap: 8px; justify-content: center;
+    padding: 22px 8px 9px;
+    background: linear-gradient(180deg, rgba(31,41,55,0), rgba(31,41,55,.72));
+  }
+  .rtools span {
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(255,255,255,.94); color: #374151;
+    font-size: 10px; font-weight: 600;
+  }
+
+  /* 改后：主图右下角常驻橙色药丸 */
+  .insert-pill {
+    position: absolute; right: 10px; bottom: 10px;
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 14px 0 11px;
+    border-radius: 999px;
+    background: linear-gradient(118deg, #ffa040, #ff6a00);
+    color: #fff; font-size: 11.5px; font-weight: 700;
+    box-shadow: 0 8px 18px rgba(255,106,0,.4), 0 0 0 2px rgba(255,255,255,.55);
+  }
+  .insert-pill svg { width: 13px; height: 13px; }
+
+  /* 缩略图条 */
+  .thumbs { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; height: 96px; }
+  .thumbs.is-new { height: 60px; gap: 8px; }
+  .thumbs .cell {
+    position: relative; border-radius: 10px; overflow: hidden;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 10px rgba(31,41,55,.1);
+  }
+  .thumbs .cell .art { position: absolute; inset: 0; }
+  .thumbs .cell span {
+    position: absolute; top: 4px; left: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(31,41,55,.6); color: #fff;
+    font-size: 8.5px; font-weight: 700;
+  }
+  .thumbs .cell.t2 .art {
+    background:
+      radial-gradient(60% 50% at 70% 30%, #cfd9f7, transparent 72%),
+      radial-gradient(50% 44% at 26% 72%, #ffd2b8, transparent 72%),
+      linear-gradient(150deg, #f6f4ff, #ece6f6);
+  }
+  .thumbs .cell.t3 .art {
+    background:
+      radial-gradient(58% 46% at 34% 34%, #bfe3d0, transparent 72%),
+      radial-gradient(46% 40% at 74% 74%, #ffe6a8, transparent 72%),
+      linear-gradient(160deg, #f4fbf6, #e8f2ec);
+  }
+
+  /* 现在：外面那条大按钮 */
+  .insert-btn {
+    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; height: 36px; margin-top: 9px;
+    border-radius: 10px;
+    background: linear-gradient(118deg, #ffa040, #ff6a00);
+    color: #fff; font-size: 12.5px; font-weight: 700;
+    box-shadow: 0 6px 16px rgba(255,106,0,.26);
+  }
+  .insert-btn svg { width: 13px; height: 13px; }
+
+  /* ---------- 标注 ---------- */
+  .mark { position: relative; }
+  .mark::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 9px;
+    pointer-events: none; z-index: 4;
+  }
+  .mark-del::after { border: 1.5px dashed #ef4444; background: rgba(239,68,68,.045); }
+  .p-head.mark::after { inset: 0 -3px -3px; border-radius: 0 0 9px 9px; }
+  .mark-add::after { border: 1.5px dashed #10b981; background: rgba(16,185,129,.06); }
+  .mark-keep::after { border: 1.5px dashed #94a3b8; }
+  /* 编号徽标：贴在虚线框左上角，遮挡面积最小 */
+  .pin {
+    position: absolute; z-index: 6; top: -9px; right: -26px;
+    width: 19px; height: 19px; border-radius: 50%;
+    display: grid; place-items: center;
+    color: #fff; font-size: 10.5px; font-weight: 800;
+    box-shadow: 0 0 0 2.5px #fff;
+  }
+  .pin.del { background: #ef4444; }
+  .pin.shrink { background: #f97316; }
+  .pin.add { background: #10b981; }
+
+  /* ---------- 尺寸胶囊（标在主图正中） ---------- */
+  .size-pill {
+    position: absolute; z-index: 4;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.9);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 6px 18px rgba(31,41,55,.16);
+    font-size: 12.5px; font-weight: 800; color: #64748b;
+    white-space: nowrap; letter-spacing: .2px;
+  }
+  .size-pill.up { color: #047857; background: rgba(236,253,245,.94); border-color: #a7f3d0; }
+  .size-pill small { font-size: 10px; font-weight: 700; color: #94a3b8; margin-left: 5px; }
+  .size-pill.up small { color: #059669; }
+
+  /* ---------- 说明区 ---------- */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    margin: 26px auto 0; padding: 12px 16px;
+    max-width: 760px;
+    background: #fff; border: 1px solid #e3e8f0; border-radius: 12px;
+    font-size: 12px; color: #5b6675;
+  }
+  .legend { align-items: center; }
+  .legend > span { display: inline-flex; align-items: center; gap: 6px; }
+  .lb {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: grid; place-items: center;
+    color: #fff; font-size: 10px; font-weight: 800;
+  }
+  .lb1, .lb3 { background: #ef4444; }
+  .lb2 { background: #f97316; }
+  .lb4 { background: #10b981; }
+  .legend .hint { color: #9ca3af; font-size: 11.5px; margin-left: auto; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 0; }
+  .card {
+    padding: 15px 16px 16px;
+    background: #fff; border: 1px solid #e3e8f0; border-radius: 14px;
+  }
+  .card h3 { margin: 0 0 7px; font-size: 13px; color: #1f2937; display: flex; align-items: center; gap: 7px; }
+  .card h3 b {
+    width: 19px; height: 19px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #fff3e6; color: #b45309; font-size: 11px;
+  }
+  .card p { margin: 0; font-size: 12px; line-height: 1.72; color: #5b6675; }
+  .card p code {
+    padding: 1px 4px; border-radius: 4px;
+    background: #f4f6fa; color: #b45309;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
+  }
+
+  table { width: 100%; margin-top: 22px; border-collapse: collapse; background: #fff;
+    border: 1px solid #e3e8f0; border-radius: 14px; overflow: hidden; font-size: 12.5px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eef1f6; }
+  th { background: #f8fafc; color: #6b7684; font-size: 11.5px; font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  td.n { font-variant-numeric: tabular-nums; color: #64748b; }
+  td.up { color: #b45309; font-weight: 700; }
+  td.down { color: #047857; font-weight: 700; }
+
+  .foot { margin: 22px 0 0; font-size: 12.5px; color: #9ca3af; text-align: center; }
+  .foot b { color: #b45309; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>右栏「AI 生成」布局调整 · 效果图</h1>
+  <p class="lead">按真实尺寸画的：右栏宽 496px、面板高 632px。左边是现在，右边是改完的样子。所有虚线框都是标注，不是真会出现的框。</p>
+  <p class="meta">数据依据 1280 × 800 视口实测</p>
+
+  <div class="compare">
+    <!-- ==================== 现在 ==================== -->
+    <div class="stage">
+      <div class="stage-tag is-old">现在</div>
+      <div class="panel">
+        <span class="rainbow"></span>
+
+        <div class="p-head mark mark-del">
+          <span class="pin del">1</span>
+          <div class="p-title">
+            <strong>AI 生成</strong>
+            <span class="badge">灵感加速</span>
+            <span class="ref-pill"><i></i>参考画纸</span>
+          </div>
+          <p class="p-sub">看着你的画来生成，插成图层就能接着画。</p>
+        </div>
+
+        <div class="p-body">
+          <div class="styles">
+            <span class="chip on">水彩绘本</span>
+            <span class="chip">蜡笔涂鸦</span>
+            <span class="chip">动漫线稿</span>
+            <span class="chip">油画厚涂</span>
+          </div>
+
+          <div class="strength mark mark-shrink">
+            <span class="pin shrink">2</span>
+            <div class="strength-head">
+              <strong>参考强度</strong>
+              <em>留大致构图，细节重新画</em>
+            </div>
+            <div class="seg">
+              <b>自由发挥</b><b class="on">半参考</b><b>照着画</b>
+            </div>
+          </div>
+
+          <p class="sec-label mark mark-del">
+            <span class="pin del">5</span>
+            生成结果 <em>主图 1 张 · 备选 3 张</em>
+          </p>
+
+          <div class="results">
+            <div class="main">
+              <span class="art"></span>
+              <span class="rbadge">当前选用</span>
+              <span class="rindex">1</span>
+              <span class="size-pill">主图 264px</span>
+              <div class="rtools"><span>插成图层</span><span>再生成</span></div>
+            </div>
+            <div class="thumbs">
+              <div class="cell"><span>2</span><i class="art"></i></div>
+              <div class="cell t2"><span>3</span><i class="art"></i></div>
+              <div class="cell t3"><span>4</span><i class="art"></i></div>
+            </div>
+          </div>
+
+          <div class="insert-btn mark mark-del">
+            <span class="pin del">3</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            把第 1 张插成新图层
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== 改后 ==================== -->
+    <div class="stage">
+      <div class="stage-tag is-new">改后</div>
+      <div class="panel">
+        <span class="rainbow"></span>
+
+        <div class="p-body is-new">
+          <div class="styles is-new">
+            <span class="chip on">水彩绘本</span>
+            <span class="chip">蜡笔涂鸦</span>
+            <span class="chip">动漫线稿</span>
+            <span class="chip">油画厚涂</span>
+          </div>
+
+          <div class="strength-row mark mark-add">
+            <span class="pin add">4</span>
+            <span class="s-label">参考强度</span>
+            <div class="seg">
+              <b>不用画纸</b><b>自由发挥</b><b class="on">半参考</b><b>照着画</b>
+            </div>
+            <span class="s-hint">细节重画</span>
+          </div>
+
+          <div class="results is-new">
+            <div class="main">
+              <span class="art"></span>
+              <span class="rbadge">当前选用</span>
+              <span class="rindex">1</span>
+              <span class="size-pill up">主图 470px<small>+78%</small></span>
+              <span class="insert-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                插成图层
+              </span>
+            </div>
+            <div class="thumbs is-new">
+              <div class="cell"><span>2</span><i class="art"></i></div>
+              <div class="cell t2"><span>3</span><i class="art"></i></div>
+              <div class="cell t3"><span>4</span><i class="art"></i></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><b class="lb lb1">1</b>顶部标题 + 副标题整块删掉</span>
+    <span><b class="lb lb2">2</b>参考强度压成一行</span>
+    <span><b class="lb lb3">3</b>「插成图层」搬进主图</span>
+    <span><b class="lb lb4">4</b>原「参考画纸」开关并进强度档</span>
+    <span><b class="lb lb1">5</b>「生成结果」小标题删掉</span>
+    <span class="hint">虚线框只是标注，实际界面里没有</span>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3><b>1</b>顶部那块整块去掉</h3>
+      <p>「AI 生成 · 灵感加速 · 参考画纸」标题行加下面那行灰字，一共 <b>71px</b>。图标本身已经说明这是干什么的，不需要再写一遍。</p>
+    </div>
+    <div class="card">
+      <h3><b>2</b>参考强度压成一行</h3>
+      <p>原来「标题一行 + 三档一行」占 62px，现在标签和选项并排一行，<b>30px</b>。说明文字缩成右边几个字，鼠标停上去能看到完整解释。</p>
+    </div>
+    <div class="card">
+      <h3><b>3</b>「插成图层」搬进图里</h3>
+      <p>不再单独占底下一整条 <b>45px</b>，改成主图右下角一个常驻橙色按钮。图在哪就能点哪，更近、也更明显。</p>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>部位</th><th>现在</th><th>改后</th><th>变化</th>
+    </tr>
+    <tr>
+      <td>顶部标题区</td><td class="n">71px</td><td class="n">0</td><td class="down">省 71px</td>
+    </tr>
+    <tr>
+      <td>参考强度</td><td class="n">62px（两行）</td><td class="n">30px（一行）</td><td class="down">省 32px</td>
+    </tr>
+    <tr>
+      <td>「生成结果」小标题</td><td class="n">22px</td><td class="n">0</td><td class="down">省 22px</td>
+    </tr>
+    <tr>
+      <td>插成图层按钮</td><td class="n">45px（图外面）</td><td class="n">0（图里面）</td><td class="down">省 45px</td>
+    </tr>
+    <tr>
+      <td>备选缩略图条</td><td class="n">96px</td><td class="n">60px</td><td class="down">省 36px</td>
+    </tr>
+    <tr>
+      <td><b>主图高度</b></td><td class="n">264px</td><td class="up">470px</td><td class="up">+78%</td>
+    </tr>
+  </table>
+
+  <p class="foot">这是<b>静态效果图</b>，还没改真页面。看着行我再动手改。</p>
+</div>
+</body>
+</html>
