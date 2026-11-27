@@ -95,7 +95,7 @@
           <span v-if="currentSectionLabel" class="as-crumb-group">{{ currentSectionLabel }}</span>
           <strong>{{ currentNav.label }}</strong>
         </nav>
-        <a class="as-top-link" href="/student/workbench" target="_blank" rel="noopener">
+        <a class="as-top-link" :href="$router.resolve('/student/workbench').href" target="_blank" rel="noopener">
           <span>查看用户端</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16L16 8M9.5 8H16v6.5" /></svg>
         </a>

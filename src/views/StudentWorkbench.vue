@@ -945,7 +945,7 @@ const proWorkbenchItems = computed(() => {
       imageUrl = galleryArt.backgroundImage
       customSrc = firstGalleryCover
     }
-    else if (id === 'gallery' && firstGalleryCover) imageUrl = `url('${firstGalleryCover}')`
+    else if (id === 'gallery' && firstGalleryCover && !/gradient\(/i.test(firstGalleryCover)) imageUrl = `url('${firstGalleryCover}')`
     // ⚠️ 素材库的 cover 存的是「整条 CSS」（如 url("https://…") center / cover no-repeat #f8fafc），
     //    不是裸地址。直接拼 url('${cover}') 会变成 url('url("https://…")')，浏览器按相对路径解析 → 图裂（踩过）。
     //    统一走 getPortfolioImageUrl() 抽出真实地址，取不到就保留内置兜底图。

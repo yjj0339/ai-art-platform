@@ -18,6 +18,12 @@ import { onBeforeRouteLeave } from 'vue-router'
 
 const state = reactive({ title: '', subtitle: '', path: '', back: null })
 
+// 部署在子路径（例如 /ai-art-platform/）时，地址栏路径带前缀，而 route.path 不带；比较前先去掉。
+function stripBase(pathname) {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+  return base && pathname.startsWith(base) ? pathname.slice(base.length) || '/' : pathname
+}
+
 export function useStudentTopBar() {
   return {
     state,
@@ -28,7 +34,7 @@ export function useStudentTopBar() {
       state.back = back && (back.to || typeof back.action === 'function')
         ? { to: back.to || '', label: back.label || '返回', action: typeof back.action === 'function' ? back.action : null }
         : null
-      state.path = path || (typeof window !== 'undefined' ? window.location.pathname : '')
+      state.path = path || (typeof window !== 'undefined' ? stripBase(window.location.pathname) : '')
     },
     reset() {
       state.title = ''

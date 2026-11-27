@@ -2761,7 +2761,7 @@ function shareUrl() {
   if (publishedShareUrl.value) return `${window.location.origin}${publishedShareUrl.value}`
   const id = savedReportId.value || (!SERVER_AUTH_MODE ? localStorage.getItem('art-studio-current-report-id') : '') || ''
   const query = new URLSearchParams({ projectId: project.id || '', reportId: id })
-  return `${window.location.origin}/student/h5-report?${query.toString()}`
+  return `${window.location.origin}${import.meta.env.BASE_URL}student/h5-report?${query.toString()}`
 }
 async function generatePoster() {
   if (h5LayoutResult.value && !publishedShareUrl.value) { ElMessage.warning('报告审核通过后才能生成可公开扫码的分享海报'); return }
