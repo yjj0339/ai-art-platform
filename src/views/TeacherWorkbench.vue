@@ -1,727 +1,940 @@
 <template>
-  <main class="teacher-page app-page">
-    <aside class="teacher-sidebar">
-      <section class="brand-panel">
-        <div class="brand-logo">AI</div>
-        <div>
-          <h1>讲师端</h1>
-          <p>课程与授权管理</p>
+  <!-- 讲师端（2026-11-27 界面重做）：外壳和组件跟管理后台同一套苹果「系统设置」风格（admin-shell / admin-ui / admin-apple），
+       功能、接口、权限判断都没改。排课、点名、扣课这些页面一直是写死的样例数据，页面上明确标出来，不冒充真功能。 -->
+  <main class="admin-shell as-shell teacher-shell" :class="{ 'is-nav-open': navDrawerOpen }">
+    <div v-if="navDrawerOpen" class="as-backdrop" aria-hidden="true" @click="navDrawerOpen = false"></div>
+
+    <aside class="as-sidebar" aria-label="讲师端菜单">
+      <div class="as-brand">
+        <span class="as-brand-mark tw-brand-mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="brandIconPath" /></svg>
+        </span>
+        <span class="as-brand-text">
+          <strong>讲师端</strong>
+          <small>课程与教学管理</small>
+        </span>
+        <button class="as-icon-btn as-close" type="button" aria-label="收起菜单" @click="navDrawerOpen = false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+
+      <label class="as-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5L20 20" /></svg>
+        <input v-model.trim="navQuery" type="search" placeholder="搜索功能" aria-label="搜索讲师端功能" @keydown.enter.prevent="openFirstNavMatch" @keydown.esc="navQuery = ''" />
+      </label>
+
+      <!-- 当前账号：头像是线条人像图标，不用名字的第一个字 -->
+      <div class="as-me">
+        <span class="as-avatar tw-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.8" /><path d="M4.8 19.6c1.4-3.2 4.1-4.9 7.2-4.9s5.8 1.7 7.2 4.9c-1.9 1.7-4.4 2.7-7.2 2.7s-5.3-1-7.2-2.7z" /></svg></span>
+        <span class="as-me-text">
+          <strong>{{ teacherDisplayName }}</strong>
+          <small>{{ teacherOrgName }}</small>
+        </span>
+        <button type="button" class="as-logout" title="退出登录" aria-label="退出登录" @click="logout">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h3.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H14M10 16.5L5.5 12 10 7.5M5.5 12H15" /></svg>
+          <span>退出</span>
+        </button>
+      </div>
+
+      <nav class="as-nav" aria-label="讲师端导航">
+        <template v-if="navQuery">
+          <button
+            v-for="item in navSearchResults"
+            :key="item.id"
+            type="button"
+            class="as-item"
+            :class="{ 'is-active': activeMenu === item.id }"
+            @click="selectMenu(item.id)"
+          >
+            <span class="as-icon" :style="{ '--tint': menuIcon(item).tint }"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="menuIcon(item).d" /></svg></span>
+            <span class="as-label">{{ item.label }}</span>
+            <small v-if="item.groupLabel" class="as-meta">{{ item.groupLabel }}</small>
+          </button>
+          <p v-if="!navSearchResults.length" class="as-empty">没有找到「{{ navQuery }}」</p>
+        </template>
+        <template v-else>
+          <section v-for="group in menuGroups" :key="group.id" class="as-section">
+            <button
+              v-if="group.label"
+              type="button"
+              class="as-section-head"
+              :class="{ 'is-closed': isGroupClosed(group) }"
+              :aria-expanded="isGroupClosed(group) ? 'false' : 'true'"
+              @click="toggleGroup(group.id)"
+            >
+              <span>{{ group.label }}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+            </button>
+            <div v-show="!group.label || !isGroupClosed(group)" class="as-section-body">
+              <button
+                v-for="item in group.children"
+                :key="item.id"
+                type="button"
+                class="as-item"
+                :class="{ 'is-active': activeMenu === item.id }"
+                :aria-current="activeMenu === item.id ? 'page' : undefined"
+                @click="selectMenu(item.id)"
+              >
+                <span class="as-icon" :style="{ '--tint': menuIcon(item).tint }"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="menuIcon(item).d" /></svg></span>
+                <span class="as-label">{{ item.label }}</span>
+              </button>
+            </div>
+          </section>
+        </template>
+      </nav>
+    </aside>
+
+    <section class="as-main tw-main">
+      <!-- 顶栏只做「我在哪」：讲师端 › 分组 › 页面；页面自己的大标题和操作在下面 -->
+      <header class="as-topbar" :class="{ 'is-scrolled': topbarScrolled }">
+        <button class="as-icon-btn as-menu-btn" type="button" aria-label="打开菜单" @click="navDrawerOpen = true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+        <nav class="as-crumbs" aria-label="当前位置">
+          <span class="as-crumb-root">讲师端</span>
+          <span v-if="currentGroupLabel" class="as-crumb-group">{{ currentGroupLabel }}</span>
+          <strong>{{ currentMenu?.label }}</strong>
+        </nav>
+        <button type="button" class="as-top-link tw-top-btn" @click="showProfile">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c1.3-3 3.9-4.5 7-4.5s5.7 1.5 7 4.5" /></svg>
+          <span>个人中心</span>
+        </button>
+      </header>
+
+      <!-- ================= 讲师概况 ================= -->
+      <section v-if="activeMenu === 'overview'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>{{ greeting }}，{{ teacherDisplayName }}</h2>
+            <p>课程、发放和教学情况一览。</p>
+          </div>
+          <div class="ax-head-actions">
+            <button type="button" class="ax-btn" @click="selectMenu('courseLibrary')">打开课程库</button>
+            <button type="button" class="ax-btn is-primary" :disabled="!canUploadCourse" @click="selectMenu('courseManage')"><AdminIcon name="upload" plain />上传新课程</button>
+          </div>
+        </header>
+
+        <div class="ax-stats">
+          <article v-for="item in summary" :key="item.label" class="ax-stat">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.note }}</small>
+          </article>
+        </div>
+
+        <div class="tw-overview-grid">
+          <article class="ax-card">
+            <div class="ax-card-head">
+              <div>
+                <h3>课程到项目报告</h3>
+                <p>小画家一节课的学习闭环，每一步的内容都会进入最后的项目报告。</p>
+              </div>
+            </div>
+            <ol class="tw-flow">
+              <li v-for="(step, index) in learningFlow" :key="step.label">
+                <AdminIcon :name="step.icon" size="lg" />
+                <strong>{{ step.label }}</strong>
+                <small>{{ step.note }}</small>
+                <i v-if="index < learningFlow.length - 1" class="tw-flow-arrow" aria-hidden="true"></i>
+              </li>
+            </ol>
+          </article>
+
+          <article class="ax-card is-flush tw-recent-card">
+            <div class="ax-card-head">
+              <div>
+                <h3>最近的课程</h3>
+                <p>自己上传的和权限组授权的</p>
+              </div>
+              <button type="button" class="ax-btn is-sm is-ghost" @click="selectMenu('courseLibrary')">查看全部</button>
+            </div>
+            <div class="tw-recent">
+              <div v-for="course in teacherVisibleCourses.slice(0, 5)" :key="course.id" class="tw-recent-row">
+                <AdminIcon name="courses" size="sm" :tint="categoryTint(course.category)" />
+                <div class="ax-row-main">
+                  <strong class="tw-ellipsis">{{ safeText(course.title, '趣味设计课程') }}</strong>
+                  <small>{{ categoryLabel(course.category) }} · {{ safeText(course.difficulty, '青少年进阶') }}</small>
+                </div>
+                <span class="ax-pill" :class="course.status === 'published' ? 'is-ok' : 'is-muted'">{{ course.status === 'published' ? '已发布' : '草稿' }}</span>
+              </div>
+              <div v-if="!teacherVisibleCourses.length" class="ax-empty is-compact">
+                <strong>{{ courseStore.loading && !courseStore.loaded ? '正在读取课程…' : '还没有课程' }}</strong>
+                <span v-if="!courseStore.loading">上传第一门课，或者等管理员把课授权给你所在的权限组。</span>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
-      <nav class="teacher-menu" aria-label="讲师端菜单">
-        <section v-for="group in menuGroups" :key="group.id" class="menu-group">
-          <button type="button" class="menu-group-title" @click="toggleGroup(group.id)">
-            <span>{{ group.icon }}</span>
-            <strong>{{ group.label }}</strong>
-            <em>{{ collapsedGroups.includes(group.id) ? '⌄' : '⌃' }}</em>
-          </button>
-          <div v-show="!collapsedGroups.includes(group.id)" class="menu-group-list">
-            <button
-              v-for="item in group.children"
-              :key="item.id"
-              type="button"
-              :class="{ active: activeMenu === item.id }"
-              @click="activeMenu = item.id"
-            >
-              <i></i>
-              <div>
-                <strong>{{ item.label }}</strong>
-                <small>{{ item.desc }}</small>
-              </div>
-            </button>
+      <!-- ================= 课程上传 / 编辑 ================= -->
+      <section v-else-if="activeMenu === 'courseManage'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>{{ editingCourseId ? '编辑课程' : '上传课程' }}</h2>
+            <p>先上传课件和课程文档，系统自动解析出课程信息和选择题；确认后发布给班级和小画家。</p>
           </div>
-        </section>
-      </nav>
+          <div class="ax-head-actions">
+            <button type="button" class="ax-btn" @click="resetForm">新建空白课程</button>
+            <button type="button" class="ax-btn is-primary" @click="saveCourse">发布并授权</button>
+          </div>
+        </header>
 
-      <footer class="sidebar-footer">
-        <button type="button" @click="logout">退出登录</button>
-      </footer>
-    </aside>
+        <p v-if="courseAccessReady && !canUploadCourse" class="ax-note is-warn">当前账号还没有上传课程的权限，发布会被拦下。请联系管理员在「账号权限 → 权限组」里开通。</p>
+        <p v-if="editingCourseId" class="ax-note tw-page-note">正在编辑「{{ form.title }}」：改完点「发布并授权」保存；点「新建空白课程」放弃这次编辑。</p>
 
-    <section class="teacher-main">
-      <header class="teacher-topbar">
-        <div>
-          <span>{{ currentMenu?.label }}</span>
-          <h2>{{ currentMenu?.title }}</h2>
-        </div>
-        <div class="topbar-actions">
-          <button type="button" @click="showProfile">个人中心</button>
-          <BaseButton v-if="activeMenu === 'courseManage'" variant="secondary" @click="resetForm">新建空白课程</BaseButton>
-          <BaseButton v-if="activeMenu === 'courseManage'" @click="saveCourse">发布并授权</BaseButton>
-        </div>
-      </header>
-
-      <section class="teacher-content">
-        <section v-if="activeMenu === 'overview'" class="overview-grid">
-          <article v-for="item in summary" :key="item.label" class="summary-card">
-            <span>{{ item.label }}</span>
-            <strong>{{ item.value }}</strong>
-            <small>{{ item.note }}</small>
-          </article>
-
-          <article class="panel flow-panel">
-            <div class="panel-title">
-              <h3>课程到项目报告链路</h3>
-              <span>用户学习闭环</span>
-            </div>
-            <div class="flow-row">
-              <span>视频 / PPT</span>
-              <b>→</b>
-              <span>课堂问答</span>
-              <b>→</b>
-              <span>创意想法</span>
-              <b>→</b>
-              <span>AI绘画</span>
-              <b>→</b>
-              <span>项目报告</span>
-            </div>
-          </article>
-
-          <article class="panel recent-panel">
-            <div class="panel-title">
-              <h3>最近发布课程</h3>
-              <button type="button" @click="activeMenu = 'courseLibrary'">查看全部</button>
-            </div>
-            <div class="lesson-list compact">
-              <div v-for="course in teacherVisibleCourses.slice(0, 4)" :key="course.id" class="lesson-row">
-                <strong>{{ safeText(course.title, '趣味设计课程') }}</strong>
-                <span>{{ categoryLabel(course.category) }} · {{ safeText(course.difficulty, '青少年进阶') }}</span>
-                <em>{{ course.status === 'published' ? '已发布' : '草稿' }}</em>
+        <div class="tw-editor">
+          <div class="tw-editor-main">
+            <!-- 1 课件与文档 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">1</span>课件与文档</h3>
+                  <p>视频、PPT、课程文档分开上传；文档上传后会自动解析。</p>
+                </div>
               </div>
-            </div>
-          </article>
-        </section>
+              <div class="tw-uploads">
+                <div class="tw-upload" :class="{ 'is-set': form.videoFileName }">
+                  <AdminIcon name="video" size="lg" />
+                  <div class="tw-upload-text">
+                    <strong>课程视频</strong>
+                    <small :title="form.videoFileName">{{ form.videoFileName || '支持 MP4 / MOV' }}</small>
+                  </div>
+                  <input ref="videoFileInput" class="tw-file" type="file" accept="video/*" @change="handleVideoFile" />
+                  <button type="button" class="ax-btn is-sm" @click="videoFileInput?.click()">{{ form.videoFileName ? '重新上传' : '上传视频' }}</button>
+                </div>
+                <div class="tw-upload" :class="{ 'is-set': form.pptFileName }">
+                  <AdminIcon name="layers" size="lg" tint="#ff9500" />
+                  <div class="tw-upload-text">
+                    <strong>PPT 课件</strong>
+                    <small :title="form.pptFileName">{{ form.pptFileName || '支持 PPT / PPTX' }}</small>
+                  </div>
+                  <input ref="pptFileInput" class="tw-file" type="file" accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" @change="handlePptFile" />
+                  <button type="button" class="ax-btn is-sm" @click="pptFileInput?.click()">{{ form.pptFileName ? '重新上传' : '上传 PPT' }}</button>
+                </div>
+                <div class="tw-upload" :class="{ 'is-set': form.documentFileName }">
+                  <AdminIcon name="text" size="lg" />
+                  <div class="tw-upload-text">
+                    <strong>课程文档</strong>
+                    <small :title="form.documentFileName">{{ form.documentFileName || 'PDF / Word，用来自动填写' }}</small>
+                  </div>
+                  <input ref="docFileInput" class="tw-file" type="file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" @change="handleCourseDocumentFile" />
+                  <button type="button" class="ax-btn is-sm" @click="docFileInput?.click()">{{ form.documentFileName ? '重新上传' : '上传文档' }}</button>
+                </div>
+              </div>
+              <div class="tw-parse" :class="`is-${documentParseStatus.state}`">
+                <span class="tw-parse-dot" aria-hidden="true"></span>
+                <div class="tw-parse-text">
+                  <strong>{{ documentParsing ? '正在解析…' : documentParseStatus.message }}</strong>
+                  <small v-if="showParseCounts">已读取 {{ documentParseStatus.textLength }} 字 · 识别字段 {{ documentParseStatus.fieldCount }} 项 · 选择题 {{ documentParseStatus.questionCount }} 道</small>
+                  <small v-else-if="!form.documentFileName">上传 PDF 或 Word 课程文档后，会自动填好课程主题、类型、适龄、简介、设计需求和选择题。</small>
+                  <em v-if="documentParseStatus.preview">{{ documentParseStatus.preview }}</em>
+                </div>
+                <button type="button" class="ax-btn is-sm is-soft" :disabled="!form.documentFileName || documentParsing" @click="parseCourseDocument">{{ documentParsing ? '解析中…' : '解析课程文档' }}</button>
+              </div>
+            </article>
 
-        <section v-else-if="activeMenu === 'courseManage'" class="course-editor-layout">
-          <article class="panel course-builder">
-            <div class="panel-title">
-              <h3>课程上传 / 编辑</h3>
-              <span>先上传课件与课程文档，再解析回填课程信息、选择题和授权</span>
-            </div>
-            <div class="builder-grid">
-              <section class="builder-section full course-basics">
-                <div class="builder-section-head">
-                  <div>
-                    <span>02</span>
-                    <strong>课程基础信息</strong>
-                  </div>
-                  <small>填写主题、适龄范围和课程简介</small>
+            <!-- 2 基础信息 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">2</span>基础信息</h3>
+                  <p>解析文档后自动填好，也可以直接改。</p>
                 </div>
-                <div class="section-grid">
-                  <label>
-                    课程主题
-                    <input v-model="form.title" placeholder="例如：奶茶店门头设计趣味课" />
-                  </label>
-                  <label>
-                    课程类型
-                    <select v-model="form.category">
-                      <option v-for="item in categoryOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
-                    </select>
-                  </label>
-                  <label>
-                    难度 / 适龄
-                    <input v-model="form.difficulty" placeholder="青少年进阶 · 13-16岁" />
-                  </label>
-                  <label class="intro-field">
-                    课程简介
-                    <textarea v-model="form.description" placeholder="可手动填写，也可上传课程文档后一键AI解析生成" />
-                  </label>
-                </div>
-              </section>
+              </div>
+              <div class="ax-form">
+                <label class="ax-field">
+                  <span>课程主题</span>
+                  <input v-model="form.title" placeholder="例如：奶茶店门头设计趣味课" />
+                </label>
+                <label class="ax-field">
+                  <span>课程类型</span>
+                  <select v-model="form.category">
+                    <option v-for="item in categoryOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
+                  </select>
+                </label>
+                <label class="ax-field">
+                  <span>难度 / 适龄</span>
+                  <input v-model="form.difficulty" placeholder="青少年进阶 · 13-16岁" />
+                </label>
+                <label class="ax-field ax-span-all">
+                  <span>课程简介</span>
+                  <textarea v-model="form.description" rows="3" placeholder="可以手动填写，也可以上传课程文档后自动生成"></textarea>
+                </label>
+              </div>
+            </article>
 
-              <section class="builder-section full h5-course-settings">
-                <div class="builder-section-head">
-                  <div><span>H5</span><strong>H5报告风格</strong></div>
-                  <small>{{ teacherH5AdminEnabled ? '按本课程设置用户可用风格' : '管理员已统一为平台智能选择' }}</small>
+            <!-- 3 引导选择题 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">3</span>引导选择题</h3>
+                  <p>解析课程文档后自动生成，带正确答案；小画家上课时作答。</p>
                 </div>
-                <div v-if="teacherH5Runtime.loading" class="h5-course-status">正在读取管理员设置…</div>
-                <template v-else>
-                  <div class="h5-mode-grid" :class="{ disabled: !teacherH5AdminEnabled }">
-                    <label>
-                      <input v-model="form.h5ReportSettings.selectionMode" type="radio" value="auto" />
-                      <span><strong>智能自动选择</strong><small>根据课程主题自动匹配已发布模板（默认）</small></span>
-                    </label>
-                    <label>
-                      <input v-model="form.h5ReportSettings.selectionMode" type="radio" value="student" :disabled="!teacherH5AdminEnabled" />
-                      <span><strong>允许用户选择</strong><small>用户只能看到管理员与本课程共同允许的模板</small></span>
-                    </label>
+                <button type="button" class="ax-btn is-sm" :disabled="!form.documentFileName || documentParsing" @click="parseCourseDocument"><AdminIcon name="refresh" plain />重新解析</button>
+              </div>
+              <ol v-if="questionCards.length" class="tw-questions">
+                <li v-for="(question, index) in questionCards" :key="`${question.id}-${index}`" class="tw-question">
+                  <div class="tw-question-title">
+                    <span>第 {{ index + 1 }} 题</span>
+                    <strong>{{ question.title }}</strong>
                   </div>
-                  <div v-if="teacherH5AdminEnabled && form.h5ReportSettings.selectionMode === 'student'" class="h5-template-course-grid">
-                    <label v-for="template in teacherH5Runtime.templates" :key="template.id" :class="{ selected: form.h5ReportSettings.allowedTemplateIds.includes(template.id) }">
-                      <input type="checkbox" :checked="form.h5ReportSettings.allowedTemplateIds.includes(template.id)" @change="toggleTeacherH5Template(template.id)" />
-                      <i :style="teacherTemplateSwatch(template)"></i>
-                      <span><strong>{{ template.name }}</strong><small>{{ template.description || 'H5报告风格' }}</small></span>
-                    </label>
-                    <p v-if="!teacherH5Runtime.templates.length">管理员还没有为这个用户版本发布可用模板。</p>
-                  </div>
-                  <label v-if="teacherH5AdminEnabled && form.h5ReportSettings.selectionMode === 'student' && teacherAllowedH5Templates.length" class="h5-default-template">
-                    本课程默认模板
-                    <select v-model="form.h5ReportSettings.defaultTemplateId">
-                      <option value="">跟随平台智能推荐</option>
-                      <option v-for="template in teacherAllowedH5Templates" :key="template.id" :value="template.id">{{ template.name }}</option>
-                    </select>
-                  </label>
-                  <div v-if="!teacherH5AdminEnabled" class="h5-course-status locked">平台已关闭用户自主选择，本课程将使用智能自动选择。</div>
-                </template>
-              </section>
-
-              <section class="builder-section full course-materials">
-                <div class="builder-section-head">
-                  <div>
-                    <span>01</span>
-                    <strong>课程课件与文档</strong>
-                  </div>
-                  <small>视频、PPT 与课程文档分别上传</small>
-                </div>
-                <div class="materials-grid">
-                  <div class="upload-field video-upload-field">
-                    <span>课程视频</span>
-                    <input ref="videoFileInput" type="file" accept="video/*" @change="handleVideoFile" />
-                    <button type="button" @click="videoFileInput?.click()">上传课程视频</button>
-                    <small>{{ form.videoFileName || '支持 MP4 / MOV 视频文件' }}</small>
-                  </div>
-                  <div class="upload-field ppt-upload-field">
-                    <span>课程PPT</span>
-                    <input ref="pptFileInput" type="file" accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" @change="handlePptFile" />
-                    <button type="button" @click="pptFileInput?.click()">上传PPT课件</button>
-                    <small>{{ form.pptFileName || '支持 PPT / PPTX 课件' }}</small>
-                  </div>
-                  <div class="upload-field document-upload-field">
-                    <span>课程文档与AI解析</span>
-                    <input ref="docFileInput" type="file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" @change="handleCourseDocumentFile" />
-                    <button type="button" @click="docFileInput?.click()">上传PDF / Word文档</button>
-                    <button type="button" class="ai-parse-btn" :disabled="!form.documentFileName || documentParsing" @click="parseCourseDocument">
-                      {{ documentParsing ? 'AI解析中...' : 'AI解析课程文档' }}
-                    </button>
-                    <small>{{ form.documentFileName || '上传后可自动填写课程信息、简介和选择题' }}</small>
-                    <div class="document-parse-status" :class="documentParseStatus.state">
-                      <strong>{{ documentParseStatus.message }}</strong>
-                      <p>已读取 {{ documentParseStatus.textLength }} 字 · 识别字段 {{ documentParseStatus.fieldCount }} 项 · 选择题 {{ documentParseStatus.questionCount }} 道</p>
-                      <em v-if="documentParseStatus.preview">{{ documentParseStatus.preview }}</em>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="builder-section full question-builder-section">
-                <div class="builder-section-head question-section-head">
-                  <div>
-                    <span>03</span>
-                    <strong>课程引导性选择题解析结果</strong>
-                  </div>
-                  <button type="button" class="reparse-question-btn" :disabled="!form.documentFileName || documentParsing" @click="parseCourseDocument">重新解析课程文档</button>
-                </div>
-                <p class="question-result-note">AI解析课程文档后，会自动回填课程主题、类型、适龄范围、简介，并生成选择题和正确答案。</p>
-                <div v-if="questionCards.length" class="choice-question-list">
-                  <article v-for="(question, index) in questionCards" :key="`${question.id}-${index}`" class="choice-question-editor">
-                    <div class="question-card-top">
-                      <span>题目 {{ index + 1 }}</span>
-                    </div>
-                    <strong class="question-title-text">{{ question.title }}</strong>
-                    <div class="choice-option-grid">
-                      <div v-for="(option, optionIndex) in question.options" :key="optionIndex" :class="{ correct: question.answer === choiceLabels[optionIndex] }">
+                  <ul class="tw-options">
+                    <template v-for="(option, optionIndex) in question.options" :key="optionIndex">
+                      <!-- 题目只有 3 个选项时第 4 格是空的：不显示空白的 D -->
+                      <li v-if="option" :class="{ 'is-correct': question.answer === choiceLabels[optionIndex] }">
                         <b>{{ choiceLabels[optionIndex] }}</b>
                         <span>{{ option }}</span>
-                        <em v-if="question.answer === choiceLabels[optionIndex]">正确答案</em>
-                      </div>
-                    </div>
-                  </article>
-                </div>
-                <div v-else class="question-empty-state">尚未解析课程文档。请先上传 PDF 或 Word 课程文档，再点击“AI解析并生成简介与题目”。</div>
-              </section>
+                        <em v-if="question.answer === choiceLabels[optionIndex]"><AdminIcon name="check" plain />正确答案</em>
+                      </li>
+                    </template>
+                  </ul>
+                </li>
+              </ol>
+              <div v-else class="ax-empty is-compact">
+                <strong>还没有选择题</strong>
+                <span>上传 PDF 或 Word 课程文档后会自动生成。</span>
+              </div>
+            </article>
 
-              <section class="builder-section full requirement-builder-section">
-                <div class="builder-section-head">
-                  <div><span>04</span><strong>项目设计需求</strong></div>
-                  <div class="builder-section-actions">
-                    <button v-if="requirementPanelOpen" type="button" class="add-row-btn" @click="addDesignRequirement">新增要求</button>
-                    <button type="button" class="expand-section-btn" @click="requirementPanelOpen = !requirementPanelOpen">{{ requirementPanelOpen ? '收起' : '展开编辑' }}</button>
-                  </div>
+            <!-- 4 项目设计需求 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">4</span>项目设计需求</h3>
+                  <p>尺寸、元素、形象来源、风格和使用场景；解析文档后自动填写，发布前确认一下。</p>
                 </div>
-                <p class="question-result-note">课程文档解析后会自动填写尺寸、元素、形象来源、风格和使用场景，发布前可人工确认。</p>
-                <div v-if="!requirementPanelOpen" class="collapsed-section-summary">
-                  <strong>{{ form.designRequirements.length }} 项设计需求</strong>
-                  <span v-for="item in form.designRequirements.slice(0, 5)" :key="item.label">{{ item.label }}</span>
+                <div class="ax-actions">
+                  <button v-if="requirementPanelOpen" type="button" class="ax-btn is-sm" @click="addDesignRequirement"><AdminIcon name="plus" plain />新增要求</button>
+                  <button type="button" class="ax-btn is-sm is-ghost" @click="requirementPanelOpen = !requirementPanelOpen">{{ requirementPanelOpen ? '收起' : '展开编辑' }}</button>
                 </div>
-                <div v-else class="requirement-editor-list expanded-section-body">
-                  <div v-for="(item, index) in form.designRequirements" :key="index" class="requirement-editor-row">
-                    <input v-model="item.label" aria-label="需求名称" placeholder="例如：尺寸规格" />
-                    <textarea v-model="item.value" aria-label="需求内容" placeholder="填写本项目的具体设计要求" />
-                    <button type="button" class="remove-row-btn" aria-label="删除设计需求" @click="removeDesignRequirement(index)">×</button>
-                  </div>
+              </div>
+              <dl v-if="!requirementPanelOpen" class="tw-kv">
+                <div v-for="(item, index) in form.designRequirements" :key="index">
+                  <dt>{{ item.label || '未命名' }}</dt>
+                  <dd>{{ item.value || '未填写' }}</dd>
                 </div>
-              </section>
+                <p v-if="!form.designRequirements.length" class="ax-hint">还没有设计需求，点「展开编辑」添加。</p>
+              </dl>
+              <div v-else class="tw-edit-list">
+                <div v-for="(item, index) in form.designRequirements" :key="index" class="tw-req-row">
+                  <input v-model="item.label" class="ax-input" aria-label="需求名称" placeholder="例如：尺寸规格" />
+                  <textarea v-model="item.value" class="ax-textarea" rows="2" aria-label="需求内容" placeholder="填写这个项目的具体设计要求"></textarea>
+                  <button type="button" class="tw-remove" title="删除这一项" aria-label="删除设计需求" @click="removeDesignRequirement(index)"><AdminIcon name="trash" plain /></button>
+                </div>
+                <p v-if="!form.designRequirements.length" class="ax-hint">还没有设计需求，点「新增要求」加一条。</p>
+              </div>
+            </article>
 
-              <section class="builder-section full supporting-material-builder">
-                <div class="builder-section-head">
-                  <div><span>05</span><strong>用户端配套资料</strong></div>
-                  <div class="builder-section-actions">
-                    <button v-if="materialPanelOpen" type="button" class="add-row-btn" @click="addMaterial">新增资料</button>
-                    <button type="button" class="expand-section-btn" @click="materialPanelOpen = !materialPanelOpen">{{ materialPanelOpen ? '收起' : '展开编辑' }}</button>
+            <!-- 5 配套资料 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">5</span>用户端配套资料</h3>
+                  <p>参考图、线稿、配色和字体；图片会自动压缩后保存。</p>
+                </div>
+                <div class="ax-actions">
+                  <button v-if="materialPanelOpen" type="button" class="ax-btn is-sm" @click="addMaterial"><AdminIcon name="plus" plain />新增资料</button>
+                  <button type="button" class="ax-btn is-sm is-ghost" @click="materialPanelOpen = !materialPanelOpen">{{ materialPanelOpen ? '收起' : '展开编辑' }}</button>
+                </div>
+              </div>
+              <div v-if="!materialPanelOpen" class="tw-material-strip">
+                <div v-for="item in form.materials" :key="item.id" class="tw-material-chip">
+                  <span class="tw-thumb" :class="`is-${item.type}`">
+                    <img v-if="item.preview" :src="item.preview" alt="" />
+                    <AdminIcon v-else :name="materialIcon(item.type)" plain />
+                  </span>
+                  <span class="tw-material-name">
+                    <strong>{{ item.title || '未命名资料' }}</strong>
+                    <small>{{ materialTypeLabel(item.type) }}</small>
+                  </span>
+                </div>
+                <p v-if="!form.materials.length" class="ax-hint">还没有配套资料，点「展开编辑」添加。</p>
+              </div>
+              <div v-else class="tw-edit-list">
+                <div v-for="(item, index) in form.materials" :key="item.id" class="tw-material-row">
+                  <span class="tw-thumb is-lg" :class="`is-${item.type}`">
+                    <img v-if="item.preview" :src="item.preview" :alt="item.title" />
+                    <AdminIcon v-else :name="materialIcon(item.type)" plain />
+                  </span>
+                  <div class="tw-material-fields">
+                    <select v-model="item.type" class="ax-select" aria-label="资料类型">
+                      <option value="image">参考图片</option>
+                      <option value="lineart">线稿</option>
+                      <option value="palette">配色</option>
+                      <option value="font">字体</option>
+                    </select>
+                    <input v-model="item.title" class="ax-input" aria-label="资料名称" placeholder="资料名称" />
+                    <input v-model="item.description" class="ax-input" aria-label="资料说明" placeholder="资料说明" />
                   </div>
-                </div>
-                <p class="question-result-note">图片会自动压缩后保存；配色、字体和线稿可使用文字说明生成缩略卡片。</p>
-                <div v-if="!materialPanelOpen" class="collapsed-section-summary material-summary-strip">
-                  <strong>{{ form.materials.length }} 项配套资料</strong>
-                  <span v-for="item in form.materials.slice(0, 6)" :key="item.id">{{ materialTypeIcon(item.type) }} {{ item.title }}</span>
-                </div>
-                <div v-else class="material-editor-list expanded-section-body">
-                  <article v-for="(item, index) in form.materials" :key="item.id" class="material-editor-row">
-                    <div class="material-editor-preview" :class="`type-${item.type}`">
-                      <img v-if="item.preview" :src="item.preview" :alt="item.title" />
-                      <span v-else>{{ materialTypeIcon(item.type) }}</span>
-                    </div>
-                    <div class="material-editor-fields">
-                      <select v-model="item.type" aria-label="资料类型">
-                        <option value="image">参考图片</option>
-                        <option value="lineart">线稿</option>
-                        <option value="palette">配色</option>
-                        <option value="font">字体</option>
-                      </select>
-                      <input v-model="item.title" aria-label="资料名称" placeholder="资料名称" />
-                      <input v-model="item.description" aria-label="资料说明" placeholder="资料说明" />
-                    </div>
-                    <label v-if="['image', 'lineart'].includes(item.type)" class="material-upload-button">
-                      选择图片
-                      <input type="file" accept="image/*" @change="handleMaterialFile($event, index)" />
-                    </label>
-                    <button type="button" class="remove-row-btn" aria-label="删除配套资料" @click="removeMaterial(index)">×</button>
-                  </article>
-                </div>
-              </section>
-
-              <section class="builder-section full authorization-section">
-                <div class="builder-section-head">
-                  <div>
-                    <span>06</span>
-                    <strong>授权范围</strong>
-                  </div>
-                  <small>仅已授权班级和用户可在用户端学习</small>
-                </div>
-                <div class="section-grid">
-                  <label>
-                    授权班级
-                    <input v-model="classText" placeholder="AI创意美术A班, 进阶设计班" />
+                  <label v-if="['image', 'lineart'].includes(item.type)" class="ax-btn is-sm tw-file-btn">
+                    {{ item.preview ? '换图片' : '选择图片' }}
+                    <input class="tw-file" type="file" accept="image/*" @change="handleMaterialFile($event, index)" />
                   </label>
-                  <label>
-                    授权用户
-                    <input v-model="studentText" placeholder="小画家阿橙, 晨晨, 可可" />
+                  <button type="button" class="tw-remove" title="删除这一项" aria-label="删除配套资料" @click="removeMaterial(index)"><AdminIcon name="trash" plain /></button>
+                </div>
+                <p v-if="!form.materials.length" class="ax-hint">还没有配套资料，点「新增资料」加一条。</p>
+              </div>
+            </article>
+
+            <!-- 6 H5 报告风格 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">6</span>H5 报告风格</h3>
+                  <p>{{ teacherH5AdminEnabled ? '按这门课设置小画家能选哪些报告风格。' : '管理员已统一为平台智能选择。' }}</p>
+                </div>
+              </div>
+              <p v-if="teacherH5Runtime.loading" class="ax-hint">正在读取管理员设置…</p>
+              <template v-else>
+                <div class="ax-option-grid">
+                  <label class="ax-option">
+                    <input v-model="form.h5ReportSettings.selectionMode" type="radio" value="auto" />
+                    <span><strong>智能自动选择</strong><small>根据课程主题自动匹配已发布的模板（默认）</small></span>
+                  </label>
+                  <label class="ax-option" :class="{ 'is-disabled': !teacherH5AdminEnabled }">
+                    <input v-model="form.h5ReportSettings.selectionMode" type="radio" value="student" :disabled="!teacherH5AdminEnabled" />
+                    <span><strong>允许小画家选择</strong><small>只能选管理员和这门课都允许的模板</small></span>
                   </label>
                 </div>
-              </section>
-            </div>
-          </article>
+                <div v-if="teacherH5AdminEnabled && form.h5ReportSettings.selectionMode === 'student'" class="tw-templates">
+                  <label v-for="template in teacherH5Runtime.templates" :key="template.id" class="ax-option tw-template">
+                    <input type="checkbox" :checked="form.h5ReportSettings.allowedTemplateIds.includes(template.id)" @change="toggleTeacherH5Template(template.id)" />
+                    <i class="tw-swatch" :style="teacherTemplateSwatch(template)" aria-hidden="true"></i>
+                    <span><strong>{{ template.name }}</strong><small>{{ template.description || 'H5 报告风格' }}</small></span>
+                  </label>
+                  <p v-if="!teacherH5Runtime.templates.length" class="ax-hint">管理员还没有为这个年龄段发布可用的模板。</p>
+                </div>
+                <label v-if="teacherH5AdminEnabled && form.h5ReportSettings.selectionMode === 'student' && teacherAllowedH5Templates.length" class="ax-field tw-default-template">
+                  <span>这门课的默认模板</span>
+                  <select v-model="form.h5ReportSettings.defaultTemplateId">
+                    <option value="">跟随平台智能推荐</option>
+                    <option v-for="template in teacherAllowedH5Templates" :key="template.id" :value="template.id">{{ template.name }}</option>
+                  </select>
+                </label>
+                <p v-if="!teacherH5AdminEnabled" class="ax-note is-plain">平台已关闭小画家自主选择，这门课会使用智能自动选择。</p>
+              </template>
+            </article>
 
-          <aside class="panel editor-preview">
-            <div class="panel-title">
-              <h3>课程预览</h3>
-              <span>{{ categoryLabel(form.category) }}</span>
-            </div>
-            <div class="preview-cover">
-              <b>{{ categoryLabel(form.category).slice(0, 1) }}</b>
-              <strong>{{ form.title }}</strong>
-            </div>
-            <p>{{ form.description }}</p>
-            <div class="preview-meta">
-              <span>{{ form.difficulty }}</span>
-              <span>PPT {{ parsedPpt.length }} 页</span>
-              <span>问答 {{ parsedQuestions.length }} 题</span>
-            </div>
-            <BaseButton block @click="saveCourse">发布并授权到用户端</BaseButton>
+            <!-- 7 授权范围 -->
+            <article class="ax-card">
+              <div class="ax-card-head">
+                <div>
+                  <h3><span class="tw-step">7</span>发给谁</h3>
+                  <p>只有发到的班级和小画家能在用户端看到这门课；多个名字用逗号隔开。</p>
+                </div>
+              </div>
+              <div class="ax-form">
+                <label class="ax-field">
+                  <span>授权班级</span>
+                  <input v-model="classText" placeholder="AI创意美术A班, 进阶设计班" />
+                </label>
+                <label class="ax-field">
+                  <span>授权小画家</span>
+                  <input v-model="studentText" placeholder="小画家阿橙, 晨晨, 可可" />
+                </label>
+              </div>
+            </article>
+          </div>
+
+          <!-- 右侧：课程预览 + 发布前检查 -->
+          <aside class="tw-editor-side">
+            <article class="ax-card tw-preview">
+              <div class="tw-preview-cover" :style="{ '--tint': categoryTint(form.category) }">
+                <AdminIcon name="courses" size="xl" :tint="categoryTint(form.category)" />
+                <span class="tw-preview-cat">{{ categoryLabel(form.category) }}</span>
+              </div>
+              <h3>{{ form.title || '未命名课程' }}</h3>
+              <p>{{ form.description || '还没有课程简介' }}</p>
+              <div class="ax-tags">
+                <span v-if="form.difficulty" class="ax-tag">{{ form.difficulty }}</span>
+                <span class="ax-tag">PPT {{ parsedPpt.length }} 页</span>
+                <span class="ax-tag">问答 {{ parsedQuestions.length }} 题</span>
+              </div>
+              <ul class="tw-checklist" aria-label="发布前检查">
+                <li v-for="item in publishChecklist" :key="item.label" :class="{ 'is-done': item.done }">
+                  <span class="tw-check" aria-hidden="true"><AdminIcon v-if="item.done" name="check" plain /></span>
+                  <span>{{ item.label }}</span>
+                  <small>{{ item.done ? item.doneText : item.todoText }}</small>
+                </li>
+              </ul>
+              <button type="button" class="ax-btn is-primary is-block" @click="saveCourse">发布并授权到用户端</button>
+              <small class="ax-hint tw-preview-hint">发布后会同步到管理员的课程库。</small>
+            </article>
           </aside>
-        </section>
+        </div>
+      </section>
 
-        <section v-else-if="activeMenu === 'courseLibrary'" class="edu-dense-page course-library-page">
-          <div class="library-title-row">
-            <div>
-              <h3>课程库</h3>
-              <p>统一存储讲师上传的视频、PPT、题目和授权信息</p>
-            </div>
-            <strong>{{ teacherVisibleCourses.length }} 门课程</strong>
+      <!-- ================= 课程库 ================= -->
+      <section v-else-if="activeMenu === 'courseLibrary'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>课程库</h2>
+            <p>自己上传的课、管理员授权给你所在权限组的课都在这里；可以发放、编辑、复制。</p>
           </div>
-          <div class="edu-toolbar">
-            <button type="button" class="green-btn" :disabled="!canUploadCourse" @click="activeMenu = 'courseManage'">+ 上传新课程</button>
-            <button type="button" :disabled="!canUploadCourse" @click="resetForm(); activeMenu = 'courseManage'">新建空白课程</button>
-            <button type="button" :disabled="!selectedCourseIds.length" @click="bulkDeleteCourses">批量删除</button>
-            <button type="button" :disabled="!selectedCourseIds.length" @click="clearCourseSelection">取消选择</button>
-            <span></span>
-            <label>课程名称 <input v-model="courseKeyword" placeholder="搜索课程" /></label>
+          <div class="ax-head-actions">
+            <button type="button" class="ax-btn" :disabled="!canUploadCourse" @click="resetForm(); selectMenu('courseManage')">新建空白课程</button>
+            <button type="button" class="ax-btn is-primary" :disabled="!canUploadCourse" @click="selectMenu('courseManage')"><AdminIcon name="upload" plain />上传新课程</button>
           </div>
-          <div class="filter-line">
-            <span>课程类型、年龄段、授权班级、发布状态</span>
-            <label><input type="checkbox" :checked="allLibraryCoursesSelected" @change="toggleAllLibraryCourses" /> 全选当前列表</label>
-            <b>已选 {{ selectedCourseIds.length }} 门</b>
-            <em v-if="courseAccessReady && !canUploadCourse" class="library-perm-hint">当前账号还没有上传课程的权限，请联系管理员在「账号权限 → 权限组」里开通</em>
-          </div>
-          <section v-if="distributionCourse" class="course-distribution-panel">
-            <header>
-              <div>
-                <strong>发放课程：{{ distributionCourse.title }}</strong>
-                <small>可同时发放给多个班级或指定用户，保存后用户端立即可见。</small>
-              </div>
-              <button type="button" aria-label="关闭发放面板" @click="closeCourseDistribution">×</button>
-            </header>
-            <div class="distribution-options">
-              <fieldset>
-                <legend>指定班级</legend>
-                <label v-for="item in classOptions" :key="item.value">
-                  <input v-model="distributionClassDraft" type="checkbox" :value="item.value" /> {{ item.label }}
-                </label>
-                <small v-if="!classOptions.length">{{ distributionOptionsError || '机构里还没有班级，请管理员先在「班级管理」里建班级。' }}</small>
-              </fieldset>
-              <fieldset>
-                <legend>指定用户</legend>
-                <label v-for="item in studentOptions" :key="item.value">
-                  <input v-model="distributionStudentDraft" type="checkbox" :value="item.value" /> {{ item.label }}
-                </label>
-                <small v-if="!studentOptions.length">{{ distributionOptionsError || '机构里还没有小画家账号。' }}</small>
-              </fieldset>
-            </div>
-            <footer>
-              <button type="button" @click="clearCourseDistribution">清空选择</button>
-              <button type="button" class="green-btn" @click="saveCourseDistribution">保存发放</button>
-            </footer>
-          </section>
-          <div class="dense-table-wrap library-table-wrap">
-            <table class="dense-table library-table">
-              <thead>
-                <tr>
-                  <th><input type="checkbox" :checked="allLibraryCoursesSelected" @change="toggleAllLibraryCourses" /></th>
-                  <th>课程名称</th>
-                  <th>分类</th>
-                  <th>年龄段</th>
-                  <th>视频</th>
-                  <th>PPT</th>
-                  <th>授权班级</th>
-                  <th>状态</th>
-                  <th>更新时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="!filteredLibraryCourses.length" class="library-empty-row">
-                  <td colspan="10">{{ courseStore.loading && !courseStore.loaded ? '正在读取课程…' : courseStore.loadError ? courseStore.loadError : courseKeyword.trim() ? '没有找到这门课程' : '课程库里还没有课程。自己上传的课、管理员授权给你所在权限组的课都会显示在这里。' }}</td>
-                </tr>
-                <tr v-for="course in filteredLibraryCourses" :key="course.id">
-                  <td><input type="checkbox" :disabled="!isOwnCourse(course)" :checked="selectedCourseIds.includes(course.id)" @change="toggleCourseSelection(course.id)" /></td>
-                  <td class="course-name-cell">
-                    <a>{{ safeText(course.title, '趣味设计课程') }}</a>
-                    <small>{{ isOwnCourse(course) ? '我的上传' : serverAuthMode ? '权限组授权，复制后可发放' : '权限组授权' }}</small>
-                  </td>
-                  <td>{{ categoryLabel(course.category) }}</td>
-                  <td>{{ safeText(course.difficulty || course.ageRange, '青少年进阶') }}</td>
-                  <td>{{ courseVideoText(course) }}</td>
-                  <td>{{ coursePptText(course) }}</td>
-                  <td :title="courseAudienceText(course)">{{ courseAudienceText(course) }}</td>
-                  <td><em class="tag-green">{{ course.status === 'published' ? '已发布' : '草稿' }}</em></td>
-                  <td>{{ formatDate(course.updatedAt || course.createdAt) }}</td>
-                  <td class="row-actions">
-                    <button v-if="canDistributeCourse(course)" @click="openCourseDistribution(course)">发放</button>
-                    <button v-if="isOwnCourse(course)" @click="editCourse(course)">编辑</button>
-                    <button v-if="canUseCourse(course)" @click="duplicateCourse(course)">复制</button>
-                    <button v-if="isOwnCourse(course)" @click="deleteCourse(course.id)">删除</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <footer class="pagination-bar">共 {{ filteredLibraryCourses.length }} 门<button>10条/页</button><b>1</b><span>{{ serverAuthMode ? '课程库数据保存在服务器，换设备登录也能看到' : '课程库数据已保存到本地 Mock 存储' }}</span></footer>
-        </section>
+        </header>
 
-        <section v-else-if="activeMenu === 'classManage'" class="edu-dense-page">
-          <div class="edu-tabs">
-            <button type="button" class="active">一对多</button>
-            <button type="button">一对一</button>
-          </div>
-          <div class="edu-subtabs">
-            <button type="button" class="active">在课</button>
-            <button type="button">已结班</button>
-          </div>
-          <div class="edu-toolbar">
-            <label>班级 <input placeholder="班级名称" /></label>
-            <button type="button" class="green-btn">查询</button>
-            <button type="button">重置</button>
-            <span></span>
-            <button type="button" class="green-btn">+ 新增班级</button>
-            <button type="button">班级分组</button>
-            <button type="button">导入/导出⌄</button>
-            <button type="button" class="orange-btn">批量结班</button>
-          </div>
-          <div class="filter-line">
-            <span>班级讲师⌄</span><span>关联课程⌄</span><span>助教⌄</span><span>教室⌄</span><span>班级分组⌄</span>
-            <label><input type="radio" /> 满班</label><label><input type="radio" /> 未满班</label><label><input type="radio" /> 已排课</label>
-            <label><input type="checkbox" /> 允许充值上课</label>
-          </div>
-          <div class="dense-table-wrap">
-            <table class="dense-table">
-              <thead>
-                <tr>
-                  <th><input type="checkbox" /></th>
-                  <th>排序</th>
-                  <th>班级名称</th>
-                  <th>类型</th>
-                  <th>关联课程</th>
-                  <th>班级讲师</th>
-                  <th>人数/容量</th>
-                  <th>教学进度</th>
-                  <th>开课日期</th>
-                  <th>助教</th>
-                  <th>教室</th>
-                  <th>在线选班</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in classRows" :key="row.name">
-                  <td><input type="checkbox" /></td>
-                  <td class="sort-icons">↓ ↑ 不</td>
-                  <td><a>{{ row.name }}</a></td>
-                  <td><em class="tag-green">{{ row.type }}</em></td>
-                  <td>{{ row.course }}</td>
-                  <td>{{ row.teacher }}</td>
-                  <td>{{ row.capacity }}</td>
-                  <td><span class="mini-progress"><i :style="{ width: row.progressWidth }"></i></span>{{ row.progress }}</td>
-                  <td>{{ row.startDate }}</td>
-                  <td>{{ row.assistant }}</td>
-                  <td>{{ row.room }}</td>
-                  <td><span class="switch-off">禁</span></td>
-                  <td class="row-actions"><button>用户</button><button>课表</button><button>更多⌄</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <footer class="pagination-bar">共55条 <button>10条/页</button><b>1</b><button>2</button><button>3</button><button>4</button><span>前往 1 页</span></footer>
-        </section>
+        <p v-if="courseAccessReady && !canUploadCourse" class="ax-note is-warn">当前账号还没有上传课程的权限，请联系管理员在「账号权限 → 权限组」里开通。</p>
 
-        <section v-else-if="activeMenu === 'students'" class="edu-dense-page">
-          <div class="edu-tabs">
-            <button type="button" class="active">在读用户</button>
-            <button type="button">历史用户</button>
-            <button type="button">报课明细</button>
-            <button type="button">停课记录</button>
-            <button type="button">上课讲师设置</button>
-          </div>
-          <div class="edu-subtabs notice-line">
-            <button type="button" class="active">全部</button>
-            <button type="button">今日待跟进 <em>(0)</em></button>
-            <button type="button">过去未跟进 <em>(3)</em></button>
-            <span>用户微信绑定率约90%，提升用户绑定率，能增强用户体验感，提高续费率。</span>
-          </div>
-          <div class="edu-toolbar">
-            <label>用户 <input placeholder="姓名/手机号" /></label>
-            <label>考勤卡号 <input placeholder="请输入卡号或刷卡" /></label>
-            <button type="button" class="green-btn">查询</button>
-            <button type="button">重置</button>
-            <button type="button">更多搜索⌄</button>
-            <span></span>
-            <button type="button" class="green-btn">+ 用户报名</button>
-            <button type="button">导入/导出⌄</button>
-            <button type="button">批量操作⌄</button>
-          </div>
-          <div class="filter-line">
-            <span>报读课程⌄</span><span>课程状态⌄</span><span>报读班级⌄</span><span>班级讲师⌄</span><span>年级⌄</span><span>用户生日⌄</span>
-            <label><input type="checkbox" /> 待分班</label><label><input type="checkbox" /> 在课用户</label><label><input type="checkbox" /> 已停课</label><label><input type="checkbox" /> 有欠课</label>
-          </div>
-          <div class="dense-table-wrap">
-            <table class="dense-table">
-              <thead>
-                <tr>
-                  <th><input type="checkbox" /></th>
-                  <th>姓名</th>
-                  <th>联系方式</th>
-                  <th>用户来源</th>
-                  <th>考勤卡</th>
-                  <th>在读课程</th>
-                  <th>报读班级</th>
-                  <th>购买课数</th>
-                  <th>剩余课数</th>
-                  <th>年级</th>
-                  <th>备注</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in studentTableRows" :key="row.name">
-                  <td><input type="checkbox" /></td>
-                  <td><a>{{ row.name }} {{ row.gender }}</a></td>
-                  <td>{{ row.contact }}</td>
-                  <td>{{ row.source }}</td>
-                  <td>▣</td>
-                  <td>{{ row.course }}</td>
-                  <td>{{ row.className }}</td>
-                  <td>{{ row.buyLessons }}</td>
-                  <td>{{ row.leftLessons }}</td>
-                  <td>{{ row.grade }}</td>
-                  <td>{{ row.remark }}</td>
-                  <td class="row-actions"><button>报名</button><button>编辑</button><button>更多⌄</button></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section v-else-if="activeMenu === 'schedule'" class="schedule-page">
-          <div class="edu-tabs">
-            <button type="button" class="active">视图模式</button>
-            <button type="button">列表模式</button>
-            <button type="button">排课记录</button>
-            <button type="button">临时用户记录</button>
-          </div>
-          <div class="schedule-tools">
-            <div>
-              <button type="button" class="active">按时间</button>
-              <button type="button">按讲师</button>
-              <button type="button">按班级</button>
-              <button type="button">按教室</button>
-            </div>
-            <div>
-              <button type="button" class="green-btn">快速排课</button>
-              <button type="button">更多⌄</button>
-              <button type="button">简单模式⌄</button>
-            </div>
-          </div>
-          <div class="filter-line">
-            <span>班级⌄</span><span>用户⌄</span><span>课程⌄</span><span>上课讲师⌄</span><span>助教⌄</span><span>教室⌄</span><span>授课方式⌄</span>
-            <button type="button">重置</button>
-          </div>
-          <div class="week-title"><button>‹</button><strong>2026-07-13 ~ 2026-07-19</strong><button>›</button></div>
-          <div class="schedule-board">
-            <div class="time-head"></div>
-            <div v-for="day in weekDays" :key="day.date" class="day-head">
-              <strong>{{ day.label }}</strong>
-              <span>共 {{ day.count }} 节课</span>
-            </div>
-            <template v-for="period in periods" :key="period">
-              <div class="period-cell">{{ period }}</div>
-              <div v-for="day in weekDays" :key="`${period}-${day.date}`" class="schedule-cell">
-                <article v-for="lesson in lessonsBy(day.key, period)" :key="lesson.title" :class="lesson.tone">
-                  <span>{{ lesson.title }}</span>
-                  <b>{{ lesson.time }}</b>
-                </article>
-              </div>
-            </template>
-          </div>
-        </section>
-
-        <section v-else-if="activeMenu === 'attendanceRecord'" class="panel data-table">
-          <div class="panel-title">
-            <h3>点名记录</h3>
-            <button type="button">今日点名</button>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>日期</th>
-                <th>班级</th>
-                <th>到课</th>
-                <th>请假</th>
-                <th>缺勤</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in attendanceRows" :key="row.date">
-                <td>{{ row.date }}</td>
-                <td>{{ row.className }}</td>
-                <td>{{ row.present }}</td>
-                <td>{{ row.leave }}</td>
-                <td>{{ row.absent }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section v-else-if="activeMenu === 'booking'" class="panel data-table">
-          <div class="panel-title">
-            <h3>约课管理</h3>
-            <button type="button">确认约课</button>
-          </div>
-          <div class="lesson-list">
-            <div v-for="row in bookingRows" :key="row.name" class="lesson-row">
-              <strong>{{ row.name }} · {{ row.course }}</strong>
-              <span>{{ row.time }} · {{ row.status }}</span>
-              <em>{{ row.action }}</em>
-            </div>
-          </div>
-        </section>
-
-        <section v-else-if="['quickDeduct', 'classCharge', 'leaveManage'].includes(activeMenu)" class="dashboard-layout">
-          <article v-for="item in dailyCards" :key="item.label" class="summary-card">
+        <div class="ax-stats is-3">
+          <article v-for="item in libraryStats" :key="item.label" class="ax-stat">
             <span>{{ item.label }}</span>
             <strong>{{ item.value }}</strong>
             <small>{{ item.note }}</small>
           </article>
-          <article class="panel data-table">
-            <div class="panel-title">
-              <h3>{{ currentMenu?.title }}</h3>
-              <button type="button">{{ activeMenu === 'leaveManage' ? '处理请假' : '确认扣课' }}</button>
-            </div>
-            <table>
+        </div>
+
+        <article class="ax-card is-flush tw-library-card">
+          <div class="ax-toolbar">
+            <label class="ax-search">
+              <input v-model="courseKeyword" type="search" placeholder="搜索课程名称、分类、班级" aria-label="搜索课程" />
+            </label>
+            <span class="ax-grow"></span>
+            <template v-if="selectedCourseIds.length">
+              <span class="ax-count">已选 {{ selectedCourseIds.length }} 门</span>
+              <button type="button" class="ax-btn is-sm" @click="clearCourseSelection">取消选择</button>
+              <button type="button" class="ax-btn is-sm is-danger" @click="confirmBulkDeleteCourses"><AdminIcon name="trash" plain />批量删除</button>
+            </template>
+            <span v-else class="ax-count">共 {{ filteredLibraryCourses.length }} 门</span>
+          </div>
+          <div v-if="!filteredLibraryCourses.length" class="ax-empty tw-table-empty">
+            <strong>{{ courseStore.loading && !courseStore.loaded ? '正在读取课程…' : courseStore.loadError ? '课程读取失败' : courseKeyword.trim() ? '没有找到这门课程' : '课程库里还没有课程' }}</strong>
+            <span>{{ courseStore.loadError || (courseKeyword.trim() ? '换个关键词试试。' : '自己上传的课、管理员授权给你所在权限组的课都会显示在这里。') }}</span>
+          </div>
+          <div v-else class="ax-table-wrap">
+            <table class="ax-table tw-library-table">
               <thead>
                 <tr>
-                  <th>用户</th>
+                  <th class="is-check"><input type="checkbox" :checked="allLibraryCoursesSelected" :disabled="!filteredLibraryCourses.some(isOwnCourse)" title="全选我上传的课程" aria-label="全选当前列表里我上传的课程" @change="toggleAllLibraryCourses" /></th>
+                  <th class="tw-col-course">课程</th>
+                  <th class="tw-col-category">分类 / 年龄段</th>
+                  <th class="tw-col-assets">课件</th>
+                  <th class="tw-col-audience">发放范围</th>
+                  <th class="tw-col-status">状态</th>
+                  <th class="tw-col-updated">更新</th>
+                  <th class="is-right tw-col-actions">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="course in filteredLibraryCourses" :key="course.id" :class="{ 'is-selected': selectedCourseIds.includes(course.id) }">
+                  <td class="is-check">
+                    <input type="checkbox" :disabled="!isOwnCourse(course)" :title="isOwnCourse(course) ? '选择' : '只能选择自己上传的课程'" :checked="selectedCourseIds.includes(course.id)" :aria-label="`选择 ${safeText(course.title, '趣味设计课程')}`" @change="toggleCourseSelection(course.id)" />
+                  </td>
+                  <td class="tw-col-course">
+                    <div class="tw-course-cell">
+                      <AdminIcon name="courses" size="sm" :tint="categoryTint(course.category)" />
+                      <div class="ax-cell-main">
+                        <strong class="tw-clamp-2" :title="safeText(course.title, '趣味设计课程')">{{ safeText(course.title, '趣味设计课程') }}</strong>
+                        <small>{{ isOwnCourse(course) ? '我的上传' : serverAuthMode ? '权限组授权，复制后可发放' : '权限组授权' }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="tw-col-category">
+                    <div class="ax-cell-main">
+                      <strong>{{ categoryLabel(course.category) }}</strong>
+                      <small>{{ safeText(course.difficulty || course.ageRange, '青少年进阶') }}</small>
+                    </div>
+                  </td>
+                  <td class="tw-col-assets">
+                    <div class="tw-assets">
+                      <span :class="{ 'is-missing': courseVideoText(course) === '未上传' }" :title="courseVideoText(course)"><AdminIcon name="video" plain />{{ courseVideoText(course) }}</span>
+                      <span :class="{ 'is-missing': coursePptText(course) === '未上传' }" :title="coursePptText(course)"><AdminIcon name="layers" plain />{{ coursePptText(course) }}</span>
+                    </div>
+                  </td>
+                  <td class="tw-col-audience">
+                    <span class="tw-audience" :class="{ 'is-missing': courseAudienceText(course) === '暂未发放' }" :title="courseAudienceText(course)">{{ courseAudienceText(course) }}</span>
+                  </td>
+                  <td class="tw-col-status"><span class="ax-pill" :class="course.status === 'published' ? 'is-ok' : 'is-muted'">{{ course.status === 'published' ? '已发布' : '草稿' }}</span></td>
+                  <td class="is-num tw-col-updated">{{ formatDate(course.updatedAt || course.createdAt) }}</td>
+                  <td class="is-right tw-col-actions">
+                    <div class="ax-actions">
+                      <button v-if="canDistributeCourse(course)" type="button" class="ax-btn is-sm is-soft" @click="openCourseDistribution(course)">发放</button>
+                      <button v-if="isOwnCourse(course)" type="button" class="ax-btn is-sm" @click="editCourse(course)">编辑</button>
+                      <button v-if="canUseCourse(course)" type="button" class="ax-btn is-sm" @click="duplicateCourse(course)">复制</button>
+                      <button v-if="isOwnCourse(course)" type="button" class="ax-btn is-sm is-danger" @click="confirmDeleteCourse(course)">删除</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <footer class="ax-pager tw-table-foot">
+            <span>{{ serverAuthMode ? '课程库存在服务器上，换设备登录也能看到。' : '演示模式：课程库只存在这台设备的浏览器里。' }}</span>
+          </footer>
+        </article>
+      </section>
+
+      <!-- ================= 以下页面：样例数据（还没接后台） ================= -->
+      <!-- 正式用户 -->
+      <section v-else-if="activeMenu === 'students'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>正式用户</h2>
+            <p>在读小画家的联系方式、报读班级和剩余课时。</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面的名单是虚构的，用来看排版。</span></p>
+        <article class="ax-card is-flush">
+          <div class="ax-toolbar">
+            <label class="ax-search"><input v-model="sampleKeyword" type="search" placeholder="搜索姓名、课程、班级" aria-label="搜索小画家" /></label>
+            <span class="ax-grow"></span>
+            <span class="ax-count">共 {{ filteredStudentTableRows.length }} 人</span>
+          </div>
+          <div v-if="!filteredStudentTableRows.length" class="ax-empty is-compact tw-table-empty"><strong>没有找到</strong><span>换个关键词试试。</span></div>
+          <div v-else class="ax-table-wrap">
+            <table class="ax-table">
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>联系方式</th>
+                  <th>在读课程</th>
+                  <th>报读班级</th>
+                  <th>剩余课时</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in filteredStudentTableRows" :key="row.name">
+                  <td>
+                    <div class="ax-person is-static">
+                      <AdminAvatar role="student" />
+                      <div class="ax-cell-main"><strong>{{ row.name }}</strong><small>来源：{{ row.source }}</small></div>
+                    </div>
+                  </td>
+                  <td class="is-nowrap">{{ row.contact }}</td>
+                  <td>{{ row.course }}</td>
+                  <td><span class="tw-ellipsis tw-cell-wide" :title="row.className">{{ row.className }}</span></td>
+                  <td>
+                    <div class="tw-meter" :class="{ 'is-low': lessonPercent(row.leftLessons, row.buyLessons) <= 25 }">
+                      <span class="tw-bar"><i :style="{ width: `${lessonPercent(row.leftLessons, row.buyLessons)}%` }"></i></span>
+                      <small>{{ lessonCount(row.leftLessons) }} / {{ row.buyLessons }}</small>
+                    </div>
+                  </td>
+                  <td class="tw-muted">{{ row.remark }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- 班级管理 -->
+      <section v-else-if="activeMenu === 'classManage'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>班级管理</h2>
+            <p>班级、关联课程、人数和教学进度。</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面的班级是虚构的，用来看排版。真实班级在管理后台「账号与权限 → 分部与班级」里管理。</span></p>
+        <article class="ax-card is-flush">
+          <div class="ax-toolbar">
+            <label class="ax-search"><input v-model="sampleKeyword" type="search" placeholder="搜索班级、课程、讲师" aria-label="搜索班级" /></label>
+            <span class="ax-grow"></span>
+            <span class="ax-count">共 {{ filteredClassRows.length }} 个班</span>
+          </div>
+          <div v-if="!filteredClassRows.length" class="ax-empty is-compact tw-table-empty"><strong>没有找到</strong><span>换个关键词试试。</span></div>
+          <div v-else class="ax-table-wrap">
+            <table class="ax-table">
+              <thead>
+                <tr>
+                  <th>班级</th>
+                  <th>关联课程</th>
+                  <th>讲师</th>
+                  <th>人数</th>
+                  <th>教学进度</th>
+                  <th>开课日期</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, index) in filteredClassRows" :key="`${row.name}-${index}`">
+                  <td>
+                    <div class="ax-cell-main">
+                      <strong class="tw-ellipsis tw-cell-wide" :title="row.name">{{ row.name }}</strong>
+                      <small>{{ row.type }}</small>
+                    </div>
+                  </td>
+                  <td><span class="tw-ellipsis" :title="row.course">{{ row.course }}</span></td>
+                  <td class="is-nowrap">{{ row.teacher }}</td>
+                  <td>
+                    <div class="tw-meter">
+                      <span class="tw-bar"><i :style="{ width: `${fractionPercent(row.capacity)}%` }"></i></span>
+                      <small>{{ row.capacity }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="tw-meter is-green">
+                      <span class="tw-bar"><i :style="{ width: row.progressWidth }"></i></span>
+                      <small>{{ row.progress }}</small>
+                    </div>
+                  </td>
+                  <td class="is-num">{{ row.startDate }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- 课表中心 -->
+      <section v-else-if="activeMenu === 'schedule'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>课表中心</h2>
+            <p>按周查看每个班的上课时间。</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面是一周的样例课表，用来看排版。</span></p>
+        <article class="ax-card is-flush tw-week">
+          <div class="ax-card-head">
+            <div>
+              <h3>2026-07-13 ～ 07-19</h3>
+              <p>这周共 {{ weekLessonTotal }} 节课</p>
+            </div>
+            <div class="tw-legend">
+              <span><i class="is-done"></i>已上</span>
+              <span><i class="is-todo"></i>待上</span>
+            </div>
+          </div>
+          <div class="tw-week-scroll">
+            <div class="tw-week-grid">
+              <div class="tw-week-corner"></div>
+              <div v-for="day in weekDays" :key="day.date" class="tw-day-head">
+                <strong>{{ weekdayName(day) }}</strong>
+                <small>{{ day.date.slice(5) }} · {{ day.count }} 节</small>
+              </div>
+              <template v-for="period in periods" :key="period">
+                <div class="tw-period">{{ period }}</div>
+                <div v-for="day in weekDays" :key="`${period}-${day.date}`" class="tw-cell">
+                  <article v-for="(lesson, index) in lessonsBy(day.key, period)" :key="`${lesson.title}-${index}`" class="tw-lesson" :class="lesson.tone === 'gray' ? 'is-done' : 'is-todo'">
+                    <b>{{ lesson.time }}</b>
+                    <span>{{ lesson.title }}</span>
+                  </article>
+                </div>
+              </template>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 点名记录 -->
+      <section v-else-if="activeMenu === 'attendanceRecord'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>点名记录</h2>
+            <p>每次上课的到课、请假和缺勤人数。</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面的记录是虚构的，用来看排版。</span></p>
+        <article class="ax-card is-flush">
+          <div class="ax-table-wrap">
+            <table class="ax-table">
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>班级</th>
+                  <th>到课</th>
+                  <th>请假</th>
+                  <th>缺勤</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in attendanceRows" :key="row.date">
+                  <td class="is-num">{{ row.date }}</td>
+                  <td><strong class="tw-strong">{{ row.className }}</strong></td>
+                  <td><span class="ax-pill is-ok">{{ row.present }}</span></td>
+                  <td><span class="ax-pill" :class="row.leave === '0人' ? 'is-muted' : 'is-info'">{{ row.leave }}</span></td>
+                  <td><span class="ax-pill" :class="row.absent === '0人' ? 'is-muted' : 'is-bad'">{{ row.absent }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- 约课管理 -->
+      <section v-else-if="activeMenu === 'booking'" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>约课管理</h2>
+            <p>小画家的约课申请和确认情况。</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面的约课是虚构的，用来看排版。</span></p>
+        <article class="ax-card is-flush">
+          <div class="tw-list">
+            <div v-for="row in bookingRows" :key="row.name" class="tw-list-row">
+              <AdminAvatar role="student" />
+              <div class="ax-row-main">
+                <strong>{{ row.name }}</strong>
+                <small>{{ row.course }} · {{ row.time }}</small>
+              </div>
+              <span class="ax-pill" :class="statusTone(row.status)">{{ row.status }}</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 快速扣课 / 上课扣费 / 用户请假 -->
+      <section v-else-if="['quickDeduct', 'classCharge', 'leaveManage'].includes(activeMenu)" class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>{{ currentMenu?.title }}</h2>
+            <p>{{ activeMenu === 'leaveManage' ? '小画家的请假申请。' : activeMenu === 'classCharge' ? '上课后确认课消。' : '按签到和上课记录批量扣课时。' }}</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面的数字和名单是虚构的，用来看排版；不会真的扣课时。</span></p>
+        <div class="ax-stats">
+          <article v-for="item in dailyCards" :key="item.label" class="ax-stat">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+            <small>{{ item.note }}</small>
+          </article>
+        </div>
+        <article class="ax-card is-flush">
+          <div class="ax-card-head">
+            <div>
+              <h3>{{ activeMenu === 'leaveManage' ? '请假申请' : '今日课消' }}</h3>
+            </div>
+          </div>
+          <div class="ax-table-wrap">
+            <table class="ax-table">
+              <thead>
+                <tr>
+                  <th>小画家</th>
                   <th>课程</th>
                   <th>课时</th>
                   <th>状态</th>
-                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="row in chargeRows" :key="row.name">
-                  <td>{{ row.name }}</td>
+                  <td>
+                    <div class="ax-person is-static">
+                      <AdminAvatar role="student" />
+                      <div class="ax-cell-main"><strong>{{ row.name }}</strong></div>
+                    </div>
+                  </td>
                   <td>{{ row.course }}</td>
-                  <td>{{ row.count }}</td>
-                  <td>{{ row.status }}</td>
-                  <td>{{ activeMenu === 'leaveManage' ? '查看请假' : '扣课' }}</td>
+                  <td class="is-num">{{ row.count }}</td>
+                  <td><span class="ax-pill" :class="statusTone(row.status)">{{ row.status }}</span></td>
                 </tr>
               </tbody>
             </table>
-          </article>
-        </section>
+          </div>
+        </article>
+      </section>
 
-        <section v-else class="dashboard-layout">
-          <article v-for="item in dataCards" :key="item.label" class="summary-card">
+      <!-- 教学数据 -->
+      <section v-else class="ax-page">
+        <header class="ax-head">
+          <div>
+            <h2>教学数据</h2>
+            <p>课程进度、答题、创意提交和 AI 出图情况。</p>
+          </div>
+        </header>
+        <p class="ax-note tw-page-note tw-sample-note"><AdminIcon name="eye" plain /><span><strong>样例数据</strong>这一页还没有接后台，下面的数字是虚构的，用来看排版。</span></p>
+        <div class="ax-stats">
+          <article v-for="item in dataCards" :key="item.label" class="ax-stat">
             <span>{{ item.label }}</span>
             <strong>{{ item.value }}</strong>
             <small>{{ item.note }}</small>
           </article>
-          <article class="panel data-table">
-            <div class="panel-title">
-              <h3>用户学习明细</h3>
-              <button type="button">导出数据</button>
+        </div>
+        <article class="ax-card is-flush">
+          <div class="ax-card-head">
+            <div>
+              <h3>学习明细</h3>
             </div>
-            <table>
+          </div>
+          <div class="ax-table-wrap">
+            <table class="ax-table">
               <thead>
                 <tr>
-                  <th>用户</th>
+                  <th>小画家</th>
                   <th>课程进度</th>
                   <th>答题得分</th>
                   <th>创意提交</th>
-                  <th>AI出图</th>
+                  <th>AI 出图</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="row in studentRows" :key="row.name">
-                  <td>{{ row.name }}</td>
-                  <td>{{ row.progress }}</td>
-                  <td>{{ row.score }}</td>
-                  <td>{{ row.idea }}</td>
-                  <td>{{ row.ai }}</td>
+                  <td>
+                    <div class="ax-person is-static">
+                      <AdminAvatar role="student" />
+                      <div class="ax-cell-main"><strong>{{ row.name }}</strong></div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="tw-meter is-green">
+                      <span class="tw-bar"><i :style="{ width: row.progress }"></i></span>
+                      <small>{{ row.progress }}</small>
+                    </div>
+                  </td>
+                  <td class="is-num">{{ row.score }}</td>
+                  <td><span class="ax-pill" :class="statusTone(row.idea)">{{ row.idea }}</span></td>
+                  <td class="is-num">{{ row.ai }}</td>
                 </tr>
               </tbody>
             </table>
-          </article>
-        </section>
+          </div>
+        </article>
       </section>
+
+      <!-- 发放课程：勾选班级 / 小画家（课程库里点「发放」打开） -->
+      <el-dialog
+        :model-value="Boolean(distributionCourse)"
+        class="ax-dialog tw-dist-dialog"
+        :title="`发放课程 · ${distributionCourse ? safeText(distributionCourse.title, '趣味设计课程') : ''}`"
+        width="min(640px, 94vw)"
+        align-center
+        @update:model-value="(open) => { if (!open) closeCourseDistribution() }"
+      >
+        <p class="ax-hint tw-dist-hint">可以同时发给多个班级和指定的小画家，保存后用户端马上能看到。</p>
+        <section class="tw-dist-group">
+          <h4>班级 <small v-if="distributionClassDraft.length">已选 {{ distributionClassDraft.length }}</small></h4>
+          <div class="ax-tags is-roomy">
+            <label v-for="item in classOptions" :key="item.value" class="ax-chip-check">
+              <input v-model="distributionClassDraft" type="checkbox" :value="item.value" />
+              <span>{{ item.label }}</span>
+            </label>
+          </div>
+          <p v-if="!classOptions.length" class="ax-hint">{{ distributionOptionsError || '机构里还没有班级，请管理员先在「班级管理」里建班级。' }}</p>
+        </section>
+        <section class="tw-dist-group">
+          <h4>指定小画家 <small v-if="distributionStudentDraft.length">已选 {{ distributionStudentDraft.length }}</small></h4>
+          <div class="ax-tags is-roomy">
+            <label v-for="item in studentOptions" :key="item.value" class="ax-chip-check">
+              <input v-model="distributionStudentDraft" type="checkbox" :value="item.value" />
+              <span>{{ item.label }}</span>
+            </label>
+          </div>
+          <p v-if="!studentOptions.length" class="ax-hint">{{ distributionOptionsError || '机构里还没有小画家账号。' }}</p>
+        </section>
+        <template #footer>
+          <div class="tw-dist-foot">
+            <button type="button" class="ax-btn" @click="clearCourseDistribution">清空选择</button>
+            <span class="ax-grow"></span>
+            <button type="button" class="ax-btn" @click="closeCourseDistribution">取消</button>
+            <button type="button" class="ax-btn is-primary" @click="saveCourseDistribution">保存发放</button>
+          </div>
+        </template>
+      </el-dialog>
     </section>
   </main>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import BaseButton from '../components/base/BaseButton.vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import AdminIcon from '../components/admin/AdminIcon.vue'
+import AdminAvatar from '../components/admin/AdminAvatar.vue'
+import { adminIcon } from '../components/admin/adminIcons.js'
 import { useUserStore } from '../stores/userStore'
 import { useCourseStore } from '../stores/courseStore'
 import { useAccountPermissionStore } from '../stores/accountPermissionStore'
@@ -733,6 +946,11 @@ import {
 import { uploadCourseAsset, uploadCourseVideoToServer } from '../services/coursePptConversion'
 import { createCourseAssetId, saveCourseAsset } from '../stores/courseAssetStore'
 import { apiClient } from '../services/apiClient'
+// 外观和管理后台同一套（顺序同 AdminDashboard.vue：基础 → 组件 → 外壳 → 苹果风覆盖）
+import '../styles/admin-theme.scss'
+import '../styles/admin-ui.scss'
+import '../styles/admin-shell.scss'
+import '../styles/admin-apple.scss'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -771,31 +989,49 @@ const courseKeyword = ref('')
 const selectedCourseIds = ref([])
 const teacherH5Runtime = reactive({ loading: false, edition: null, templates: [], defaultTemplateId: '' })
 
+// 菜单（2026-11-27 讲师端重做）：按用途分区，每项一个图标；页面 id、标题和以前一样，只改了摆法。
+// 排课、点名、扣课、请假、教学数据这几页一直是写死的样例数据（还没接后台），页面上会标出来。
 const menuGroups = [
   {
+    id: 'home',
+    label: '',
+    children: [
+      { id: 'overview', label: '讲师概况', title: '讲师工作台概览', desc: '今日概览', icon: 'dashboard' },
+    ],
+  },
+  {
+    id: 'course',
+    label: '课程',
+    children: [
+      { id: 'courseManage', label: '课程管理', title: '课程上传与管理', desc: '上传课程课件', icon: 'upload', tint: '#ff9500' },
+      { id: 'courseLibrary', label: '课程库', title: '课程库', desc: '分类课程文件', icon: 'folder' },
+    ],
+  },
+  {
     id: 'education',
-    icon: '▣',
     label: '教务中心',
     children: [
-      { id: 'students', label: '正式用户', title: '正式用户管理', desc: '信息 / 档案 / 作品' },
-      { id: 'courseManage', label: '课程管理', title: '课程上传与管理', desc: '上传课程课件' },
-      { id: 'classManage', label: '班级管理', title: '班级与授权管理', desc: '班级 / 用户' },
-      { id: 'schedule', label: '课表中心', title: '课表中心', desc: '排课 / 调课' },
-      { id: 'attendanceRecord', label: '点名记录', title: '点名记录', desc: '到课 / 请假' },
-      { id: 'booking', label: '约课管理', title: '约课管理', desc: '预约 / 确认' },
+      { id: 'students', label: '正式用户', title: '正式用户管理', desc: '信息 / 档案 / 作品', icon: 'accounts' },
+      { id: 'classManage', label: '班级管理', title: '班级与授权管理', desc: '班级 / 用户', icon: 'layers', tint: '#30c158' },
+      { id: 'schedule', label: '课表中心', title: '课表中心', desc: '排课 / 调课', icon: 'calendar' },
+      { id: 'attendanceRecord', label: '点名记录', title: '点名记录', desc: '到课 / 请假', icon: 'checklist' },
+      { id: 'booking', label: '约课管理', title: '约课管理', desc: '预约 / 确认', icon: 'clock' },
     ],
   },
   {
     id: 'daily',
-    icon: '▦',
     label: '日常课务',
     children: [
-      { id: 'quickDeduct', label: '快速扣课', title: '快速扣课', desc: '批量扣课时' },
-      { id: 'classCharge', label: '上课扣费', title: '上课扣费', desc: '课消确认' },
-      { id: 'overview', label: '讲师概况', title: '讲师工作台概览', desc: '今日概览' },
-      { id: 'leaveManage', label: '用户请假', title: '用户请假', desc: '请假审核' },
-      { id: 'courseLibrary', label: '课程库', title: '课程库', desc: '分类课程文件' },
-      { id: 'data', label: '教学数据', title: '教学数据看板', desc: '学习进度与AI生成' },
+      { id: 'quickDeduct', label: '快速扣课', title: '快速扣课', desc: '批量扣课时', icon: 'ticket' },
+      { id: 'classCharge', label: '上课扣费', title: '上课扣费', desc: '课消确认', icon: 'coins' },
+      { id: 'leaveManage', label: '用户请假', title: '用户请假', desc: '请假审核', icon: 'note' },
+    ],
+  },
+  {
+    id: 'insight',
+    label: '数据',
+    children: [
+      { id: 'data', label: '教学数据', title: '教学数据看板', desc: '学习进度与AI生成', icon: 'trendUp', tint: '#00c7be' },
     ],
   },
 ]
@@ -814,6 +1050,62 @@ const categoryOptions = [
 
 const flatMenuItems = computed(() => menuGroups.flatMap((group) => group.children))
 const currentMenu = computed(() => flatMenuItems.value.find((item) => item.id === activeMenu.value))
+
+// ---- 外壳：侧栏搜索、分组收起、手机抽屉、顶栏（和管理后台同一套交互） ----
+const brandIconPath = adminIcon('courses').d
+const navDrawerOpen = ref(false)
+const navQuery = ref('')
+const topbarScrolled = ref(false)
+const currentGroup = computed(() => menuGroups.find((group) => group.children.some((item) => item.id === activeMenu.value)))
+const currentGroupLabel = computed(() => currentGroup.value?.label || '')
+const navSearchResults = computed(() => {
+  const keyword = navQuery.value.toLowerCase()
+  if (!keyword) return []
+  return menuGroups.flatMap((group) => group.children
+    .filter((item) => [item.label, item.title, item.desc, group.label].some((text) => String(text || '').toLowerCase().includes(keyword)))
+    .map((item) => ({ ...item, groupLabel: group.label })))
+})
+function menuIcon(item) {
+  const base = adminIcon(item.icon)
+  return item.tint ? { ...base, tint: item.tint } : base
+}
+// 当前页面所在的分组总是展开，免得看不到自己选中的是哪一项
+function isGroupClosed(group) {
+  return collapsedGroups.value.includes(group.id) && group.id !== currentGroup.value?.id
+}
+function selectMenu(id) {
+  activeMenu.value = id
+  navDrawerOpen.value = false
+  navQuery.value = ''
+}
+function openFirstNavMatch() {
+  if (navSearchResults.value.length) selectMenu(navSearchResults.value[0].id)
+}
+// 换页（包括点「编辑」、发布后自动跳回课程库）：回到页面顶部；离开课程库就关掉发放弹窗，免得回来时又自己弹出来
+watch(activeMenu, (id) => {
+  if (id !== 'courseLibrary') closeCourseDistribution()
+  sampleKeyword.value = ''
+  navDrawerOpen.value = false
+  window.scrollTo({ top: 0 })
+})
+function updateTopbarScrolled() {
+  topbarScrolled.value = window.scrollY > 4
+}
+onMounted(() => {
+  updateTopbarScrolled()
+  window.addEventListener('scroll', updateTopbarScrolled, { passive: true })
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', updateTopbarScrolled))
+const teacherDisplayName = computed(() => userStore.user?.name || '讲师')
+const teacherOrgName = computed(() => userStore.user?.organization?.name || '讲师')
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 5) return '夜深了'
+  if (hour < 11) return '上午好'
+  if (hour < 13) return '中午好'
+  if (hour < 18) return '下午好'
+  return '晚上好'
+})
 const parsedPpt = computed(() => splitList(pptText.value))
 const parsedQuestions = computed(() => parseChoiceQuestions(questionText.value))
 const teacherAccount = computed(() => accountPermissionStore.getAccountForUser(userStore.user))
@@ -855,9 +1147,14 @@ const allLibraryCoursesSelected = computed(() => (
   filteredLibraryCourses.value.some(isOwnCourse)
   && filteredLibraryCourses.value.filter(isOwnCourse).every((course) => selectedCourseIds.value.includes(course.id))
 ))
+// 「发放到的班级」以前写死成 2 个班，现在按课程实际发到的班级算
+const distributedClassNames = computed(() => [...new Set(teacherVisibleCourses.value
+  .flatMap((course) => course.authorizedClasses || [])
+  .map((name) => safeText(name, ''))
+  .filter(Boolean))])
 const summary = computed(() => [
   { label: '可用课程', value: String(teacherVisibleCourses.value.length), note: '本人上传与权限组授权' },
-  { label: '授权班级', value: '2', note: 'AI创意美术A班 / 进阶设计班' },
+  { label: '发放到的班级', value: String(distributedClassNames.value.length), note: distributedClassNames.value.slice(0, 2).join(' / ') || '还没有发给班级' },
   { label: '课程类型', value: String(categoryOptions.length), note: '门头、IP、广告、产品等' },
   { label: '报告素材', value: '自动同步', note: '问答和创意进入项目报告' },
 ])
@@ -869,12 +1166,12 @@ const dataCards = [
   { label: 'AI绘图生成数', value: '126', note: '用户项目出图' },
 ]
 
-const dailyCards = [
+const dailyCards = computed(() => [
   { label: '今日待扣课', value: '12', note: '按签到与上课记录生成' },
   { label: '待确认课消', value: '5', note: '需要讲师确认' },
   { label: '请假申请', value: '3', note: '今日待处理' },
   { label: '课程库文件', value: String(teacherVisibleCourses.value.length), note: '本人上传与组授权课程' },
-]
+])
 
 // 发放面板的名单：演示模式用内置名字；服务端模式读本机构真实的班级、小画家（勾的是 ID，重名也不会发错人）
 const demoClassOptions = ['AI创意美术A班', '进阶设计班', '低龄启蒙班', '周末综合班']
@@ -1018,6 +1315,65 @@ const scheduleLessonMap = {
   'sun-下午': [{ title: '2026年暑期美术综合班', time: '13:30-15:45', tone: 'green' }, { title: '造型基础-2班', time: '15:45-17:45', tone: 'green' }],
 }
 
+// ---- 页面上用的小工具（只管显示，不碰数据和接口） ----
+const learningFlow = [
+  { label: '视频 / PPT', note: '讲师上传课件', icon: 'play' },
+  { label: '课堂问答', note: '随堂选择题', icon: 'checklist' },
+  { label: '创意想法', note: '文字或语音', icon: 'sparkles' },
+  { label: 'AI绘画', note: '生成作品', icon: 'image' },
+  { label: '项目报告', note: 'H5 报告', icon: 'report' },
+]
+const CATEGORY_TINTS = { storefront: '#ff9500', ip: '#ff2d55', ad: '#af52de', anime: '#5856d6', product: '#30b0c7', interior: '#30c158', car: '#0a84ff', creative: '#ff9f0a', picturebook: '#00c7be' }
+function categoryTint(value) {
+  return CATEGORY_TINTS[value] || '#8e8e93'
+}
+const libraryStats = computed(() => {
+  const own = teacherVisibleCourses.value.filter(isOwnCourse)
+  return [
+    { label: '全部课程', value: String(teacherVisibleCourses.value.length), note: '我上传的和权限组授权的' },
+    { label: '我上传的', value: String(own.length), note: '可以编辑、发放、删除' },
+    { label: '还没发放', value: String(own.filter((course) => courseAudienceText(course) === '暂未发放').length), note: '小画家暂时看不到这些课' },
+  ]
+})
+const publishChecklist = computed(() => [
+  { label: '课程视频', done: Boolean(form.videoFileName), doneText: '已上传', todoText: '可选' },
+  { label: 'PPT 课件', done: Boolean(form.pptFileName), doneText: '已上传', todoText: '可选' },
+  { label: '引导选择题', done: questionCards.value.length > 0, doneText: `${questionCards.value.length} 道`, todoText: '解析文档后生成' },
+  { label: '发给谁', done: splitList(classText.value).length + splitList(studentText.value).length > 0, doneText: '已填写', todoText: '还没填' },
+])
+const showParseCounts = computed(() => documentParseStatus.state !== 'idle' || documentParseStatus.textLength > 0)
+const sampleKeyword = ref('')
+function matchesSample(row, keys) {
+  const keyword = sampleKeyword.value.trim().toLowerCase()
+  return !keyword || keys.some((key) => String(row[key] || '').toLowerCase().includes(keyword))
+}
+const filteredStudentTableRows = computed(() => studentTableRows.filter((row) => matchesSample(row, ['name', 'contact', 'course', 'className', 'remark'])))
+const filteredClassRows = computed(() => classRows.filter((row) => matchesSample(row, ['name', 'type', 'course', 'teacher'])))
+const weekLessonTotal = computed(() => weekDays.reduce((sum, day) => sum + day.count, 0))
+function weekdayName(day) {
+  return String(day?.label || '').replace(/[(（].*$/, '')
+}
+function lessonCount(value) {
+  return String(value ?? '').replace(/课时$/, '')
+}
+
+function lessonPercent(left, total) {
+  const rest = parseFloat(left)
+  const all = parseFloat(total)
+  return all > 0 && Number.isFinite(rest) ? Math.max(0, Math.min(100, Math.round((rest / all) * 100))) : 0
+}
+function fractionPercent(text) {
+  const [part, all] = String(text || '').split('/').map((value) => parseFloat(value))
+  return all > 0 && Number.isFinite(part) ? Math.max(0, Math.min(100, Math.round((part / all) * 100))) : 0
+}
+function statusTone(status) {
+  const text = String(status || '')
+  if (/已确认|已签到|已提交|已发布/.test(text)) return 'is-ok'
+  if (/请假/.test(text)) return 'is-info'
+  if (/未提交/.test(text)) return 'is-muted'
+  return 'is-warn'
+}
+
 function defaultDesignRequirements(category = 'storefront') {
   const presets = {
     storefront: ['横向门头画面，招牌文字清晰可读', '店名、招牌、入口、橱窗或产品符号', '从店铺商品、品牌名称和目标顾客中提取', '亲和、醒目，与店铺定位一致', '实体门店门头与品牌展示'],
@@ -1137,8 +1493,13 @@ function removeMaterial(index) {
   form.materials.splice(index, 1)
 }
 
-function materialTypeIcon(type) {
-  return { image: '图', lineart: '线', palette: '色', font: '字' }[type] || '资'
+// 配套资料的图标和类型名（以前用一个汉字当图标）
+function materialIcon(type) {
+  return { image: 'image', lineart: 'pencil', palette: 'palette', font: 'text' }[type] || 'folder'
+}
+
+function materialTypeLabel(type) {
+  return { image: '参考图片', lineart: '线稿', palette: '配色', font: '字体' }[type] || '资料'
 }
 
 function compressMaterialImage(file) {
@@ -2119,16 +2480,17 @@ function applyParsedCourseDocument(parsed, context, options = {}) {
   ].join(' / ')
   setDocumentParseStatus({
     state: 'success',
-    message: options.message || `AI模型已解析课程文档《${sourceName}》`,
+    message: options.message || `已解析课程文档《${sourceName}》`,
     textLength: context.textLength,
     fieldCount: parsed.fieldCount ?? ['title', 'category', 'difficulty', 'description'].filter((key) => Boolean(parsed[key])).length,
     questionCount: questions.length,
     preview: options.preview || recognitionPreview || context.preview,
   })
-  ElMessage.success(options.toast || `AI模型已解析《${sourceName}》并自动填写课程信息与选择题`)
+  ElMessage.success(options.toast || `已解析《${sourceName}》并自动填写课程信息与选择题`)
   return true
 }
 
+// 课程文档在浏览器里按规则解析（courseUploadParser），不调用 AI；提示文字照实写「已解析」，不写「AI已解析」
 function parseCourseDocumentLocal(options = {}) {
   const context = getDocumentParseContext()
   const { sourceName, textLength, preview } = context
@@ -2171,8 +2533,8 @@ function parseCourseDocumentLocal(options = {}) {
     toast: options.fallbackReason
       ? `AI接口不可用，已使用本地规则整理《${sourceName}》`
       : (parsed.parseMode === 'inferred'
-        ? `AI已根据《${sourceName}》正文整理课程信息与选择题`
-        : `AI已解析《${sourceName}》并自动填写课程信息与选择题`),
+        ? `已根据《${sourceName}》正文整理课程信息与选择题`
+        : `已解析《${sourceName}》并自动填写课程信息与选择题`),
     preview: options.fallbackReason ? `${preview} / 兜底原因：${options.fallbackReason}`.slice(0, 180) : '',
   })
 }
@@ -2233,6 +2595,35 @@ async function bulkDeleteCourses() {
   } catch (error) {
     ElMessage.error(error?.message || '删除失败，请稍后重试')
   }
+}
+
+// 删除前先确认（以前点「删除」马上就删了）
+async function confirmDeleteCourse(course) {
+  try {
+    await ElMessageBox.confirm(`删除「${safeText(course?.title, '趣味设计课程')}」？删除后课程库里就没有这门课了，小画家也看不到。`, '删除课程', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+  await deleteCourse(course.id)
+}
+
+async function confirmBulkDeleteCourses() {
+  const total = selectedCourseIds.value.length
+  if (!total) return
+  try {
+    await ElMessageBox.confirm(`删除选中的 ${total} 门课程？删除后课程库里就没有这些课了，小画家也看不到。`, '批量删除', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+  await bulkDeleteCourses()
 }
 
 function editCourse(course) {
@@ -2449,1546 +2840,493 @@ function logout() {
 </script>
 
 <style scoped lang="scss">
-.teacher-page {
-  height: 100vh;
-  overflow: hidden;
-  padding: 0;
-  background: #f5f7fb;
+/* ==========================================================================
+   讲师端页面专用样式（2026-11-27 重做）
+   外壳（侧栏 / 顶栏）、按钮、表格、表单、状态标都直接用后台那套 admin-shell / admin-ui / admin-apple，
+   这里只写讲师端自己才有的版块：学习闭环、课程编辑器、课程库单元格、课表、进度条。
+   ========================================================================== */
+
+/* ---------- 外壳上的讲师端标识：青绿色（和后台账号列表里讲师头像同色），其余跟后台一致 ---------- */
+.tw-brand-mark { background: linear-gradient(180deg, #5fd3c4 0%, #30b0a6 100%); }
+.tw-brand-mark svg { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.tw-avatar { background: linear-gradient(180deg, #5fd3c4 0%, #30b0a6 100%); }
+.tw-top-btn { border: 0; font-family: inherit; cursor: pointer; }
+
+/* 按钮里的线条图标：普通按钮 16px、小按钮 14px */
+.ax-btn .adm-icon.is-plain { width: 16px; height: 16px; }
+.ax-btn.is-sm .adm-icon.is-plain { width: 14px; height: 14px; }
+
+.tw-ellipsis { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tw-strong { color: var(--ax-ink); font-weight: 600; }
+.tw-muted { color: var(--ax-muted); }
+
+/* 页面级提示条：页面底色是浅灰，提示条用白底，免得和底色混在一起 */
+.tw-page-note { align-items: center; background: #fff; box-shadow: var(--ax-shadow); color: var(--ax-text); }
+.tw-sample-note .adm-icon { flex-shrink: 0; width: 16px; height: 16px; color: var(--ax-muted); }
+.tw-sample-note strong { margin-right: 8px; color: var(--ax-ink); font-weight: 600; }
+
+/* ---------- 讲师概况 ---------- */
+.tw-overview-grid {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  color: #172033;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button {
-  min-height: 48px;
-  cursor: pointer;
-}
-
-.teacher-sidebar {
-  min-height: 0;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.brand-panel {
-  min-height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 8px 10px;
-  border-bottom: 1px solid #edf0f5;
-}
-
-.brand-logo {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #ff7a00, #ff9f1c);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-}
-
-.brand-panel h1,
-.teacher-topbar h2,
-.panel-title h3 {
-  margin: 0;
-  color: #111827;
-}
-
-.brand-panel p,
-.teacher-topbar span,
-.panel-title span,
-.summary-card small,
-.lesson-row span,
-.editor-preview p {
-  margin: 4px 0 0;
-  color: #64748b;
-}
-
-.teacher-menu {
-  display: grid;
-  gap: 12px;
-  overflow: auto;
-}
-
-.menu-group {
-  display: grid;
-  gap: 6px;
-}
-
-.teacher-menu .menu-group-title {
-  min-height: 42px;
-  border: 0;
-  border-radius: 12px;
-  background: #1f2937;
-  color: #fff;
-  display: grid;
-  grid-template-columns: 34px 1fr 22px;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-}
-
-.menu-group-title span {
-  color: #fff;
-  font-size: 18px;
-}
-
-.menu-group-title em {
-  color: #9ca3af;
-  font-style: normal;
-  text-align: right;
-}
-
-.menu-group-list {
-  display: grid;
-  gap: 4px;
-}
-
-.menu-group-list button {
-  min-height: 34px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background: transparent;
-  color: #334155;
-  display: grid;
-  grid-template-columns: 24px 1fr;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px;
-  text-align: left;
-}
-
-.menu-group-list button i {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #9ca3af;
-  justify-self: center;
-}
-
-.teacher-menu button > span {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-}
-
-.teacher-menu strong {
-  display: block;
-  font-size: 15px;
-}
-
-.teacher-menu small {
-  display: none;
-  color: #94a3b8;
-  font-size: 12px;
-}
-
-.menu-group-list button.active {
-  border-color: rgba(255, 122, 0, .34);
-  background: #fff7ed;
-  color: #ff7a00;
-}
-
-.menu-group-list button.active i {
-  background: #ff7a00;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  display: grid;
-  gap: 10px;
-}
-
-.sidebar-footer button {
-  min-height: 42px;
-}
-
-.sidebar-footer button,
-.topbar-actions button,
-.panel-title button,
-.auth-list button,
-.student-grid button {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-  color: #334155;
-  font-weight: 800;
-}
-
-.teacher-main {
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.teacher-topbar {
-  height: 76px;
-  padding: 0 24px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr);
   gap: 16px;
-  flex: 0 0 auto;
-}
-
-.teacher-topbar h2 {
-  font-size: 22px;
-}
-
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.teacher-content {
-  min-height: 0;
-  flex: 1;
-  padding: 18px;
-  overflow: auto;
-}
-
-.overview-grid,
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.panel,
-.summary-card {
-  background: #fff;
-  border: 1px solid #edf0f5;
-  border-radius: 16px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
-}
-
-.summary-card {
-  min-height: 128px;
-  padding: 18px;
-  display: grid;
-  gap: 6px;
-}
-
-.summary-card span {
-  color: #64748b;
-}
-
-.summary-card strong {
-  color: #ff7a00;
-  font-size: 28px;
-}
-
-.panel {
-  padding: 18px;
-}
-
-.flow-panel {
-  grid-column: span 3;
-}
-
-.recent-panel {
-  grid-column: span 1;
-}
-
-.panel-title {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.flow-row {
-  min-height: 110px;
-  border-radius: 14px;
-  background: #fff7ed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.flow-row span {
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: #fff;
-  color: #111827;
-  font-weight: 900;
-}
-
-.flow-row b {
-  color: #ff7a00;
-  font-size: 22px;
-}
-
-.course-editor-layout,
-.auth-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 16px;
-}
-
-.builder-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.builder-grid label {
-  display: grid;
-  gap: 7px;
-  color: #111827;
-  font-weight: 900;
-}
-
-.builder-grid .full {
-  grid-column: 1 / -1;
-}
-
-.intro-field textarea {
-  min-height: 84px;
-}
-
-.upload-field {
-  min-height: 92px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
-  background: #f8fafc;
-  padding: 12px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px 12px;
-  align-items: center;
-}
-
-.upload-field.full {
-  grid-column: 1 / -1;
-}
-
-.upload-field span {
-  grid-column: 1 / -1;
-  color: #111827;
-  font-weight: 900;
-}
-
-.upload-field input[type='file'] {
-  display: none;
-}
-
-.upload-field button {
-  min-height: 40px;
-  border: 1px solid #20c997;
-  border-radius: 8px;
-  background: #20c997;
-  color: #fff;
-  font-weight: 900;
-}
-
-.upload-field .ai-parse-btn {
-  border-color: #ff7a00;
-  background: #ff7a00;
-}
-
-.document-upload-field {
-  grid-template-columns: auto auto minmax(0, 1fr);
-}
-
-.upload-field small {
-  min-width: 0;
-  color: #64748b;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.course-builder {
-  padding: 20px;
-}
-
-.course-builder .panel-title {
-  margin-bottom: 16px;
-}
-
-.course-builder .builder-grid {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-}
-
-.builder-section {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fbfcfe;
-  padding: 16px;
-}
-
-.course-materials {
-  order: 1;
-}
-
-.course-basics {
-  order: 2;
-}
-
-.question-builder-section {
-  order: 3;
-}
-
-.requirement-builder-section {
-  order: 4;
-}
-
-.supporting-material-builder {
-  order: 5;
-}
-
-.authorization-section {
-  order: 6;
-}
-
-.h5-course-settings { order: 3; }
-.h5-mode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.h5-mode-grid label { min-height: 78px; padding: 13px 14px; border: 1px solid #dce6f2; border-radius: 12px; display: flex; align-items: flex-start; gap: 10px; background: #fff; cursor: pointer; }
-.h5-mode-grid label:has(input:checked) { border-color: #2683f5; box-shadow: 0 0 0 3px rgba(38,131,245,.1); }
-.h5-mode-grid input { margin-top: 4px; accent-color: #2683f5; }
-.h5-mode-grid span { display: grid; gap: 5px; }
-.h5-mode-grid small,.h5-template-course-grid small { color: #718096; font-weight: 500; line-height: 1.45; }
-.h5-mode-grid.disabled { opacity: .65; }
-.h5-template-course-grid { margin-top: 14px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
-.h5-template-course-grid label { padding: 10px; border: 1px solid #dde7f2; border-radius: 12px; display: grid; grid-template-columns: auto 58px 1fr; align-items: center; gap: 9px; background: #fff; cursor: pointer; }
-.h5-template-course-grid label.selected { border-color: #2683f5; background: #f5faff; }
-.h5-template-course-grid i { width: 58px; height: 42px; border-radius: 9px; }
-.h5-template-course-grid span { display: grid; gap: 3px; }
-.h5-template-course-grid p { grid-column: 1/-1; margin: 0; color: #7b8797; }
-.h5-default-template { max-width: 420px; margin-top: 14px; }
-.h5-course-status { padding: 12px 14px; border-radius: 10px; color: #56708e; background: #f2f7fc; font-weight: 700; }
-.h5-course-status.locked { margin-top: 12px; color: #8a5a13; background: #fff7e7; }
-
-.builder-section-head {
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.builder-section-head > div {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #0f172a;
-}
-
-.builder-section-head > div span {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #fff1e6;
-  color: #f97316;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.builder-section-head > div strong {
-  font-size: 16px;
-}
-
-.builder-section-actions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex: 0 0 auto;
-}
-
-.builder-section-head small,
-.question-result-note {
-  color: #64748b;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.section-grid,
-.materials-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.section-grid label {
-  min-width: 0;
-}
-
-.intro-field textarea {
-  min-height: 96px;
-}
-
-.materials-grid .upload-field {
-  min-height: 126px;
-  align-content: center;
-}
-
-.materials-grid .document-upload-field {
-  grid-column: 1 / -1;
-  min-height: 104px;
-  grid-template-columns: max-content max-content minmax(0, 1fr);
-}
-
-.materials-grid .document-upload-field small {
-  grid-column: 1 / -1;
-}
-
-.document-parse-status {
-  grid-column: 1 / -1;
-  border: 1px solid #dbe2ea;
-  border-radius: 10px;
-  background: #fff;
-  padding: 10px 12px;
-  display: grid;
-  gap: 4px;
-}
-
-.document-parse-status strong {
-  color: #334155;
-  font-size: 13px;
-}
-
-.document-parse-status p,
-.document-parse-status em {
-  margin: 0;
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.document-parse-status em {
-  font-style: normal;
-  white-space: normal;
-  word-break: break-word;
-}
-
-.document-parse-status.success {
-  border-color: #86efac;
-  background: #f0fdf4;
-}
-
-.document-parse-status.success strong {
-  color: #15803d;
-}
-
-.document-parse-status.error {
-  border-color: #fed7aa;
-  background: #fff7ed;
-}
-
-.document-parse-status.error strong {
-  color: #c2410c;
-}
-
-.materials-grid .document-upload-field button {
-  white-space: nowrap;
-}
-
-.materials-grid .document-upload-field .ai-parse-btn:disabled,
-.reparse-question-btn:disabled {
-  cursor: not-allowed;
-  opacity: .45;
-}
-
-.question-builder-section {
-  background: #fff;
-}
-
-.question-section-head {
-  margin-bottom: 6px;
-}
-
-.reparse-question-btn {
-  min-height: 40px;
-  border: 1px solid #f97316;
-  border-radius: 8px;
-  background: #fff7ed;
-  color: #ea580c;
-  padding: 0 12px;
-  font-weight: 900;
-}
-
-.question-result-note {
-  margin: 0 0 14px;
-}
-
-.choice-question-list {
-  display: grid;
-  gap: 10px;
-}
-
-.choice-question-editor {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #fff;
-  padding: 14px;
-}
-
-.question-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.question-card-top span {
-  color: #f97316;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.question-title-text {
-  display: block;
-  color: #0f172a;
-  line-height: 1.5;
-}
-
-.choice-option-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.choice-option-grid > div {
-  min-width: 0;
-  min-height: 54px;
-  border: 1px solid #dbe2ea;
-  border-radius: 8px;
-  padding: 8px;
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
   align-items: start;
-  gap: 7px;
-  color: #475569;
-  font-size: 13px;
+}
+.tw-flow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.tw-flow li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 6px 14px;
+  border-radius: 12px;
+  background: #f5f5f7;
+  text-align: center;
+}
+.tw-flow strong { color: var(--ax-ink); font-size: 13.5px; font-weight: 600; }
+.tw-flow small { color: var(--ax-muted); font-size: 12px; line-height: 1.4; text-wrap: balance; }
+.tw-flow-arrow {
+  position: absolute;
+  top: 50%;
+  right: -11px;
+  width: 7px;
+  height: 7px;
+  border-top: 1.8px solid #c7c7cc;
+  border-right: 1.8px solid #c7c7cc;
+  transform: translateY(-50%) rotate(45deg);
 }
 
-.choice-option-grid > div.correct {
-  border-color: #6ee7b7;
-  background: #ecfdf5;
-  color: #047857;
+.tw-recent { display: grid; padding: 4px 20px 10px; }
+.tw-recent-row { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 11px 0; }
+.tw-recent-row + .tw-recent-row { border-top: 1px solid var(--ax-line); }
+.tw-recent-row .ax-row-main { flex: 1 1 auto; min-width: 0; }
+.tw-recent-row .ax-pill { flex-shrink: 0; }
+
+/* ---------- 课程编辑器 ---------- */
+.tw-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+}
+.tw-editor-main { display: grid; gap: 16px; min-width: 0; }
+.tw-editor-side { position: sticky; top: 68px; min-width: 0; }
+.tw-step {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: rgba(0, 122, 255, 0.1);
+  color: #007aff;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: 1px;
+}
+.tw-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.choice-option-grid b {
+.tw-uploads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tw-upload {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px dashed rgba(60, 60, 67, 0.24);
+  border-radius: 12px;
+  background: #fafafc;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.tw-upload.is-set { border-style: solid; border-color: rgba(52, 199, 89, 0.4); background: rgba(52, 199, 89, 0.05); }
+.tw-upload > .ax-btn { justify-self: stretch; }
+.tw-upload-text { display: grid; gap: 2px; width: 100%; min-width: 0; }
+.tw-upload-text strong { color: var(--ax-ink); font-size: 13.5px; font-weight: 600; }
+.tw-upload-text small { overflow: hidden; color: var(--ax-muted); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.tw-upload.is-set .tw-upload-text small { color: var(--ax-ok); }
+
+.tw-parse {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f5f5f7;
+}
+.tw-parse-dot { flex-shrink: 0; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: #c7c7cc; }
+.tw-parse.is-success .tw-parse-dot { background: #34c759; }
+.tw-parse.is-error { background: rgba(255, 59, 48, 0.06); }
+.tw-parse.is-error .tw-parse-dot { background: #ff3b30; }
+.tw-parse-text { display: grid; flex: 1 1 auto; gap: 2px; min-width: 0; }
+.tw-parse-text strong { color: var(--ax-ink); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.tw-parse-text small { color: var(--ax-muted); font-size: 12px; line-height: 1.5; }
+.tw-parse-text em { color: var(--ax-text); font-size: 12px; font-style: normal; line-height: 1.5; overflow-wrap: anywhere; }
+.tw-parse > .ax-btn { flex-shrink: 0; }
+
+.tw-questions { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.tw-question { padding: 14px; border-radius: 12px; background: #f5f5f7; }
+.tw-question-title { display: grid; gap: 3px; margin-bottom: 10px; }
+.tw-question-title span { color: var(--ax-muted); font-size: 12px; font-weight: 500; }
+.tw-question-title strong { color: var(--ax-ink); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.tw-options {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tw-options li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  font-size: 13.5px;
+}
+.tw-options b {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #eef2f7;
-  color: #475569;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-}
-
-.choice-option-grid .correct b {
-  background: #10b981;
-  color: #fff;
-}
-
-.choice-option-grid span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.choice-option-grid em {
-  grid-column: 2;
-  color: #059669;
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 900;
-}
-
-.question-empty-state {
-  min-height: 92px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 10px;
-  background: #f8fafc;
-  color: #64748b;
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  text-align: center;
-  line-height: 1.6;
-}
-
-.add-row-btn {
-  min-height: 38px;
-  border: 1px solid #20c997;
-  border-radius: 8px;
-  padding: 0 12px;
-  background: #ecfdf5;
-  color: #047857;
-  font-weight: 900;
-}
-
-.expand-section-btn {
-  min-height: 38px;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 0 14px;
-  background: #eff6ff;
-  color: #2563eb;
-  cursor: pointer;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.collapsed-section-summary {
-  min-height: 54px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 10px;
-  background: #fff;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.collapsed-section-summary strong {
-  color: #0f172a;
-  font-size: 14px;
-  margin-right: 4px;
-}
-
-.collapsed-section-summary span {
-  min-height: 28px;
-  border-radius: 999px;
-  padding: 5px 10px;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.expanded-section-body {
-  margin-top: 6px;
-}
-
-.material-summary-strip span {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.requirement-editor-list,
-.material-editor-list {
-  display: grid;
-  gap: 10px;
-}
-
-.requirement-editor-row {
-  display: grid;
-  grid-template-columns: 140px minmax(0, 1fr) 36px;
-  gap: 10px;
-  align-items: start;
-}
-
-.requirement-editor-row textarea {
-  min-height: 48px;
-}
-
-.remove-row-btn {
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 8px;
-  background: #fee2e2;
-  color: #dc2626;
-  font-size: 22px;
-}
-
-.material-editor-row {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr) auto 36px;
-  gap: 10px;
-  align-items: center;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fff;
-}
-
-.material-editor-preview {
-  width: 82px;
-  aspect-ratio: 4 / 3;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #e8f8f2;
-  color: #0f766e;
-  display: grid;
-  place-items: center;
-  font-size: 24px;
-  font-weight: 900;
-}
-
-.material-editor-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.material-editor-preview.type-palette { background: linear-gradient(135deg, #bbf7d0 0 33%, #d6a15a 33% 66%, #fff 66%); }
-.material-editor-preview.type-font { font-family: 'Microsoft YaHei', sans-serif; background: #fff7ed; color: #9a3412; }
-.material-editor-preview.type-lineart { background: repeating-linear-gradient(135deg, #f8fafc 0 8px, #e2e8f0 8px 9px); }
-
-.material-editor-fields {
-  display: grid;
-  grid-template-columns: 130px minmax(130px, .7fr) minmax(180px, 1fr);
-  gap: 8px;
-}
-
-.material-upload-button {
-  min-height: 38px;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 0 12px;
-  background: #eff6ff;
-  color: #2563eb;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.material-upload-button input { display: none; }
-
-@media (max-width: 760px) {
-  .section-grid,
-  .materials-grid,
-  .choice-option-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .materials-grid .document-upload-field {
-    grid-template-columns: 1fr;
-  }
-
-  .requirement-editor-row,
-  .material-editor-row,
-  .material-editor-fields {
-    grid-template-columns: 1fr;
-  }
-}
-
-input,
-textarea,
-select {
-  min-height: 48px;
-  border: 1px solid #dbe2ea;
-  border-radius: 10px;
-  padding: 10px 12px;
-  outline: none;
-  background: #fff;
-}
-
-textarea {
-  min-height: 84px;
-  resize: vertical;
-}
-
-.editor-preview {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-}
-
-.preview-cover {
-  min-height: 180px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #fff3e6, #dbeafe);
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 12px;
-  text-align: center;
-}
-
-.preview-cover b {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  background: #ff7a00;
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 28px;
-}
-
-.preview-cover strong {
-  color: #111827;
-  font-size: 18px;
-}
-
-.preview-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.preview-meta span {
-  border-radius: 999px;
-  padding: 7px 10px;
-  background: #f1f5f9;
-  color: #475569;
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.lesson-list {
-  display: grid;
-  gap: 12px;
-}
-
-.lesson-list.compact {
-  gap: 10px;
-}
-
-.lesson-row {
-  min-height: 74px;
-  border-radius: 14px;
-  background: #f8fafc;
-  padding: 14px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 6px 12px;
-}
-
-.lesson-row strong {
-  color: #111827;
-}
-
-.lesson-row em {
-  grid-row: 1 / 3;
-  grid-column: 2;
-  align-self: center;
-  border-radius: 999px;
-  background: #fff3e6;
-  color: #ff7a00;
-  padding: 7px 10px;
-  font-style: normal;
-  font-weight: 900;
-}
-
-.published-panel,
-.data-table {
-  min-height: 560px;
-}
-
-.course-library-page {
-  min-height: 680px;
-}
-
-.library-title-row {
-  min-height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 10px;
-}
-
-.library-title-row h3 {
-  color: #0f172a;
-  font-size: 22px;
-}
-
-.library-title-row p {
-  color: #64748b;
-  margin-top: 4px;
-}
-
-.library-title-row strong {
-  border-radius: 999px;
-  background: #e8f8f2;
-  color: #0f766e;
-  padding: 8px 12px;
-}
-
-.library-table-wrap {
-  border: 1px solid #edf0f5;
-}
-
-.course-distribution-panel {
-  border: 1px solid #b7ead8;
-  border-radius: 6px;
-  padding: 12px;
-  background: #f0fdf8;
-  display: grid;
-  gap: 10px;
-}
-
-.course-distribution-panel header,
-.course-distribution-panel footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.course-distribution-panel header > div {
-  display: grid;
-  gap: 3px;
-}
-
-.course-distribution-panel header strong {
-  color: #0f172a;
-}
-
-.course-distribution-panel header small {
-  color: #64748b;
-}
-
-.course-distribution-panel header > button {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #dbe2ea;
-  border-radius: 4px;
-  background: #fff;
-  color: #475569;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-.distribution-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.distribution-options fieldset {
-  margin: 0;
-  border: 1px solid #d9eee7;
-  border-radius: 5px;
-  padding: 9px;
-  display: flex;
-  align-items: center;
-  gap: 8px 14px;
-  flex-wrap: wrap;
-}
-
-.distribution-options legend {
-  padding: 0 5px;
-  color: #0f766e;
-  font-weight: 900;
-}
-
-.distribution-options label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.course-distribution-panel footer {
-  justify-content: flex-end;
-}
-
-.course-distribution-panel footer button {
-  min-height: 34px;
-  border: 1px solid #dbe2ea;
-  border-radius: 4px;
-  padding: 0 12px;
-  background: #fff;
-  color: #334155;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.library-table {
-  min-width: 940px !important;
-  table-layout: fixed;
-}
-
-.library-table th,
-.library-table td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.library-table th:nth-child(1),
-.library-table td:nth-child(1) {
-  width: 34px;
-}
-
-.library-table th:nth-child(2),
-.library-table td:nth-child(2) {
-  width: 150px;
-}
-
-.course-name-cell a,
-.course-name-cell small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.course-name-cell small {
-  margin-top: 2px;
-  color: #64748b;
-  font-size: 11px;
-}
-
-.library-table th:nth-child(5),
-.library-table td:nth-child(5),
-.library-table th:nth-child(6),
-.library-table td:nth-child(6),
-.library-table th:nth-child(7),
-.library-table td:nth-child(7) {
-  width: 112px;
-}
-
-.library-table th:nth-child(10),
-.library-table td:nth-child(10) {
-  width: 184px;
-}
-
-.library-table .row-actions {
-  gap: 4px;
-}
-
-.library-table .row-actions button {
-  min-height: 28px;
-  padding: 0 7px;
-  font-size: 12px;
-}
-
-.edu-toolbar button:disabled,
-.pagination-bar button:disabled {
-  cursor: not-allowed;
-  opacity: .45;
-}
-
-.auth-list,
-.student-grid {
-  display: grid;
-  gap: 12px;
-}
-
-.auth-list button.active,
-.student-grid button:hover {
-  border-color: rgba(255, 122, 0, .34);
-  background: #fff7ed;
-  color: #ff7a00;
-}
-
-.data-table {
-  grid-column: 1 / -1;
-}
-
-.edu-dense-page,
-.schedule-page {
-  min-height: 100%;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  overflow: hidden;
-}
-
-.edu-tabs,
-.edu-subtabs,
-.edu-toolbar,
-.filter-line,
-.schedule-tools,
-.week-title,
-.pagination-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.edu-tabs {
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.edu-tabs button,
-.edu-subtabs button,
-.edu-toolbar button,
-.filter-line button,
-.schedule-tools button,
-.pagination-bar button,
-.row-actions button {
-  min-height: 32px;
-  border: 1px solid #dbe2ea;
-  border-radius: 3px;
-  background: #fff;
-  color: #334155;
-  padding: 0 12px;
-  font-size: 13px;
-}
-
-.edu-tabs button {
-  min-width: 86px;
-  border-bottom: 0;
-  border-radius: 3px 3px 0 0;
-}
-
-.edu-tabs button.active,
-.edu-subtabs button.active,
-.schedule-tools button.active {
-  border-color: #20c997;
-  background: #fff;
-  color: #0f172a;
-  box-shadow: inset 0 2px 0 #20c997;
-}
-
-.edu-subtabs.notice-line {
-  background: #e8f8f2;
-  padding: 0 8px;
-}
-
-.edu-subtabs.notice-line span {
-  flex: 1;
-  min-width: 360px;
-  color: #166534;
-  font-size: 12px;
-}
-
-.edu-subtabs em {
-  color: #ef4444;
-  font-style: normal;
-}
-
-.edu-toolbar label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #0f172a;
-  font-size: 13px;
-}
-
-.edu-toolbar input {
-  width: 132px;
-  min-height: 32px;
-  border-radius: 3px;
-  font-size: 13px;
-}
-
-.edu-toolbar > span {
-  flex: 1;
-}
-
-.green-btn {
-  border-color: #20c997 !important;
-  background: #20c997 !important;
-  color: #fff !important;
-}
-
-.orange-btn {
-  border-color: #f59e0b !important;
-  background: #fff7ed !important;
-  color: #f97316 !important;
-}
-
-.filter-line {
-  color: #334155;
-  font-size: 13px;
-}
-
-.filter-line span {
-  color: #0f766e;
-}
-
-.filter-line label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.filter-line .library-perm-hint {
-  color: #b45309;
-  font-style: normal;
+  background: rgba(118, 118, 128, 0.12);
+  color: var(--ax-text);
+  font-size: 11.5px;
   font-weight: 700;
 }
-
-.library-empty-row td {
-  padding: 36px 12px;
-  color: #64748b;
-  text-align: center;
-  white-space: normal;
-}
-
-.dense-table-wrap {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  border-top: 1px solid #edf0f5;
-}
-
-.dense-table {
-  min-width: 1320px;
-  font-size: 13px;
-}
-
-.dense-table th {
-  height: 44px;
-  background: #f3f6fa;
-  color: #1f2937;
-  white-space: nowrap;
-}
-
-.dense-table td {
-  height: 58px;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.dense-table a {
-  color: #1677ff;
-  font-weight: 800;
-}
-
-.row-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.row-actions button:nth-child(1) {
-  border-color: #99f6e4;
-  color: #10b981;
-}
-
-.row-actions button:nth-child(2) {
-  border-color: #fed7aa;
-  color: #f97316;
-}
-
-.row-actions button:nth-child(3) {
-  border-color: #bfdbfe;
-  color: #1677ff;
-}
-
-.tag-green {
-  color: #10b981;
-  font-style: normal;
-  font-weight: 900;
-}
-
-.sort-icons {
-  color: #10b981;
-  letter-spacing: 3px;
-}
-
-.mini-progress {
-  width: 72px;
-  height: 14px;
-  border-radius: 999px;
-  background: #e5eaf1;
+.tw-options li > span { flex: 1 1 auto; min-width: 0; color: var(--ax-text); line-height: 1.45; }
+.tw-options li.is-correct { background: rgba(52, 199, 89, 0.07); box-shadow: 0 0 0 1px rgba(52, 199, 89, 0.45); }
+.tw-options li.is-correct b { background: #34c759; color: #fff; }
+.tw-options em {
   display: inline-flex;
-  vertical-align: middle;
-  margin-right: 6px;
-  overflow: hidden;
-}
-
-.mini-progress i {
-  height: 100%;
-  border-radius: inherit;
-  background: #20c997;
-}
-
-.switch-off {
-  width: 40px;
-  height: 20px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  color: #64748b;
-  display: inline-grid;
-  place-items: center;
-  font-size: 12px;
-}
-
-.pagination-bar {
-  justify-content: flex-end;
-  min-height: 40px;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.pagination-bar b {
-  width: 30px;
-  height: 30px;
-  border-radius: 3px;
-  background: #20c997;
-  color: #fff;
-  display: grid;
-  place-items: center;
-}
-
-.schedule-tools {
-  justify-content: space-between;
-}
-
-.week-title {
-  justify-content: flex-end;
-}
-
-.week-title button {
-  min-height: 28px;
-  border: 1px solid #dbe2ea;
-  border-radius: 4px;
-  background: #fff;
-}
-
-.schedule-board {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 72px repeat(7, minmax(126px, 1fr));
-  grid-template-rows: 64px repeat(3, minmax(170px, 1fr));
-  overflow: auto;
-  border: 1px solid #dbe2ea;
-}
-
-.time-head,
-.day-head,
-.period-cell,
-.schedule-cell {
-  border-right: 1px solid #dbe2ea;
-  border-bottom: 1px solid #dbe2ea;
-}
-
-.day-head {
-  background: #f8fafc;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 4px;
-  color: #111827;
-  text-align: center;
-  font-size: 13px;
-}
-
-.day-head span {
-  color: #0f766e;
-}
-
-.period-cell {
-  display: grid;
-  place-items: center;
-  color: #334155;
-  background: #fbfdff;
-}
-
-.schedule-cell {
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-
-.schedule-cell article {
-  min-height: 26px;
-  border-radius: 5px;
-  padding: 5px 6px;
-  display: flex;
+  flex-shrink: 0;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  color: #fff;
-  font-size: 11px;
-  line-height: 1.2;
-}
-
-.schedule-cell article.green {
-  background: #39d0b2;
-}
-
-.schedule-cell article.gray {
-  background: #9ca3af;
-}
-
-.schedule-cell article span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  gap: 3px;
+  color: var(--ax-ok);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
   white-space: nowrap;
 }
+.tw-options em .adm-icon { width: 13px; height: 13px; }
 
-.schedule-cell article b {
-  flex: 0 0 auto;
-  font-size: 10px;
+.tw-kv { display: grid; margin: 0; }
+.tw-kv > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid var(--ax-line); }
+.tw-kv > div:first-child { padding-top: 0; border-top: 0; }
+.tw-kv dt { color: var(--ax-muted); font-size: 13px; }
+.tw-kv dd { margin: 0; color: var(--ax-text); font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+
+.tw-edit-list { display: grid; gap: 10px; }
+.tw-req-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 32px; gap: 8px; align-items: start; }
+.tw-req-row .ax-textarea { min-height: 60px; }
+.tw-remove {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ax-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
+.tw-remove:hover { background: rgba(255, 59, 48, 0.1); color: #d70015; }
+.tw-remove:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ax-brand-ring); }
+.tw-remove .adm-icon { width: 16px; height: 16px; }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.tw-material-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.tw-material-chip { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px; border-radius: 10px; background: #f5f5f7; }
+.tw-material-name { display: grid; min-width: 0; line-height: 1.3; }
+.tw-material-name strong { overflow: hidden; color: var(--ax-ink); font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.tw-material-name small { color: var(--ax-muted); font-size: 11.5px; }
+.tw-thumb {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  color: #8e8e93;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08);
 }
-
-th,
-td {
-  height: 52px;
-  border-bottom: 1px solid #edf0f5;
-  text-align: left;
-  color: #334155;
+.tw-thumb.is-lg { width: 56px; height: 56px; border-radius: 10px; }
+.tw-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.tw-thumb .adm-icon { width: 18px; height: 18px; }
+.tw-thumb.is-lg .adm-icon { width: 22px; height: 22px; }
+.tw-thumb.is-image { color: #ff2d55; }
+.tw-thumb.is-lineart { color: #0a84ff; }
+.tw-thumb.is-palette { color: #ff9500; }
+.tw-thumb.is-font { color: #5856d6; }
+.tw-material-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto 32px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f5f5f7;
 }
+.tw-material-fields { display: grid; grid-template-columns: 110px minmax(0, 1fr) minmax(0, 1.3fr); gap: 8px; min-width: 0; }
+.tw-material-row .ax-input,
+.tw-material-row .ax-select { background-color: #fff; }
+.tw-file-btn { position: relative; cursor: pointer; }
 
-th {
-  color: #64748b;
-  font-weight: 900;
+.ax-option.is-disabled { opacity: 0.5; cursor: not-allowed; }
+.tw-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 10px; }
+.tw-template { align-items: center; }
+.tw-swatch { flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.08); }
+.tw-default-template { max-width: 320px; margin-top: 12px; }
+.ax-option-grid + .ax-note { margin-top: 12px; }
+
+.tw-preview { display: grid; gap: 12px; }
+.tw-preview-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 128px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tint) 10%, #fff) 0%, color-mix(in srgb, var(--tint) 26%, #fff) 100%);
 }
+.tw-preview-cat {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ax-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+.tw-preview h3 { margin: 0; color: var(--ax-ink); font-size: 16px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.tw-preview p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ax-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+.tw-checklist { display: grid; margin: 0; padding: 0; border-top: 1px solid var(--ax-line); list-style: none; }
+.tw-checklist li { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--ax-line); color: var(--ax-text); font-size: 13px; }
+.tw-checklist li > span:nth-child(2) { flex: 1 1 auto; }
+.tw-checklist small { color: var(--ax-muted); font-size: 12px; }
+.tw-checklist li.is-done small { color: var(--ax-ok); }
+.tw-check {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px #c7c7cc;
+  color: #fff;
+}
+.tw-checklist li.is-done .tw-check { background: #34c759; box-shadow: none; }
+.tw-check .adm-icon { width: 12px; height: 12px; }
+.tw-preview-hint { text-align: center; }
 
+/* ---------- 课程库 ---------- */
+.tw-course-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.tw-course-cell .ax-cell-main { min-width: 150px; max-width: 260px; }
+.ax-table .ax-cell-main > strong.tw-clamp-2 {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.tw-assets { display: grid; gap: 3px; width: 136px; }
+.tw-assets > span {
+  display: block;
+  overflow: hidden;
+  color: var(--ax-text);
+  font-size: 12.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tw-assets > span.is-missing { color: var(--ax-faint); }
+.tw-assets .adm-icon { display: inline-flex; width: 14px; height: 14px; margin-right: 5px; color: var(--ax-muted); vertical-align: -2px; }
+.tw-audience { display: block; max-width: 190px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tw-audience.is-missing { color: var(--ax-muted); }
+.tw-library-table tr.is-selected td { background: rgba(0, 122, 255, 0.045); }
+.tw-library-table input[type='checkbox']:disabled { cursor: not-allowed; opacity: 0.35; }
+.tw-table-foot { justify-content: flex-start; }
+.tw-table-empty { border-top: 1px solid var(--ax-line); }
+.tw-cell-wide { max-width: 260px; }
+
+/* ---------- 样例页：进度条、课表、列表 ---------- */
+.tw-meter { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.tw-bar { position: relative; flex: 1 1 auto; min-width: 56px; height: 6px; overflow: hidden; border-radius: 999px; background: rgba(118, 118, 128, 0.14); }
+.tw-bar i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: #007aff; }
+.tw-meter.is-green .tw-bar i { background: #34c759; }
+.tw-meter.is-low .tw-bar i { background: #ff9500; }
+.tw-meter small { flex-shrink: 0; color: var(--ax-text); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.tw-week > .ax-card-head { margin: 0; padding-bottom: 14px; border-bottom: 1px solid var(--ax-line); }
+.tw-legend { display: flex; gap: 14px; color: var(--ax-muted); font-size: 12.5px; }
+.tw-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tw-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.tw-legend i.is-done { background: #d1d1d6; }
+.tw-legend i.is-todo { background: #007aff; }
+.tw-week-scroll { overflow-x: auto; }
+.tw-week-grid { display: grid; grid-template-columns: 52px repeat(7, minmax(118px, 1fr)); min-width: 900px; }
+.tw-week-corner,
+.tw-day-head { border-bottom: 1px solid var(--ax-line); }
+.tw-day-head { display: grid; gap: 1px; padding: 10px 10px 8px; border-left: 1px solid var(--ax-line); }
+.tw-day-head strong { color: var(--ax-ink); font-size: 13px; font-weight: 600; }
+.tw-day-head small { color: var(--ax-muted); font-size: 11.5px; }
+.tw-period { padding: 12px 0; border-bottom: 1px solid var(--ax-line); color: var(--ax-muted); font-size: 12px; font-weight: 500; text-align: center; }
+.tw-cell { display: grid; align-content: start; gap: 6px; min-height: 96px; padding: 8px; border-bottom: 1px solid var(--ax-line); border-left: 1px solid var(--ax-line); }
+.tw-week-grid > :nth-last-child(-n + 8) { border-bottom: 0; }
+.tw-lesson { display: grid; gap: 1px; padding: 6px 8px 6px 9px; border-left: 3px solid #007aff; border-radius: 7px; background: rgba(0, 122, 255, 0.08); }
+.tw-lesson b { color: #0064d1; font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tw-lesson span { color: var(--ax-ink); font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+.tw-lesson.is-done { border-left-color: #c7c7cc; background: #f2f2f4; }
+.tw-lesson.is-done b,
+.tw-lesson.is-done span { color: var(--ax-muted); }
+
+.tw-list { display: grid; }
+.tw-list-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; }
+.tw-list-row + .tw-list-row { border-top: 1px solid var(--ax-line); }
+.tw-list-row .ax-row-main { flex: 1 1 auto; min-width: 0; }
+
+/* ---------- 发放课程弹窗 ---------- */
+.tw-dist-hint { margin: -4px 0 14px; }
+.tw-dist-group + .tw-dist-group { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ax-line); }
+.tw-dist-group h4 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 10px; color: var(--ax-ink); font-size: 14px; font-weight: 600; }
+.tw-dist-group h4 small { color: #007aff; font-size: 12px; font-weight: 500; }
+.tw-dist-foot { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- 响应式 ---------- */
 @media (max-width: 1100px) {
-  .teacher-page {
-    grid-template-columns: 210px minmax(0, 1fr);
-  }
+  .tw-overview-grid,
+  .tw-editor { grid-template-columns: minmax(0, 1fr); }
+  .tw-editor-side { position: static; }
+}
+@media (max-width: 900px) {
+  .ax-table td { white-space: nowrap; }
+  .tw-flow { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .tw-flow-arrow { display: none; }
+  .tw-uploads { grid-template-columns: minmax(0, 1fr); }
+  .tw-upload { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; justify-items: stretch; }
+  .tw-upload > .ax-btn { justify-self: end; }
+  .tw-material-fields { grid-template-columns: minmax(0, 1fr); }
+  .tw-req-row { grid-template-columns: minmax(0, 1fr) 32px; }
+  .tw-req-row .ax-textarea { grid-column: 1; }
+  .tw-req-row .tw-remove { grid-row: 1; grid-column: 2; }
+}
+@media (max-width: 640px) {
+  .tw-kv > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .tw-material-row { grid-template-columns: 56px minmax(0, 1fr) 32px; }
+  .tw-material-row .tw-file-btn { grid-column: 2; justify-self: start; }
+  .tw-parse { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 10px; }
+  .tw-parse > .ax-btn { grid-column: 2; justify-self: start; }
+  /* 学习闭环 5 步：手机上两列，最后一步「项目报告」占满一行，不留空位 */
+  .tw-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tw-flow li:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 520px) {
+  /* 手机上统计卡保持两列（后台在这个宽度是一列）：讲师可能在手机上用，少往下滑，先看到课程列表 */
+  .ax-stats,
+  .ax-stats.is-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .ax-stat { gap: 2px; padding: 12px 14px; border-radius: 16px; }
+  .ax-stat > strong { font-size: 24px; }
+  .ax-stat > small { font-size: 12px; line-height: 1.4; }
+}
 
-  .overview-grid,
-  .dashboard-layout {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* 课程库：按卡片实际宽度排版。宽的时候完整表格；中等宽度收起「更新」「课件」两列；
+   平板竖屏、手机上每门课变成一张小卡片，操作按钮直接露出来，不用左右滑 */
+.tw-library-card { container: twlib / inline-size; }
+.tw-library-table th,
+.tw-library-table td { padding-right: 12px; padding-left: 12px; }
+.tw-library-table th:first-child,
+.tw-library-table td:first-child { padding-left: 16px; }
+.tw-library-table th:last-child,
+.tw-library-table td:last-child { padding-right: 16px; }
+@container twlib (max-width: 1100px) {
+  .tw-library-table .tw-col-updated { display: none; }
+}
+@container twlib (max-width: 1000px) {
+  .tw-library-table .tw-col-assets { display: none; }
+}
+@container twlib (max-width: 860px) {
+  .tw-library-table thead { display: none; }
+  .tw-library-table,
+  .tw-library-table tbody { display: block; }
+  .tw-library-table tbody tr {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas:
+      'check course course status'
+      '.     cat    aud    aud'
+      '.     act    act    act';
+    gap: 10px 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--ax-line);
   }
-
-  .flow-panel,
-  .recent-panel {
-    grid-column: 1 / -1;
-  }
-
-  .course-editor-layout,
-  .auth-layout {
-    grid-template-columns: 1fr;
+  .tw-library-table tbody tr:last-child { border-bottom: 0; }
+  .tw-library-table td,
+  .tw-library-table td:first-child,
+  .tw-library-table td:last-child { display: block; padding: 0; border-bottom: 0; white-space: normal; }
+  .tw-library-table td.is-check { grid-area: check; width: auto; }
+  .tw-library-table .tw-col-course { grid-area: course; }
+  .tw-library-table .tw-col-status { grid-area: status; }
+  .tw-library-table .tw-col-category { grid-area: cat; }
+  .tw-library-table .tw-col-audience { grid-area: aud; }
+  .tw-library-table .tw-col-actions { grid-area: act; text-align: left; }
+  .tw-library-table .tw-col-category .ax-cell-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+  .tw-library-table .tw-course-cell .ax-cell-main { min-width: 0; max-width: none; }
+  .tw-library-table .tw-audience { max-width: none; }
+  .tw-library-table .tw-audience::before { content: '发放范围：'; color: var(--ax-muted); }
+  .tw-library-table .tw-col-actions .ax-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 112px)); justify-content: start; }
+}
+@container twlib (max-width: 480px) {
+  .tw-library-table tbody tr {
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'check course status'
+      '.     cat    cat'
+      '.     aud    aud'
+      '.     act    act';
   }
 }
+</style>
+
+<style lang="scss">
+/* 顶栏「个人中心」是 button（后台那个位置是链接）：全站 button 最低 48px，这里不用 */
+.teacher-shell .tw-top-btn { min-height: 0; }
 </style>

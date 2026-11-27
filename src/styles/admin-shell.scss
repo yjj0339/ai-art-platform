@@ -324,6 +324,18 @@
 .as-top-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .as-backdrop { display: none; }
 
+/* 全站给 button 设了触屏最低高度 48px：侧栏分组标题（24px）、图标按钮（30px）、退出（28px）不用它，
+   否则分组标题被撑成 48px 高、退出按钮变成竖椭圆。触屏设备上单独放大一点，好点。 */
+.as-icon-btn,
+.as-logout,
+.as-section-head { min-height: 0; }
+@media (pointer: coarse) {
+  .as-icon-btn { width: 40px; height: 40px; }
+  .as-logout { width: 36px; height: 36px; }
+  .as-section-head { height: 32px; }
+  .as-top-link { height: 36px; }
+}
+
 /* 页面切换：内容淡入并轻轻上移（苹果常用的减速曲线） */
 .as-main > .ax-page,
 .as-main > section,
