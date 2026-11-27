@@ -19,8 +19,9 @@
     <!-- 技能包是「原料区」：上传进来的 SKILL.md 先在这里待整理，转成玩法、测试、发布后才进用户端。 -->
     <AiSkillPackagePanel v-if="activeView === 'packages'" />
 
-    <template v-else>
-      <div class="sk-toolbar">
+    <!-- 2026-11-27 按客户给的参考后台改：筛选条 + 表格放在一张白卡片里（以前是一张张大卡片，很占地方）。按钮和操作都没变。 -->
+    <section v-else class="ax-card is-flush sk-list">
+      <div class="ax-toolbar sk-toolbar">
         <div class="ax-search"><input v-model.trim="keyword" type="search" placeholder="搜索玩法名称或说明" aria-label="搜索玩法" /></div>
         <select v-model="statusFilter" class="ax-select" aria-label="按状态筛选"><option value="all">全部状态</option><option value="draft">草稿</option><option value="published">已发布</option><option value="offline">已下线</option></select>
         <select v-model="providerFilter" class="ax-select" aria-label="按供应商筛选"><option value="all">全部供应商</option><option value="agnes">Agnes</option><option value="volcengine">火山引擎</option></select>
@@ -28,52 +29,58 @@
         <span class="ax-count">共 {{ filteredSkills.length }} 个玩法</span>
       </div>
 
-      <div v-if="loading" class="ax-card"><div class="ax-empty is-compact"><strong>正在读取玩法…</strong></div></div>
-      <div v-else-if="loadError" class="ax-card">
-        <div class="ax-empty">
-          <strong>玩法列表没有读出来</strong>
-          <span>{{ loadError }}</span>
-          <button type="button" class="ax-btn is-sm is-soft" @click="loadSkills">重新加载</button>
-        </div>
+      <div v-if="loading" class="ax-empty is-compact"><strong>正在读取玩法…</strong></div>
+      <div v-else-if="loadError" class="ax-empty">
+        <strong>玩法列表没有读出来</strong>
+        <span>{{ loadError }}</span>
+        <button type="button" class="ax-btn is-sm is-soft" @click="loadSkills">重新加载</button>
       </div>
-      <div v-else-if="!filteredSkills.length" class="ax-card">
-        <div class="ax-empty">
-          <strong>{{ typeCount(activeType) ? '没有符合条件的玩法' : `还没有${activeType === 'video' ? '视频' : '图像'}玩法` }}</strong>
-          <span>{{ typeCount(activeType) ? '换个关键词或筛选条件试试。' : '点上方「新建」按钮创建第一个玩法。' }}</span>
-        </div>
+      <div v-else-if="!filteredSkills.length" class="ax-empty">
+        <strong>{{ typeCount(activeType) ? '没有符合条件的玩法' : `还没有${activeType === 'video' ? '视频' : '图像'}玩法` }}</strong>
+        <span>{{ typeCount(activeType) ? '换个关键词或筛选条件试试。' : '点上方「新建」按钮创建第一个玩法。' }}</span>
       </div>
 
-      <div v-else class="sk-grid">
-        <article v-for="skill in filteredSkills" :key="skill.id" class="sk-card" :class="`is-${skill.status}`">
-          <div class="sk-cover" :style="coverStyle(skill)">
-            <span v-if="!hasCover(skill)" class="sk-cover-empty"><AdminIcon :name="skill.skillType === 'video' ? 'video' : 'image'" size="lg" /></span>
-            <span class="ax-pill sk-status" :class="statusPill(skill.status)">{{ statusLabel(skill.status) }}</span>
-          </div>
-          <div class="sk-body">
-            <strong class="sk-title" :title="skill.title">{{ skill.title }}</strong>
-            <p class="sk-summary">{{ skill.summary || '暂无玩法说明' }}</p>
-            <div class="ax-tags">
-              <span class="ax-tag">{{ providerLabel(skill) }}</span>
-              <span class="ax-tag">更新于 {{ dateLabel(skill.updatedAt) }}</span>
-            </div>
-          </div>
-          <footer class="sk-foot">
-            <button type="button" class="ax-btn is-sm is-soft" @click="openWorkflow(skill)">配置工作流</button>
-            <button type="button" class="ax-btn is-sm" @click="openStudentPage(skill)">用户页面</button>
-            <span class="ax-grow"></span>
-            <el-dropdown trigger="click">
-              <button type="button" class="ax-btn is-sm is-ghost sk-more" aria-label="更多操作"><AdminIcon name="more" plain /></button>
-              <template #dropdown><el-dropdown-menu>
-                <el-dropdown-item @click="editBasic(skill)">编辑基础信息</el-dropdown-item>
-                <el-dropdown-item v-if="skill.status === 'published'" @click="setStatus(skill, 'offline')">下线玩法</el-dropdown-item>
-                <el-dropdown-item v-if="skill.status === 'offline'" @click="setStatus(skill, 'draft')">转为草稿</el-dropdown-item>
-                <el-dropdown-item divided @click="removeSkill(skill)">永久删除</el-dropdown-item>
-              </el-dropdown-menu></template>
-            </el-dropdown>
-          </footer>
-        </article>
+      <div v-else class="ax-table-wrap">
+        <table class="ax-table sk-table">
+          <thead>
+            <tr><th>玩法信息</th><th>供应商</th><th>状态</th><th>更新时间</th><th class="is-right">操作</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="skill in filteredSkills" :key="skill.id" class="sk-row" :class="`is-${skill.status}`">
+              <td>
+                <div class="sk-info">
+                  <span class="sk-cover" :style="coverStyle(skill)">
+                    <span v-if="!hasCover(skill)" class="sk-cover-empty"><AdminIcon :name="skill.skillType === 'video' ? 'video' : 'image'" /></span>
+                  </span>
+                  <span class="sk-text">
+                    <strong class="sk-title" :title="skill.title">{{ skill.title }}</strong>
+                    <small class="sk-summary" :title="skill.summary || ''">{{ skill.summary || '暂无玩法说明' }}</small>
+                  </span>
+                </div>
+              </td>
+              <td class="is-nowrap"><span class="ax-tag">{{ providerLabel(skill) }}</span></td>
+              <td class="is-nowrap"><span class="ax-pill" :class="statusPill(skill.status)">{{ statusLabel(skill.status) }}</span></td>
+              <td class="is-num">{{ dateLabel(skill.updatedAt) }}</td>
+              <td class="is-right">
+                <div class="sk-ops">
+                  <button type="button" class="ax-link" @click="openWorkflow(skill)">配置工作流</button>
+                  <button type="button" class="ax-link" @click="openStudentPage(skill)">用户页面</button>
+                  <el-dropdown trigger="click">
+                    <button type="button" class="ax-link sk-more" aria-label="更多操作">更多<AdminIcon name="chevron" plain class="sk-caret" /></button>
+                    <template #dropdown><el-dropdown-menu>
+                      <el-dropdown-item @click="editBasic(skill)">编辑基础信息</el-dropdown-item>
+                      <el-dropdown-item v-if="skill.status === 'published'" @click="setStatus(skill, 'offline')">下线玩法</el-dropdown-item>
+                      <el-dropdown-item v-if="skill.status === 'offline'" @click="setStatus(skill, 'draft')">转为草稿</el-dropdown-item>
+                      <el-dropdown-item divided @click="removeSkill(skill)">永久删除</el-dropdown-item>
+                    </el-dropdown-menu></template>
+                  </el-dropdown>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </template>
+    </section>
 
     <el-dialog v-model="createVisible" class="ax-dialog" :title="editingId ? '编辑玩法基础信息' : `新建${form.skillType === 'video' ? '视频' : '图像'}玩法`" width="min(92vw, 620px)" align-center destroy-on-close>
       <div class="sk-form">
@@ -208,49 +215,29 @@ loadSkills()
 
 <style scoped>
 /* AI玩法中心（2026-11-26 第二版）：玩法做成 3:1 封面卡片，和用户端「技能玩法」卡片同比例；组件类名一律 sk- 前缀 */
-.sk-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .sk-toolbar > .ax-search { flex: 1 1 260px; max-width: 360px; }
-
-.sk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-.sk-card {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--ax-glass-edge);
-  border-radius: var(--ax-radius-lg);
-  background: var(--ax-surface);
-  box-shadow: var(--ax-shadow);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-  -webkit-backdrop-filter: var(--ax-blur);
-  backdrop-filter: var(--ax-blur);
-}
-.sk-card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 18px 40px rgba(16, 24, 40, 0.1); }
+.sk-list > .ax-empty { margin: 8px 0; }
+.sk-info { display: flex; align-items: center; gap: 12px; min-width: 260px; max-width: 520px; }
 .sk-cover {
   position: relative;
-  aspect-ratio: 3 / 1;
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.12), rgba(175, 82, 222, 0.14));
+  flex: none;
+  width: 108px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(var(--ax-brand-rgb), 0.12), rgba(175, 82, 222, 0.14));
   background-position: center;
   background-size: cover;
 }
-.sk-card.is-offline .sk-cover { filter: grayscale(0.7); opacity: 0.75; }
+.sk-row.is-offline .sk-cover { filter: grayscale(0.7); opacity: 0.75; }
 .sk-cover-empty { position: absolute; inset: 0; display: grid; place-items: center; }
-.sk-status { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.92) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.sk-body { display: grid; flex: 1 1 auto; align-content: start; gap: 8px; padding: 14px 16px 12px; }
-.sk-title { overflow: hidden; color: var(--ax-ink); font-size: 16px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
-.sk-summary {
-  display: -webkit-box;
-  overflow: hidden;
-  min-height: calc(1.55em * 2);
-  margin: 0;
-  color: var(--ax-text);
-  font-size: 13px;
-  line-height: 1.55;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.sk-foot { display: flex; align-items: center; gap: 6px; padding: 10px 16px 14px; border-top: 1px solid var(--ax-line); }
-.sk-more { width: 30px; padding: 0; color: var(--ax-muted); }
+.sk-text { display: grid; gap: 2px; min-width: 0; }
+.sk-title { overflow: hidden; color: var(--ax-ink); font-size: 14px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sk-summary { overflow: hidden; color: var(--ax-muted); font-size: 12.5px; white-space: nowrap; text-overflow: ellipsis; }
+.sk-ops { display: inline-flex; align-items: center; justify-content: flex-end; gap: 14px; white-space: nowrap; }
+.sk-ops .ax-link { min-height: 0; font-size: 13.5px; }
+.sk-more { display: inline-flex; align-items: center; gap: 2px; }
+.sk-caret { width: 12px; height: 12px; transform: rotate(90deg); }
 
 /* 新建 / 编辑弹窗 */
 .sk-form { display: grid; gap: 14px; }

@@ -32,7 +32,18 @@
           <button v-for="group in groupNames" :key="group" type="button" class="st-chip" :class="{ 'is-active': groupFilter === group }" @click="groupFilter = group">{{ group }}<em>{{ countOfGroup(group) }}</em></button>
         </nav>
         <div class="st-tools">
-          <button type="button" class="ax-btn is-sm" :class="{ 'is-soft': batchMode }" :aria-pressed="batchMode" @click="toggleBatchMode"><AdminIcon name="check" plain />{{ batchMode ? '退出批量' : '批量管理' }}</button>
+          <!-- 2026-11-27 客户：不要单独的「批量管理」模式，改成参考后台那种下拉。勾选框一直在，勾了再从这里选操作。 -->
+          <el-dropdown trigger="click" :disabled="busy">
+            <button type="button" class="ax-btn is-sm" :class="{ 'is-soft': selectedIds.length }">批量操作<template v-if="selectedIds.length">（已选 {{ selectedIds.length }}）</template><AdminIcon name="chevron" plain class="st-caret" /></button>
+            <template #dropdown><el-dropdown-menu>
+              <el-dropdown-item :disabled="!visibleStyles.length" @click="togglePickAll">{{ allPicked ? '取消全选' : `全选${groupFilter === '__all__' ? '' : '本分类'}` }}</el-dropdown-item>
+              <el-dropdown-item :disabled="!selectedIds.length" @click="clearSelection">取消选择</el-dropdown-item>
+              <el-dropdown-item divided :disabled="!selectedIds.length" @click="runBatch('enable')">批量启用</el-dropdown-item>
+              <el-dropdown-item :disabled="!selectedIds.length" @click="runBatch('disable')">批量停用</el-dropdown-item>
+              <el-dropdown-item :disabled="!selectedIds.length" @click="openBatchGroup">批量改分类</el-dropdown-item>
+              <el-dropdown-item divided :disabled="!selectedIds.length" @click="runBatch('delete')"><span class="st-danger-text">批量删除</span></el-dropdown-item>
+            </el-dropdown-menu></template>
+          </el-dropdown>
           <div class="ax-seg" role="group" aria-label="展示方式">
             <button type="button" :class="{ 'is-active': viewMode === 'grid' }" :aria-pressed="viewMode === 'grid'" @click="setViewMode('grid')">卡片</button>
             <button type="button" :class="{ 'is-active': viewMode === 'list' }" :aria-pressed="viewMode === 'list'" @click="setViewMode('list')">列表</button>
@@ -40,20 +51,9 @@
         </div>
       </div>
 
-      <!-- 批量条：进「批量管理」才出现；按钮一直在，没勾选时置灰，不用先勾一个才看得到有哪些功能 -->
-      <div v-if="batchMode" class="ax-card st-batch">
-        <div class="st-batch-row">
-          <strong class="st-batch-count">已选 {{ selectedIds.length }} 个</strong>
-          <button type="button" class="ax-btn is-sm is-ghost" :disabled="busy || !visibleStyles.length" @click="togglePickAll">{{ allPicked ? '取消全选' : `全选${groupFilter === '__all__' ? '' : '本分类'}` }}</button>
-          <button type="button" class="ax-btn is-sm is-ghost" :disabled="busy || !selectedIds.length" @click="clearSelection">取消选择</button>
-          <span class="st-batch-actions">
-            <button type="button" class="ax-btn is-sm" :disabled="busy || !selectedIds.length" @click="runBatch('enable')">批量启用</button>
-            <button type="button" class="ax-btn is-sm" :disabled="busy || !selectedIds.length" @click="runBatch('disable')">批量停用</button>
-            <button type="button" class="ax-btn is-sm" :disabled="busy || !selectedIds.length" @click="openBatchGroup">批量改分类</button>
-            <button type="button" class="ax-btn is-sm is-danger" :disabled="busy || !selectedIds.length" @click="runBatch('delete')"><AdminIcon name="trash" plain />批量删除</button>
-          </span>
-        </div>
-        <div v-if="batchGroupOpen" class="st-batch-group">
+      <!-- 批量改分类：从「批量操作」里点了才出现 -->
+      <div v-if="batchGroupOpen" class="ax-card st-batch">
+        <div class="st-batch-group">
           <span>把选中的 {{ selectedIds.length }} 个风格移到</span>
           <!-- 用真下拉：批量条默认预填当前分类，用 datalist 会被预填值过滤成只剩一项 -->
           <select v-model="batchGroupName" class="ax-select" aria-label="目标分类">
@@ -63,7 +63,6 @@
           <button type="button" class="ax-btn is-sm is-primary" :disabled="busy || !batchGroupName" @click="runBatch('group')">确定</button>
           <button type="button" class="ax-btn is-sm is-ghost" @click="batchGroupOpen = false">取消</button>
         </div>
-        <small class="ax-hint">勾选下方卡片或行即可操作。删除只删勾选的那几个；在「分类设置」里删分类不会删风格。</small>
       </div>
 
       <!-- 卡片模式 -->
@@ -139,9 +138,9 @@
                 <td><span class="ax-pill" :class="item.status === 'enabled' ? 'is-ok' : 'is-muted'">{{ statusLabel(item.status) }}</span></td>
                 <td class="is-right">
                   <span class="st-row-actions">
-                    <button type="button" class="ax-btn is-sm" @click="openForm(item)">编辑</button>
-                    <button type="button" class="ax-btn is-sm" @click="toggleStatus(item)">{{ item.status === 'enabled' ? '停用' : '启用' }}</button>
-                    <button type="button" class="ax-btn is-sm is-danger" @click="removeStyle(item)">删除</button>
+                    <button type="button" class="ax-link" @click="openForm(item)">编辑</button>
+                    <button type="button" class="ax-link" @click="toggleStatus(item)">{{ item.status === 'enabled' ? '停用' : '启用' }}</button>
+                    <button type="button" class="ax-link is-danger" @click="removeStyle(item)">删除</button>
                   </span>
                 </td>
               </tr>
@@ -344,7 +343,8 @@ const formError = ref('')
 const formVisible = ref(false)
 const groupFilter = ref('__all__')
 const coverInput = ref(null)
-const viewMode = ref('grid')
+// 2026-11-27 客户要参考后台那种紧凑列表：默认用「列表」，管理员自己切到「卡片」后会记住
+const viewMode = ref('list')
 const selectedIds = ref([])
 const batchGroupOpen = ref(false)
 const batchGroupName = ref('')
@@ -354,7 +354,8 @@ const settingsError = ref('')
 
 // 批量模式：显式开关。以前要「先随便勾一个」才会冒出批量条，入口太隐蔽，
 // 管理员根本不知道有这个功能。现在点顶部「批量管理」进来，卡片/每行左侧才出现勾选框。
-const batchMode = ref(false)
+// 勾选框一直显示（以前要先点「批量管理」才出现）；变量名留着，卡片 / 表格里还在用
+const batchMode = ref(true)
 // 分类设置弹窗
 const categoryVisible = ref(false)
 const categoryBusy = ref(false)
@@ -460,7 +461,7 @@ async function loadSettings() {
   if (![2, 3, 4].includes(Number(settings.columns))) settings.columns = 4
 }
 function loadViewMode() {
-  try { if (localStorage.getItem(`${SETTINGS_KEY}-view`) === 'list') viewMode.value = 'list' } catch { /* 忽略 */ }
+  try { if (localStorage.getItem(`${SETTINGS_KEY}-view`) === 'grid') viewMode.value = 'grid' } catch { /* 忽略 */ }
 }
 function setViewMode(mode) {
   viewMode.value = mode
@@ -492,10 +493,6 @@ function clearSelection() { selectedIds.value = []; batchGroupOpen.value = false
 
 // 退出批量模式时一定要清空勾选：否则下次进来会带着上次的隐藏勾选，
 // 点一下「批量删除」就删掉看不见的几条。
-function toggleBatchMode() {
-  batchMode.value = !batchMode.value
-  clearSelection()
-}
 
 /* ---------------------------- 分类设置 ---------------------------- */
 
@@ -822,18 +819,15 @@ onMounted(() => {
 .st-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 .st-groups { display: flex; flex: 1 1 320px; gap: 6px; min-width: 0; padding: 2px; overflow-x: auto; scrollbar-width: none; }
 .st-groups::-webkit-scrollbar { display: none; }
-.st-chip { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border: 1px solid var(--ax-glass-edge); border-radius: 999px; background: var(--ax-surface); color: var(--ax-text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+.st-chip { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border: 1px solid var(--ax-line-strong); border-radius: 6px; background: #fff; color: var(--ax-text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
 .st-chip > em { color: var(--ax-muted); font-size: 12px; font-style: normal; font-weight: 500; font-variant-numeric: tabular-nums; }
 .st-chip:hover { color: var(--ax-ink); }
-.st-chip.is-active { border-color: transparent; background: var(--ax-ink); color: #fff; }
-.st-chip.is-active > em { color: rgba(255, 255, 255, 0.7); }
+.st-chip.is-active { border-color: rgba(var(--ax-brand-rgb), 0.45); background: var(--ax-brand-soft); color: var(--ax-brand); }
+.st-chip.is-active > em { color: var(--ax-brand); }
 .st-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ax-brand-ring); }
 .st-tools { display: flex; flex: none; align-items: center; gap: 10px; }
 
 .st-batch { display: grid; gap: 10px; padding: 14px 18px; }
-.st-batch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.st-batch-count { margin-right: 4px; color: var(--ax-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
-.st-batch-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
 .st-batch-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--ax-surface-2); color: var(--ax-text); font-size: 13px; }
 .st-batch-group > .ax-select { min-width: 160px; }
 
@@ -891,7 +885,7 @@ onMounted(() => {
 .st-thumb > img { width: 100%; height: 100%; object-fit: cover; }
 .st-table tr.is-off .st-thumb > img { filter: grayscale(0.75); opacity: 0.7; }
 .st-cell-prompt { display: -webkit-box; overflow: hidden; min-width: 220px; max-width: 420px; color: var(--ax-text); line-height: 1.5; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.st-row-actions { display: inline-flex; flex-wrap: nowrap; justify-content: flex-end; gap: 6px; }
+.st-row-actions { display: inline-flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 12px; white-space: nowrap; }
 
 /* 弹窗 */
 .st-form { display: grid; gap: 14px; }
@@ -927,7 +921,6 @@ onMounted(() => {
 .st-summary b { color: var(--ax-ink); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 760px) {
-  .st-batch-actions { margin-left: 0; }
   .st-cover-editor { grid-template-columns: minmax(0, 1fr); }
   .st-cover-preview { width: 148px; }
 }
@@ -935,4 +928,6 @@ onMounted(() => {
   .st-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .st-cat { flex-wrap: wrap; }
 }
+.st-caret { width: 12px; height: 12px; margin-left: 2px; transform: rotate(90deg); }
+.st-danger-text { color: var(--ax-bad); }
 </style>

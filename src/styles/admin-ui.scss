@@ -1492,95 +1492,8 @@ button.ax-stat { min-height: 0; }
   .course-save-bar > .ax-hint { flex-basis: 100%; }
 }
 
-/* 课程列表：封面卡片墙（2026-11-26 第二版） */
+/* 课程列表工具条 */
 .course-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.cl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(286px, 1fr)); gap: 16px; }
-.cl-card {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--ax-glass-edge);
-  border-radius: var(--ax-radius-lg);
-  background: var(--ax-surface);
-  box-shadow: var(--ax-shadow);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  -webkit-backdrop-filter: var(--ax-blur);
-  backdrop-filter: var(--ax-blur);
-}
-.cl-card:hover { transform: translateY(-2px); box-shadow: var(--ax-shadow), 0 18px 40px rgba(16, 24, 40, 0.09); }
-.cl-card.is-selected { border-color: rgba(var(--ax-brand-rgb), 0.6); box-shadow: 0 0 0 3px rgba(var(--ax-brand-rgb), 0.18), var(--ax-shadow); }
-.cl-card-cover {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 9;
-  padding: 18px;
-  background: linear-gradient(135deg, #5ac8fa, #0a84ff);
-}
-.cl-card-cover-title {
-  display: -webkit-box;
-  overflow: hidden;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-.cl-card-check { position: absolute; top: 10px; left: 10px; display: grid; cursor: pointer; }
-.cl-card-check > input { position: absolute; opacity: 0; pointer-events: none; }
-.cl-card-check > i {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.18);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-  transition: background 0.15s ease, border-color 0.15s ease;
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-}
-.cl-card-check > input:checked + i { border-color: #fff; background: var(--ax-brand); }
-.cl-card-check > input:checked + i::after {
-  content: '';
-  width: 9px;
-  height: 5px;
-  margin-top: -3px;
-  border-bottom: 2.2px solid #fff;
-  border-left: 2.2px solid #fff;
-  transform: rotate(-45deg);
-}
-.cl-card-check > input:focus-visible + i { box-shadow: 0 0 0 3px var(--ax-brand-ring); }
-.cl-card-status { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.92) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-.cl-card-body { display: grid; flex: 1 1 auto; align-content: start; gap: 8px; padding: 14px 16px 10px; }
-.cl-card-title {
-  overflow: hidden;
-  min-height: 0 !important;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ax-ink);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  text-align: left;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-.cl-card-title:hover { color: var(--ax-brand); }
-.cl-card-title:focus-visible { outline: none; text-decoration: underline; }
-.cl-card-meta { margin: -4px 0 0; color: var(--ax-muted); font-size: 13px; }
-.cl-card-groups { display: flex; align-items: center; gap: 8px; min-width: 0; margin: 2px 0 0; color: var(--ax-text); font-size: 13px; }
-.cl-card-groups > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.cl-card-foot { display: grid; gap: 10px; padding: 10px 16px 16px; border-top: 1px solid var(--ax-line); }
-.cl-card-foot > small { color: var(--ax-muted); font-size: 12.5px; }
-.cl-card-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* ==========================================================================
    页面专用：智能体配置（activeNav === 'agents'，2026-11-26 第二版）
@@ -1591,83 +1504,19 @@ button.ax-stat { min-height: 0; }
 .ag-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .ag-toolbar > .ax-search { flex: 1 1 260px; max-width: 380px; }
 
-.ag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.ag-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  padding: 18px 18px 14px;
-  border: 1px solid var(--ax-glass-edge);
-  border-radius: var(--ax-radius-lg);
-  background: var(--ax-surface);
-  box-shadow: var(--ax-shadow);
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-  -webkit-backdrop-filter: var(--ax-blur);
-  backdrop-filter: var(--ax-blur);
-}
-.ag-card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 18px 40px rgba(16, 24, 40, 0.1); }
-.ag-card.is-selected { box-shadow: 0 0 0 2px var(--ax-brand), 0 14px 34px rgba(var(--ax-brand-rgb), 0.16); }
-.ag-card.is-off .ag-card-role { color: var(--ax-muted); }
-.ag-card-head { display: flex; align-items: flex-start; gap: 12px; }
-.ag-card-title { display: grid; flex: 1 1 auto; gap: 6px; min-width: 0; }
-.ag-card-name {
-  overflow: hidden;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: none;
-  color: var(--ax-ink);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.35;
-  text-align: left;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-.ag-card-name:hover { color: var(--ax-brand); }
-.ag-card-name:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ax-brand-ring); }
-.ag-card-check { position: relative; display: grid; flex-shrink: 0; place-items: center; width: 30px; height: 30px; margin: -3px -3px 0 0; cursor: pointer; }
-.ag-card-check > input { position: absolute; opacity: 0; pointer-events: none; }
-.ag-card-check > i {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--ax-fill-strong);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.7);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.ag-card-check:hover > i { border-color: rgba(var(--ax-brand-rgb), 0.5); }
-.ag-card-check > input:checked + i { border-color: var(--ax-brand); background: var(--ax-brand); }
-.ag-card-check > input:checked + i::after {
-  content: '';
-  width: 9px;
-  height: 5px;
-  margin-top: -3px;
-  border-bottom: 2.2px solid #fff;
-  border-left: 2.2px solid #fff;
-  transform: rotate(-45deg);
-}
-.ag-card-check > input:focus-visible + i { box-shadow: 0 0 0 3px var(--ax-brand-ring); }
-.ag-card-role {
-  display: -webkit-box;
-  overflow: hidden;
-  min-height: calc(1.6em * 2);
-  margin: 0;
-  color: var(--ax-text);
-  font-size: 13.5px;
-  line-height: 1.6;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-.ag-card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--ax-line); cursor: default; }
+/* 智能体列表：表格（2026-11-27 按客户给的参考后台，由卡片墙改来） */
+.ag-list > .ax-empty { margin: 8px 0; }
+.ag-info { display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 520px; }
+.ag-text { display: grid; gap: 2px; min-width: 0; }
+.ag-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ag-name { min-height: 0; padding: 0; overflow: hidden; border: 0; background: none; color: var(--ax-ink); font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
+.ag-name:hover { color: var(--ax-brand); }
+.ag-text > small { overflow: hidden; color: var(--ax-muted); font-size: 12.5px; white-space: nowrap; text-overflow: ellipsis; }
+.ag-table tr.is-off .ag-name { color: var(--ax-muted); }
+.ag-table tr.is-selected { background: rgba(var(--ax-brand-rgb), 0.05); }
+.ag-ops { display: inline-flex; align-items: center; justify-content: flex-end; gap: 12px; white-space: nowrap; }
+.ag-ops .ax-link { min-height: 0; font-size: 13.5px; }
+.ax-link:disabled { color: var(--ax-faint); cursor: not-allowed; text-decoration: none; }
 
 .ax-savebar {
   position: sticky;
@@ -1743,7 +1592,6 @@ button.ax-stat { min-height: 0; }
   .ag-editor.is-edit > .ag-editor-side { order: -1; }
 }
 @media (max-width: 640px) {
-  .ag-grid { grid-template-columns: minmax(0, 1fr); }
   .ag-dry-input { flex-direction: column; align-items: stretch; }
   .ax-savebar { flex-wrap: wrap; }
   .ax-savebar > .ax-hint { flex-basis: 100%; }
@@ -1818,3 +1666,48 @@ button.ax-stat { min-height: 0; }
   .h5c-edition { width: 100%; }
   .h5c-edition > .ax-select { flex: 1 1 auto; }
 }
+
+/* 课程列表：表格（2026-11-27 按客户给的参考后台，由封面卡片墙改来） */
+.cl-list > .ax-empty { margin: 8px 0; }
+.cl-info { display: flex; align-items: center; gap: 12px; min-width: 200px; max-width: 380px; }
+.cl-thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 72px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #8fb3ff, #4565f0);
+  background-position: center !important;
+  background-size: cover !important;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.cl-text { display: grid; gap: 2px; min-width: 0; }
+.cl-title {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: none;
+  color: var(--ax-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.cl-title:hover { color: var(--ax-brand); }
+.cl-text > small { overflow: hidden; color: var(--ax-muted); font-size: 12.5px; white-space: nowrap; text-overflow: ellipsis; }
+.cl-tags { flex-wrap: nowrap; }
+.cl-auth { display: -webkit-box; max-width: 180px; overflow: hidden; color: var(--ax-text); font-size: 13px; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cl-when { display: grid; gap: 1px; line-height: 1.4; }
+.cl-when > small { color: var(--ax-muted); font-size: 12px; }
+.cl-ops { display: inline-flex; align-items: center; justify-content: flex-end; gap: 12px; white-space: nowrap; }
+.cl-ops .ax-link { min-height: 0; font-size: 13.5px; }
+.ax-link.is-danger { color: var(--ax-bad); }
+.cl-table tr.is-selected { background: rgba(var(--ax-brand-rgb), 0.05); }

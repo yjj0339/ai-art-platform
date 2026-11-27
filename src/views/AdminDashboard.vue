@@ -1,7 +1,9 @@
 <template>
-  <main class="admin-shell as-shell" :class="{ 'is-nav-open': navDrawerOpen }">
+  <main class="admin-shell as-shell ac-shell" :class="{ 'is-nav-open': navDrawerOpen }">
     <div v-if="navDrawerOpen" class="as-backdrop" aria-hidden="true" @click="navDrawerOpen = false"></div>
 
+    <!-- 2026-11-27 按客户给的参考后台重做外壳：左边「XX管理」分组菜单（点开一组、其他组自动收起），
+         顶上面包屑 + 搜索 + 头像，下面一排「已打开的页面」标签。只改摆法，页面、路由、接口一律没动。 -->
     <aside class="as-sidebar" aria-label="后台菜单">
       <div class="as-brand">
         <span class="as-brand-mark" :class="{ 'has-logo': Boolean(brandLogoUrl) }">
@@ -17,90 +19,115 @@
         </button>
       </div>
 
-      <label class="as-search">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5L20 20" /></svg>
-        <input v-model.trim="navQuery" type="search" placeholder="搜索功能" aria-label="搜索后台功能" @keydown.enter.prevent="openFirstNavMatch" @keydown.esc="navQuery = ''" />
-      </label>
-
-      <!-- 当前账号：系统设置顶上那一行的样子；头像是人像图标，不用名字的第一个字 -->
-      <div class="as-me">
-        <span class="as-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.8" /><path d="M4.8 19.6c1.4-3.2 4.1-4.9 7.2-4.9s5.8 1.7 7.2 4.9c-1.9 1.7-4.4 2.7-7.2 2.7s-5.3-1-7.2-2.7z" /></svg></span>
-        <span class="as-me-text">
-          <strong>{{ adminDisplayName }}</strong>
-          <small>{{ userStore.user?.organization?.name || '管理员' }}</small>
-        </span>
-        <button type="button" class="as-logout" title="退出登录" aria-label="退出登录" @click="logout">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h3.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H14M10 16.5L5.5 12 10 7.5M5.5 12H15" /></svg>
-          <span>退出</span>
-        </button>
-      </div>
-
       <nav class="as-nav" aria-label="管理员导航">
-        <template v-if="navQuery">
+        <section v-for="section in navSections" :key="section.id" class="as-section" :class="{ 'is-open': !section.label || !navSectionClosed[section.id], 'has-active': section.items.some((item) => item.id === activeNav) }">
           <button
-            v-for="item in navSearchResults"
-            :key="item.id"
+            v-if="section.label"
             type="button"
-            class="as-item"
-            :class="{ 'is-active': activeNav === item.id }"
-            @click.stop="openNavFromSearch(item.id)"
+            class="as-section-head"
+            :class="{ 'is-closed': navSectionClosed[section.id] }"
+            :aria-expanded="navSectionClosed[section.id] ? 'false' : 'true'"
+            @click="toggleNavSection(section.id)"
           >
-            <span class="as-icon" :style="{ '--tint': navIcon(item.id).tint }"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="navIcon(item.id).d" /></svg></span>
-            <span class="as-label">{{ item.label }}</span>
-            <small v-if="navSectionLabelOf(item.id)" class="as-meta">{{ navSectionLabelOf(item.id) }}</small>
+            <span class="as-group-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="navIcon(section.icon).d" /></svg></span>
+            <span class="as-group-label">{{ section.label }}</span>
+            <svg class="as-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
           </button>
-          <p v-if="!navSearchResults.length" class="as-empty">没有找到「{{ navQuery }}」</p>
-        </template>
-        <template v-else>
-          <section v-for="section in navSections" :key="section.id" class="as-section">
+          <div v-show="!section.label || !navSectionClosed[section.id]" class="as-section-body">
             <button
-              v-if="section.label"
+              v-for="item in section.items"
+              :key="item.id"
               type="button"
-              class="as-section-head"
-              :class="{ 'is-closed': navSectionClosed[section.id] }"
-              :aria-expanded="navSectionClosed[section.id] ? 'false' : 'true'"
-              @click="toggleNavSection(section.id)"
+              class="as-item"
+              :class="{ 'is-active': activeNav === item.id, 'is-top': !section.label }"
+              :aria-current="activeNav === item.id ? 'page' : undefined"
+              @click.stop="selectAdminNav(item.id)"
             >
-              <span>{{ section.label }}</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+              <span class="as-icon" :style="{ '--tint': navIcon(item.id).tint }"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="navIcon(item.id).d" /></svg></span>
+              <span class="as-label">{{ item.label }}</span>
             </button>
-            <div v-show="!section.label || !navSectionClosed[section.id]" class="as-section-body">
-              <button
-                v-for="item in section.items"
-                :key="item.id"
-                type="button"
-                class="as-item"
-                :class="{ 'is-active': activeNav === item.id }"
-                :aria-current="activeNav === item.id ? 'page' : undefined"
-                @click.stop="selectAdminNav(item.id)"
-              >
-                <span class="as-icon" :style="{ '--tint': navIcon(item.id).tint }"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="navIcon(item.id).d" /></svg></span>
-                <span class="as-label">{{ item.label }}</span>
-              </button>
-            </div>
-          </section>
-        </template>
+          </div>
+        </section>
       </nav>
-
     </aside>
 
     <section class="admin-main as-main">
-      <!-- 顶栏只做「我在哪」：后台 › 分组 › 页面；页面自己的大标题和操作在下面。平板竖屏、手机上从这里的菜单键打开侧栏。 -->
       <header class="as-topbar" :class="{ 'is-scrolled': topbarScrolled }">
         <button class="as-icon-btn as-menu-btn" type="button" aria-label="打开菜单" @click="navDrawerOpen = true">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
         <nav class="as-crumbs" aria-label="当前位置">
-          <span class="as-crumb-root">管理后台</span>
           <span v-if="currentSectionLabel" class="as-crumb-group">{{ currentSectionLabel }}</span>
           <strong>{{ currentNav.label }}</strong>
         </nav>
+
+        <!-- 搜功能：按页面名或说明里的字找，回车打开第一个；Ctrl+K 直接聚焦 -->
+        <div class="ac-search" :class="{ 'is-open': navQuery }">
+          <label class="as-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5L20 20" /></svg>
+            <input ref="navSearchInput" v-model.trim="navQuery" type="search" placeholder="搜索功能" aria-label="搜索后台功能" @keydown.enter.prevent="openFirstNavMatch" @keydown.esc="navQuery = ''" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <div v-if="navQuery" class="ac-search-pop" role="listbox">
+            <button
+              v-for="item in navSearchResults"
+              :key="item.id"
+              type="button"
+              class="as-item"
+              :class="{ 'is-active': activeNav === item.id }"
+              @click.stop="openNavFromSearch(item.id)"
+            >
+              <span class="as-icon" :style="{ '--tint': navIcon(item.id).tint }"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="navIcon(item.id).d" /></svg></span>
+              <span class="as-label">{{ item.label }}</span>
+              <small v-if="navSectionLabelOf(item.id)" class="as-meta">{{ navSectionLabelOf(item.id) }}</small>
+            </button>
+            <p v-if="!navSearchResults.length" class="as-empty">没有找到「{{ navQuery }}」</p>
+          </div>
+        </div>
+
+        <button class="as-icon-btn ac-top-btn" type="button" :title="isFullscreen ? '退出全屏' : '全屏'" :aria-label="isFullscreen ? '退出全屏' : '全屏'" @click="toggleFullscreen">
+          <svg v-if="!isFullscreen" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" /></svg>
+          <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" /></svg>
+        </button>
         <a class="as-top-link" :href="$router.resolve('/student/workbench').href" target="_blank" rel="noopener">
           <span>查看用户端</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16L16 8M9.5 8H16v6.5" /></svg>
         </a>
+
+        <!-- 当前账号 + 退出：原来在侧栏，现在放到右上角（参考后台的位置） -->
+        <div class="ac-me">
+          <span class="as-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.8" /><path d="M4.8 19.6c1.4-3.2 4.1-4.9 7.2-4.9s5.8 1.7 7.2 4.9c-1.9 1.7-4.4 2.7-7.2 2.7s-5.3-1-7.2-2.7z" /></svg></span>
+          <span class="as-me-text">
+            <strong>{{ adminDisplayName }}</strong>
+            <small>{{ userStore.user?.organization?.name || '管理员' }}</small>
+          </span>
+          <button type="button" class="as-logout" title="退出登录" aria-label="退出登录" @click="logout">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h3.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H14M10 16.5L5.5 12 10 7.5M5.5 12H15" /></svg>
+            <span>退出</span>
+          </button>
+        </div>
       </header>
 
+      <!-- 已打开的页面：点标签切回去，× 关掉；数据大盘固定在第一个 -->
+      <div class="ac-tabs" role="tablist" aria-label="已打开的页面">
+        <div
+          v-for="id in openTabs"
+          :key="id"
+          class="ac-tab"
+          :class="{ 'is-active': activeNav === id }"
+          role="tab"
+          :aria-selected="activeNav === id ? 'true' : 'false'"
+          tabindex="0"
+          @click="selectAdminNav(id)"
+          @keydown.enter="selectAdminNav(id)"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="navIcon(id).d" /></svg>
+          <span>{{ navItemById.get(id)?.label }}</span>
+          <button v-if="id !== 'dashboard'" type="button" class="ac-tab-x" :aria-label="`关闭${navItemById.get(id)?.label}`" @click.stop="closeTab(id)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+          </button>
+        </div>
+      </div>
 
       <!-- 数据大盘：读 /api/admin/ops/overview 和 /api/admin/risk/overview 的真实数据（旧版是写死的 Mock 数字，已换掉） -->
       <AdminOverview
@@ -730,76 +757,83 @@
           </el-dialog>
         </template>
 
-        <!-- 课程列表：封面卡片墙 -->
+        <!-- 课程列表：表格（2026-11-27 由封面卡片墙改来） -->
         <template v-else-if="coursePanel === 'bulk'">
           <div class="ax-stats">
             <div v-for="item in adminCourseStats" :key="item.label" class="ax-stat"><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small>{{ item.note }}</small></div>
           </div>
           <p v-if="!serverAuthMode" class="ax-note is-warn">演示模式（没有连后端）：课程只保存在这台电脑的浏览器里，换电脑、换浏览器或清理缓存后会看不到。</p>
           <p v-if="courseStore.loadError" class="ax-note is-bad">{{ courseStore.loadError }}</p>
-          <div class="course-toolbar">
-            <div class="ax-search"><input v-model="courseKeyword" type="search" placeholder="搜索课程名称" aria-label="搜索课程名称" /></div>
-            <label v-if="filteredAdminCourses.length" class="ax-chip-check">
-              <input type="checkbox" :checked="allAdminCoursesSelected" @change="toggleAllAdminCourses" />
-              <span>全选</span>
-            </label>
-            <span class="ax-grow"></span>
-            <template v-if="selectedAdminCourseIds.length">
-              <span class="ax-count">已选 {{ selectedAdminCourseIds.length }} 门</span>
-              <select class="ax-select course-batch" aria-label="批量操作" @change="handleAdminCourseBatchAction">
-                <option value="">批量操作…</option>
-                <option value="publish">批量发布</option>
-                <option value="archive">批量转草稿</option>
-                <option value="delete">批量删除</option>
-              </select>
-            </template>
-            <span v-else class="ax-count">共 {{ filteredAdminCourses.length }} 门</span>
-          </div>
+          <!-- 2026-11-27 按客户给的参考后台改：筛选条 + 表格放进一张白卡片（以前是封面卡片墙，很占地方）。勾选、批量下拉、授权/编辑/复制/删除都没变。 -->
+          <section class="ax-card is-flush cl-list">
+            <div class="ax-toolbar course-toolbar">
+              <div class="ax-search"><input v-model="courseKeyword" type="search" placeholder="搜索课程名称" aria-label="搜索课程名称" /></div>
+              <span class="ax-grow"></span>
+              <template v-if="selectedAdminCourseIds.length">
+                <span class="ax-count">已选 {{ selectedAdminCourseIds.length }} 门</span>
+                <select class="ax-select course-batch" aria-label="批量操作" @change="handleAdminCourseBatchAction">
+                  <option value="">批量操作…</option>
+                  <option value="publish">批量发布</option>
+                  <option value="archive">批量转草稿</option>
+                  <option value="delete">批量删除</option>
+                </select>
+              </template>
+              <span v-else class="ax-count">共 {{ filteredAdminCourses.length }} 门</span>
+            </div>
 
-          <div v-if="filteredAdminCourses.length" class="cl-grid">
-            <article
-              v-for="course in filteredAdminCourses"
-              :key="course.id"
-              class="cl-card"
-              :class="{ 'is-selected': selectedAdminCourseIds.includes(course.id) }"
-            >
-              <div class="cl-card-cover" :style="{ background: course.cover || undefined }">
-                <span v-if="!String(course.cover || '').startsWith('url(')" class="cl-card-cover-title">{{ course.title || '趣味设计课程' }}</span>
-                <label class="cl-card-check" :title="selectedAdminCourseIds.includes(course.id) ? '取消选择' : '选择这门课'">
-                  <input type="checkbox" :checked="selectedAdminCourseIds.includes(course.id)" :aria-label="`选择 ${course.title}`" @change="toggleAdminCourse(course.id)" />
-                  <i aria-hidden="true"></i>
-                </label>
-                <span class="ax-pill cl-card-status" :class="course.status === 'published' ? 'is-ok' : 'is-muted'">{{ course.status === 'published' ? '已发布' : '草稿' }}</span>
-              </div>
-              <div class="cl-card-body">
-                <button type="button" class="cl-card-title" :title="`编辑 ${course.title}`" @click="editAdminCourse(course)">{{ course.title || '趣味设计课程' }}</button>
-                <p class="cl-card-meta">{{ categoryLabel(course.category) }} · {{ course.difficulty || course.ageRange || '未填写适龄' }}</p>
-                <div class="ax-tags">
-                  <span class="ax-tag" :class="courseHasVideo(course) ? 'is-info' : ''" :title="course.videoFileName || ''">{{ courseHasVideo(course) ? '有视频' : '无视频' }}</span>
-                  <span class="ax-tag" :title="course.pptFileName || ''">{{ coursePptLabel(course) }}</span>
-                </div>
-                <p class="cl-card-groups" :title="courseCardAuthText(course)">
-                  <AdminIcon name="accounts" size="sm" />
-                  <span>{{ courseCardAuthText(course) }}</span>
-                </p>
-              </div>
-              <footer class="cl-card-foot">
-                <small>{{ course.ownerName || '管理员' }} · {{ formatDate(course.updatedAt || course.createdAt) }}</small>
-                <div class="cl-card-actions">
-                  <button type="button" class="ax-btn is-sm is-soft" @click="selectedAuthCourseId = course.id; coursePanel = 'auth'">授权</button>
-                  <button type="button" class="ax-btn is-sm" @click="editAdminCourse(course)">编辑</button>
-                  <button type="button" class="ax-btn is-sm is-ghost" @click="duplicateAdminCourse(course)">复制</button>
-                  <button type="button" class="ax-btn is-sm is-danger" @click="deleteAdminCourse(course.id)">删除</button>
-                </div>
-              </footer>
-            </article>
-          </div>
-          <div v-else class="ax-card">
-            <div class="ax-empty">
+            <div v-if="filteredAdminCourses.length" class="ax-table-wrap">
+              <table class="ax-table cl-table">
+                <thead>
+                  <tr>
+                    <th class="is-check"><input type="checkbox" :checked="allAdminCoursesSelected" aria-label="全选课程" @change="toggleAllAdminCourses" /></th>
+                    <th>课程信息</th>
+                    <th>资料</th>
+                    <th>授权范围</th>
+                    <th>状态</th>
+                    <th>更新</th>
+                    <th class="is-right">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="course in filteredAdminCourses" :key="course.id" :class="{ 'is-selected': selectedAdminCourseIds.includes(course.id) }">
+                    <td class="is-check"><input type="checkbox" :checked="selectedAdminCourseIds.includes(course.id)" :aria-label="`选择 ${course.title}`" @change="toggleAdminCourse(course.id)" /></td>
+                    <td>
+                      <div class="cl-info">
+                        <span class="cl-thumb" :style="{ background: course.cover || undefined }">
+                          <span v-if="!String(course.cover || '').startsWith('url(')">{{ (course.title || '课').slice(0, 2) }}</span>
+                        </span>
+                        <span class="cl-text">
+                          <button type="button" class="cl-title" :title="`编辑 ${course.title}`" @click="editAdminCourse(course)">{{ course.title || '趣味设计课程' }}</button>
+                          <small>{{ categoryLabel(course.category) }} · {{ course.difficulty || course.ageRange || '未填写适龄' }}</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="ax-tags cl-tags">
+                        <span class="ax-tag" :class="courseHasVideo(course) ? 'is-info' : ''" :title="course.videoFileName || ''">{{ courseHasVideo(course) ? '有视频' : '无视频' }}</span>
+                        <span class="ax-tag" :title="course.pptFileName || ''">{{ coursePptLabel(course) }}</span>
+                      </div>
+                    </td>
+                    <td><span class="cl-auth" :title="courseCardAuthText(course)">{{ courseCardAuthText(course) }}</span></td>
+                    <td class="is-nowrap"><span class="ax-pill" :class="course.status === 'published' ? 'is-ok' : 'is-muted'">{{ course.status === 'published' ? '已发布' : '草稿' }}</span></td>
+                    <td class="is-nowrap"><span class="cl-when"><span>{{ course.ownerName || '管理员' }}</span><small>{{ formatDate(course.updatedAt || course.createdAt) }}</small></span></td>
+                    <td class="is-right">
+                      <div class="cl-ops">
+                        <button type="button" class="ax-link" @click="selectedAuthCourseId = course.id; coursePanel = 'auth'">授权</button>
+                        <button type="button" class="ax-link" @click="editAdminCourse(course)">编辑</button>
+                        <button type="button" class="ax-link" @click="duplicateAdminCourse(course)">复制</button>
+                        <button type="button" class="ax-link is-danger" @click="deleteAdminCourse(course.id)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-else class="ax-empty">
               <strong>{{ courseStore.courses.length ? '没有符合条件的课程' : '课程库还是空的' }}</strong>
               <span>{{ courseStore.courses.length ? '换个关键词试试。' : '点「上传新课程」开始。' }}</span>
             </div>
-          </div>
+          </section>
         </template>
 
         <!-- 课程授权 -->
@@ -1671,69 +1705,71 @@
 
         <!-- 智能体列表 -->
         <template v-else-if="agentView === 'list'">
-          <div class="ag-toolbar">
-            <div class="ax-search"><input v-model="agentKeyword" type="search" placeholder="搜索名称、人设、目标关键词" aria-label="搜索智能体" /></div>
-            <select v-model="agentTypeFilter" class="ax-select" aria-label="按类型筛选">
-              <option value="all">全部类型</option>
-              <option value="report">报告生成</option>
-              <option value="report-outline">报告大纲</option>
-              <option value="ppt-image">PPT页图生成</option>
-              <option value="custom">自定义任务</option>
-            </select>
-            <select v-model="agentStatusFilter" class="ax-select" aria-label="按状态筛选">
-              <option value="all">全部状态</option>
-              <option value="enabled">启用中</option>
-              <option value="disabled">已停用</option>
-            </select>
-            <span class="ax-grow"></span>
-            <label v-if="filteredAgents.length" class="ax-chip-check">
-              <input type="checkbox" :checked="allFilteredAgentsSelected" @change="toggleAllFilteredAgents" />
-              <span>全选</span>
-            </label>
-            <button type="button" class="ax-btn is-danger is-sm" :disabled="!selectedAgentIds.length" @click="deleteCheckedAgents">删除选中{{ selectedAgentIds.length ? `（${selectedAgentIds.length}）` : '' }}</button>
-          </div>
+          <!-- 2026-11-27 按客户给的参考后台改：筛选条 + 表格放进一张白卡片（以前是卡片墙）。点名字进编辑；勾选、批量删除、设为在用、复制、删除都没变。 -->
+          <section class="ax-card is-flush ag-list">
+            <div class="ax-toolbar ag-toolbar">
+              <div class="ax-search"><input v-model="agentKeyword" type="search" placeholder="搜索名称、人设、目标关键词" aria-label="搜索智能体" /></div>
+              <select v-model="agentTypeFilter" class="ax-select" aria-label="按类型筛选">
+                <option value="all">全部类型</option>
+                <option value="report">报告生成</option>
+                <option value="report-outline">报告大纲</option>
+                <option value="ppt-image">PPT页图生成</option>
+                <option value="custom">自定义任务</option>
+              </select>
+              <select v-model="agentStatusFilter" class="ax-select" aria-label="按状态筛选">
+                <option value="all">全部状态</option>
+                <option value="enabled">启用中</option>
+                <option value="disabled">已停用</option>
+              </select>
+              <span class="ax-grow"></span>
+              <button type="button" class="ax-btn is-danger is-sm" :disabled="!selectedAgentIds.length" @click="deleteCheckedAgents">删除选中{{ selectedAgentIds.length ? `（${selectedAgentIds.length}）` : '' }}</button>
+            </div>
 
-          <div v-if="filteredAgents.length" class="ag-grid">
-            <article
-              v-for="agent in filteredAgents"
-              :key="agent.id"
-              class="ag-card"
-              :class="{ 'is-primary': isPrimaryAgent(agent.id), 'is-off': agent.status === 'disabled', 'is-selected': selectedAgentIds.includes(agent.id) }"
-              @click="openAgentEditor(agent.id)"
-            >
-              <header class="ag-card-head">
-                <AdminIcon name="agents" :tint="isPrimaryAgent(agent.id) ? '' : '#8e8e93'" size="lg" />
-                <div class="ag-card-title">
-                  <button type="button" class="ag-card-name" @click.stop="openAgentEditor(agent.id)">{{ agent.name || '未命名智能体' }}</button>
-                  <div class="ax-tags">
-                    <span v-if="isPrimaryAgent(agent.id)" class="ax-pill is-ok">用户端在用</span>
-                    <span v-else class="ax-pill is-muted">备用</span>
-                    <span v-if="agent.status === 'disabled'" class="ax-pill is-bad">已停用</span>
-                  </div>
-                </div>
-                <label class="ag-card-check" title="选中后可以批量删除" @click.stop>
-                  <input v-model="selectedAgentIds" type="checkbox" :value="agent.id" :aria-label="`选择 ${agent.name}`" />
-                  <i aria-hidden="true"></i>
-                </label>
-              </header>
-              <p class="ag-card-role">{{ agentRoleLine(agent) }}</p>
-              <div class="ax-tags">
-                <span class="ax-tag">{{ agentTypeLabel(agent.type) }}</span>
-                <span class="ax-tag">{{ agentStatusLabel(agent.status) }}</span>
-                <span class="ax-tag">更新于 {{ formatAgentTime(agent.updatedAt) }}</span>
-              </div>
-              <footer class="ag-card-foot" @click.stop>
-                <button type="button" class="ax-btn is-sm is-soft" @click="openAgentEditor(agent.id)">编辑</button>
-                <button v-if="!isPrimaryAgent(agent.id)" type="button" class="ax-btn is-sm" @click="setPrimaryAgent(agent.id)">设为在用</button>
-                <button type="button" class="ax-btn is-sm is-ghost" @click="copyAgent(agent.id)">复制</button>
-                <span class="ax-grow"></span>
-                <button type="button" class="ax-btn is-sm is-danger" :disabled="reportAgents.length <= 1" :title="reportAgents.length <= 1 ? '至少要留一个智能体' : ''" @click="deleteAgent(agent.id)">删除</button>
-              </footer>
-            </article>
-          </div>
-          <div v-else class="ax-card">
-            <div class="ax-empty"><strong>没有匹配的智能体</strong><span>换个筛选条件，或点右上角「新建智能体」。</span></div>
-          </div>
+            <div v-if="filteredAgents.length" class="ax-table-wrap">
+              <table class="ax-table ag-table">
+                <thead>
+                  <tr>
+                    <th class="is-check"><input type="checkbox" :checked="allFilteredAgentsSelected" aria-label="全选智能体" @change="toggleAllFilteredAgents" /></th>
+                    <th>智能体</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>更新时间</th>
+                    <th class="is-right">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="agent in filteredAgents" :key="agent.id" :class="{ 'is-off': agent.status === 'disabled', 'is-selected': selectedAgentIds.includes(agent.id) }">
+                    <td class="is-check"><input v-model="selectedAgentIds" type="checkbox" :value="agent.id" :aria-label="`选择 ${agent.name}`" /></td>
+                    <td>
+                      <div class="ag-info">
+                        <AdminIcon name="agents" :tint="isPrimaryAgent(agent.id) ? '' : '#8e8e93'" />
+                        <span class="ag-text">
+                          <span class="ag-name-row">
+                            <button type="button" class="ag-name" @click="openAgentEditor(agent.id)">{{ agent.name || '未命名智能体' }}</button>
+                            <span v-if="isPrimaryAgent(agent.id)" class="ax-pill is-ok">用户端在用</span>
+                            <span v-else class="ax-pill is-muted">备用</span>
+                          </span>
+                          <small :title="agentRoleLine(agent)">{{ agentRoleLine(agent) }}</small>
+                        </span>
+                      </div>
+                    </td>
+                    <td class="is-nowrap"><span class="ax-tag">{{ agentTypeLabel(agent.type) }}</span></td>
+                    <td class="is-nowrap"><span class="ax-pill" :class="agent.status === 'disabled' ? 'is-bad' : 'is-ok'">{{ agentStatusLabel(agent.status) }}</span></td>
+                    <td class="is-num">{{ formatAgentTime(agent.updatedAt) }}</td>
+                    <td class="is-right">
+                      <div class="ag-ops">
+                        <button type="button" class="ax-link" @click="openAgentEditor(agent.id)">编辑</button>
+                        <button v-if="!isPrimaryAgent(agent.id)" type="button" class="ax-link" @click="setPrimaryAgent(agent.id)">设为在用</button>
+                        <button type="button" class="ax-link" @click="copyAgent(agent.id)">复制</button>
+                        <button type="button" class="ax-link is-danger" :disabled="reportAgents.length <= 1" :title="reportAgents.length <= 1 ? '至少要留一个智能体' : ''" @click="deleteAgent(agent.id)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-else class="ax-empty"><strong>没有匹配的智能体</strong><span>换个筛选条件，或点右上角「新建智能体」。</span></div>
+          </section>
 
           <div class="ax-savebar">
             <span class="ax-hint">{{ agentStatus || '新建、复制、删除、设为在用都要点「保存配置」才会生效。' }}</span>
@@ -2196,6 +2232,7 @@ import '../styles/admin-ui.scss'
 import '../styles/admin-shell.scss'
 // 第三版外观：苹果「系统设置」风格（只改外观，放在最后覆盖前两版）
 import '../styles/admin-apple.scss'
+import '../styles/admin-console.scss'
 import { defaultSkillConfiguration } from '../utils/aiSkillSchema'
 import { accountFormatError, sanitizeAccountInput } from '../utils/accountRules'
 import { saveEditableAiSkill } from '../services/adminAiSkillEditorStore'
@@ -2745,16 +2782,18 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateTopbarScrolled)
 // 平板竖屏 / 手机：侧栏变成抽屉
 const navDrawerOpen = ref(false)
 
-// ---- 左侧导航：按用途分区，全部展开可见（2026-11-26 后台外壳重做） ----------------
-// 以前 9 个功能页藏在「功能管理」折叠组里，找起来要先猜在哪个组；现在按用途分 5 个区，
-// 每一项都有自己的图标和颜色，侧栏顶上还能直接搜。分区只改菜单的「摆法」，页面、路由、权限判断一律没动。
+// ---- 左侧导航：「XX管理」分组（2026-11-27 按客户给的参考后台重做） ----------------
+// 一组一个线条图标，点开一组、其他组自动收起；当前页面所在的组总是打开的。
+// 分组只改菜单的「摆法」，页面、路由、权限判断一律没动。只有一项的组，点组名直接打开那一页。
 const NAV_SECTIONS = [
   { id: 'overview', label: '', items: ['dashboard'] },
-  { id: 'people', label: '账号与安全', items: ['accounts', 'risk'] },
-  { id: 'teaching', label: '教学内容', items: ['courses', 'h5ReportTemplates', 'h5WorkflowLibrary'] },
-  { id: 'ai', label: 'AI 能力', items: ['api', 'creditBilling', 'featureManagement', 'imageStyleTemplates', 'promptLibrary', 'agents', 'partner'] },
-  { id: 'gallery', label: '作品广场与外观', items: ['galleryCategories', 'audit', 'workbench'] },
-  { id: 'system', label: '系统', items: ['ops', 'settings'] },
+  { id: 'users', label: '用户管理', icon: 'accounts', items: ['accounts'] },
+  { id: 'content', label: '内容管理', icon: 'folder', items: ['courses', 'h5ReportTemplates', 'h5WorkflowLibrary', 'galleryCategories', 'workbench'] },
+  { id: 'apps', label: '应用管理', icon: 'layers', items: ['featureManagement', 'imageStyleTemplates', 'promptLibrary', 'agents', 'partner', 'api'] },
+  { id: 'trade', label: '交易管理', icon: 'coins', items: ['creditBilling'] },
+  { id: 'risk', label: '风控管理', icon: 'shield', items: ['risk', 'audit'] },
+  { id: 'system', label: '系统管理', icon: 'settings', items: ['settings'] },
+  { id: 'ops', label: '异常管理', icon: 'alert', items: ['ops'] },
 ]
 // 菜单图标：统一放在 src/components/admin/adminIcons.js（侧栏、数据大盘、设置页、API 配置共用一份）
 function navIcon(id) {
@@ -2774,41 +2813,82 @@ function navSectionLabelOf(id) {
 // 顶栏面包屑：当前页面属于哪个分区（数据大盘不属于分区就不显示）
 const currentSectionLabel = computed(() => navSectionLabelOf(currentNav.value.id))
 
-// 分区可以收起，各存各的；当前页面所在的分区强制展开（否则看不到自己选中的是哪一项）。
-const NAV_SECTION_STORAGE_KEY = 'admin-nav-section-closed'
-function readClosedNavSections() {
-  try {
-    const value = JSON.parse(window.localStorage.getItem(NAV_SECTION_STORAGE_KEY) || '[]')
-    return Array.isArray(value) ? value : []
-  } catch {
-    return []
-  }
-}
-const navSectionClosed = reactive(Object.fromEntries(readClosedNavSections().map((id) => [id, true])))
-function saveClosedNavSections() {
-  try {
-    window.localStorage.setItem(NAV_SECTION_STORAGE_KEY, JSON.stringify(Object.keys(navSectionClosed).filter((id) => navSectionClosed[id])))
-  } catch {
-    /* 隐私模式下存不了就算了，不影响收起 */
-  }
+// 手风琴：同一时间只打开一个组。默认打开当前页面所在的组；点另一个组 = 打开它、收起其他。
+const navSectionClosed = reactive(Object.fromEntries(navSections.filter((section) => section.label).map((section) => [section.id, true])))
+function openOnlyNavSection(id) {
+  for (const key of Object.keys(navSectionClosed)) navSectionClosed[key] = key !== id
 }
 function toggleNavSection(id) {
-  navSectionClosed[id] = !navSectionClosed[id]
-  saveClosedNavSections()
+  const section = navSections.find((item) => item.id === id)
+  if (navSectionClosed[id]) openOnlyNavSection(id)
+  else navSectionClosed[id] = true
+  // 只有一项的组（用户管理、交易管理……）：点组名就直接打开那一页，少点一下
+  if (section && section.items.length === 1 && activeNav.value !== section.items[0].id) selectAdminNav(section.items[0].id)
 }
 function openActiveNavSection() {
   const section = navSections.find((item) => item.items.some((nav) => nav.id === activeNav.value))
-  if (section && navSectionClosed[section.id]) navSectionClosed[section.id] = false
+  if (section?.label) openOnlyNavSection(section.id)
 }
 openActiveNavSection()
 watch(activeNav, () => { openActiveNavSection() })
+
+// 已打开页面的标签：数据大盘固定第一个；切到新页面就加一个标签；× 关掉，关的是当前页就回到左边那个。
+// 只存在这一次打开的后台里（刷新后从数据大盘 + 当前页重新开始），不往浏览器里存。
+const openTabs = ref(['dashboard'])
+function rememberTab(id) {
+  if (navItemById.has(id) && !openTabs.value.includes(id)) openTabs.value = [...openTabs.value, id]
+}
+rememberTab(activeNav.value)
+watch(activeNav, (id) => rememberTab(id))
+async function closeTab(id) {
+  const index = openTabs.value.indexOf(id)
+  if (index <= 0) return
+  if (activeNav.value === id) {
+    const fallback = openTabs.value[index - 1] || 'dashboard'
+    await selectAdminNav(fallback)
+    if (activeNav.value === id) return // 当前页有未保存的修改、管理员选择留下：标签也留着
+  }
+  openTabs.value = openTabs.value.filter((tab) => tab !== id)
+}
+
+// 全屏：只是浏览器全屏，Esc 也能退出
+const isFullscreen = ref(false)
+function syncFullscreen() { isFullscreen.value = Boolean(document.fullscreenElement) }
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen()
+    else await document.documentElement.requestFullscreen()
+  } catch {
+    ElMessage.info('这个浏览器不支持全屏，可以按 F11')
+  }
+}
+// Ctrl+K / ⌘K：聚焦右上角的功能搜索
+const navSearchInput = ref(null)
+function onAdminHotkey(event) {
+  if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 'k') {
+    event.preventDefault()
+    navSearchInput.value?.focus()
+  }
+}
+onMounted(() => {
+  document.documentElement.classList.add('ax-console')
+  document.addEventListener('fullscreenchange', syncFullscreen)
+  window.addEventListener('keydown', onAdminHotkey)
+})
+onBeforeUnmount(() => {
+  document.documentElement.classList.remove('ax-console')
+  document.removeEventListener('fullscreenchange', syncFullscreen)
+  window.removeEventListener('keydown', onAdminHotkey)
+})
 
 // 侧栏搜索：按页面名或说明里的字找；回车直接打开第一个结果。
 const navQuery = ref('')
 const navSearchResults = computed(() => {
   const keyword = navQuery.value.toLowerCase()
   if (!keyword) return []
-  return navItems.filter((item) => `${item.label} ${item.desc || ''} ${navSectionLabelOf(item.id)}`.toLowerCase().includes(keyword))
+  const hits = navItems.filter((item) => `${item.label} ${item.desc || ''} ${navSectionLabelOf(item.id)}`.toLowerCase().includes(keyword))
+  // 名字里就有这个词的排前面（搜「审核」回车先开「内容审核」，而不是说明里提到审核的页面）
+  return hits.sort((a, b) => Number(b.label.toLowerCase().includes(keyword)) - Number(a.label.toLowerCase().includes(keyword)))
 })
 function openNavFromSearch(id) {
   navQuery.value = ''

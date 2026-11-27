@@ -1,0 +1,488 @@
+/* ==========================================================================
+   后台「控制台」风格（2026-11-27，按客户给的参考后台重做，只作用于管理员后台）
+   - 客户的话：后台要按参考后台那样做，看得更清楚；大面积展开的卡片太占位置。
+   - 白色侧栏 +「XX管理」分组手风琴、白色顶栏 + 已打开页面标签、浅灰蓝底 + 白卡片、紧凑表格。
+   - 全部挂在 html.ax-console 下：AdminDashboard 挂载时加这个类、离开时去掉；
+     讲师端（TeacherWorkbench）也引了 admin-*.scss，但不加这个类，所以完全不受影响。
+     弹窗被 Element Plus 挂到 body 下，也在 html 里面，所以同样生效。
+   - 只改样子，不改任何功能、接口和类名（测试脚本依赖 .as-section-body .as-item .as-label）。
+   ========================================================================== */
+html.ax-console {
+  --ax-brand-rgb: 69, 101, 240;
+  --ax-brand: #4565f0;
+  --ax-brand-ink: #3352d8;
+  --ax-brand-soft: rgba(69, 101, 240, 0.1);
+  --ax-brand-ring: rgba(69, 101, 240, 0.22);
+  --ax-info: #3352d8;
+  --ax-info-soft: rgba(69, 101, 240, 0.09);
+  --ax-bg: #f4f6fa;
+  --ax-ink: #1f2329;
+  --ax-text: #3c4250;
+  --ax-muted: #8a909c;
+  --ax-faint: #c0c4cc;
+  --ax-line: #ebeef5;
+  --ax-line-strong: #dcdfe6;
+  --ax-fill: #f2f3f5;
+  --ax-fill-strong: #e8eaee;
+  --ax-surface-2: #f7f8fa;
+  --ax-radius-sm: 6px;
+  --ax-radius: 8px;
+  --ax-radius-lg: 8px;
+  --ax-shadow: 0 1px 2px rgba(31, 35, 41, 0.03);
+  --ac-border: #ebeef5;
+  --ac-input-border: #dcdfe6;
+  --color-primary: #4565f0;
+  --el-color-primary: #4565f0;
+  --el-color-primary-light-3: #7d93f5;
+  --el-color-primary-light-5: #a2b2f8;
+  --el-color-primary-light-7: #c7d1fa;
+  --el-color-primary-light-8: #dae0fc;
+  --el-color-primary-light-9: #ecf0fe;
+  --el-color-primary-dark-2: #3751c0;
+  --el-border-radius-base: 6px;
+}
+
+/* ---------- 外壳 ---------- */
+html.ax-console .ac-shell {
+  --as-sidebar-w: 220px;
+  background: #f4f6fa;
+}
+
+/* 侧栏：白底、右边一条细线 */
+html.ax-console .ac-shell .as-sidebar {
+  gap: 0;
+  padding: 0;
+  border-right: 1px solid var(--ac-border);
+  background: #fff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html.ax-console .ac-shell .as-brand {
+  flex-shrink: 0;
+  gap: 10px;
+  height: 60px;
+  padding: 0 18px;
+}
+html.ax-console .ac-shell .as-brand-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(180deg, #6d88f7 0%, #4565f0 100%); }
+html.ax-console .ac-shell .as-brand-mark.has-logo { background: #fff; }
+html.ax-console .ac-shell .as-brand-mark svg { width: 18px; height: 18px; }
+html.ax-console .ac-shell .as-brand-text { gap: 2px; line-height: 1.25; }
+html.ax-console .ac-shell .as-brand-text strong { font-size: 15.5px; font-weight: 600; }
+html.ax-console .ac-shell .as-brand-text small { font-size: 11.5px; }
+
+html.ax-console .ac-shell .as-nav {
+  margin: 0;
+  padding: 4px 10px 20px;
+  scrollbar-color: rgba(0, 0, 0, 0.14) transparent;
+}
+html.ax-console .ac-shell .as-section { gap: 2px; }
+html.ax-console .ac-shell .as-section + .as-section { margin-top: 2px; }
+
+/* 分组标题：线条图标 + 名字 + 右边的箭头（打开时朝上） */
+html.ax-console .ac-shell .as-section-head {
+  gap: 10px;
+  justify-content: flex-start;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--ax-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+html.ax-console .ac-shell .as-section-head:hover { background: #f4f6fa; color: var(--ax-ink); }
+html.ax-console .ac-shell .as-section.has-active > .as-section-head { color: var(--ax-ink); font-weight: 600; }
+html.ax-console .ac-shell .as-section-head svg { opacity: 1; transform: none; }
+html.ax-console .ac-shell .as-group-icon { display: grid; flex-shrink: 0; place-items: center; width: 20px; height: 20px; color: #5c6370; }
+html.ax-console .ac-shell .as-section.has-active .as-group-icon { color: var(--ax-brand); }
+html.ax-console .ac-shell .as-group-icon svg { width: 19px; height: 19px; stroke-width: 1.8; }
+html.ax-console .ac-shell .as-group-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-align: left; white-space: nowrap; text-overflow: ellipsis; }
+html.ax-console .ac-shell .as-section-head .as-chevron { width: 14px; height: 14px; color: var(--ax-muted); stroke-width: 2; transform: rotate(0deg); transition: transform 0.22s ease; }
+html.ax-console .ac-shell .as-section-head:not(.is-closed) .as-chevron { transform: rotate(180deg); }
+
+/* 菜单项：单色线条图标，选中是浅蓝底 + 蓝字（参考后台的样子），组里的项往里缩一格 */
+html.ax-console .ac-shell .as-item {
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px 0 22px;
+  border-radius: 6px;
+  color: var(--ax-text);
+  font-size: 14px;
+}
+html.ax-console .ac-shell .as-section-body .as-item:not(.is-top) { padding-left: 32px; }
+html.ax-console .ac-shell .as-item.is-top { padding-left: 12px; font-weight: 500; }
+html.ax-console .ac-shell .as-item:hover { background: #f4f6fa; }
+html.ax-console .ac-shell .as-item:active { background: #eceff5; }
+html.ax-console .ac-shell .as-item.is-active { background: rgba(var(--ax-brand-rgb), 0.1); color: var(--ax-brand); font-weight: 500; }
+html.ax-console .ac-shell .as-icon,
+html.ax-console .ac-search-pop .as-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #6b7280;
+}
+html.ax-console .ac-shell .as-icon svg,
+html.ax-console .ac-search-pop .as-icon svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 1.8; }
+html.ax-console .ac-shell .as-item.is-active .as-icon { box-shadow: none; color: var(--ax-brand); }
+
+/* ---------- 内容区 + 顶栏 + 标签栏 ---------- */
+html.ax-console .ac-shell .as-main { padding: 0 24px 40px; }
+html.ax-console .ac-shell .as-topbar {
+  gap: 12px;
+  height: 56px;
+  margin: 0 -24px;
+  padding: 0 20px 0 24px;
+  border-bottom: 1px solid var(--ac-border);
+  background: #fff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html.ax-console .ac-shell .as-crumbs { gap: 0; font-size: 14px; }
+html.ax-console .ac-shell .as-crumbs > * + *::before {
+  content: '/';
+  width: auto;
+  height: auto;
+  margin: 0 10px;
+  border: 0;
+  color: #c0c4cc;
+  transform: none;
+}
+html.ax-console .ac-shell .as-crumb-group { color: var(--ax-muted); }
+html.ax-console .ac-shell .as-crumbs strong { color: var(--ax-ink); font-size: 14px; font-weight: 500; }
+
+/* 右上角功能搜索 */
+html.ax-console .ac-search { position: relative; flex: 0 1 220px; min-width: 150px; }
+html.ax-console .ac-search .as-search { margin: 0; }
+html.ax-console .ac-search .as-search input {
+  height: 34px;
+  padding-right: 58px;
+  border: 1px solid var(--ac-border);
+  border-radius: 6px;
+  background: #f7f8fa;
+  font-size: 13px;
+}
+html.ax-console .ac-search .as-search input:focus { border-color: var(--ax-brand); background: #fff; box-shadow: 0 0 0 3px var(--ax-brand-ring); }
+html.ax-console .ac-search kbd {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  padding: 1px 5px;
+  border: 1px solid var(--ac-input-border);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ax-muted);
+  font: 500 11px/1.4 ui-monospace, Consolas, monospace;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+html.ax-console .ac-search.is-open kbd { display: none; }
+html.ax-console .ac-search.is-open .as-search input { padding-right: 10px; }
+html.ax-console .ac-search-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 2px;
+  width: max(100%, 300px);
+  max-height: 60vh;
+  box-sizing: border-box;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid var(--ac-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(31, 35, 41, 0.12);
+}
+html.ax-console .ac-search-pop .as-item {
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--ax-text);
+  font-size: 14px;
+}
+html.ax-console .ac-search-pop .as-item:hover,
+html.ax-console .ac-search-pop .as-item:first-child { background: #f4f6fa; }
+html.ax-console .ac-search-pop .as-item.is-active { background: rgba(var(--ax-brand-rgb), 0.1); color: var(--ax-brand); }
+html.ax-console .ac-search-pop .as-item.is-active .as-meta { color: var(--ax-muted); }
+
+html.ax-console .ac-shell .ac-top-btn { width: 34px; height: 34px; border-radius: 6px; color: #5c6370; }
+html.ax-console .ac-shell .ac-top-btn:hover { background: #f4f6fa; color: var(--ax-ink); }
+html.ax-console .ac-shell .as-top-link {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--ac-input-border);
+  border-radius: 6px;
+  box-shadow: none;
+  color: var(--ax-text);
+}
+html.ax-console .ac-shell .as-top-link:hover { border-color: var(--ax-brand); color: var(--ax-brand); background: #fff; }
+
+/* 右上角账号 */
+html.ax-console .ac-me {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  margin-left: 2px;
+  padding-left: 14px;
+  border-left: 1px solid var(--ac-border);
+}
+html.ax-console .ac-me .as-avatar { width: 32px; height: 32px; background: linear-gradient(180deg, #a9b6f8 0%, #6d88f7 100%); }
+html.ax-console .ac-me .as-avatar svg { width: 21px; height: 21px; }
+html.ax-console .ac-me .as-me-text { max-width: 120px; }
+html.ax-console .ac-me .as-me-text strong { font-size: 13px; font-weight: 500; }
+html.ax-console .ac-me .as-me-text small { font-size: 11.5px; }
+html.ax-console .ac-me .as-logout { width: 30px; height: 30px; border-radius: 6px; }
+
+/* 已打开页面的标签 */
+html.ax-console .ac-tabs {
+  position: sticky;
+  top: 56px;
+  z-index: 19;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  margin: 0 -24px 16px;
+  padding: 0 16px 0 24px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--ac-border);
+  background: #fff;
+  scrollbar-width: none;
+  animation: none !important;
+}
+html.ax-console .ac-tabs::-webkit-scrollbar { display: none; }
+html.ax-console .ac-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background: #fff;
+  color: #5c6370;
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+html.ax-console .ac-tab:hover { color: var(--ax-brand); }
+html.ax-console .ac-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ax-brand-ring); }
+html.ax-console .ac-tab.is-active { border-color: rgba(var(--ax-brand-rgb), 0.4); background: rgba(var(--ax-brand-rgb), 0.07); color: var(--ax-brand); }
+html.ax-console .ac-tab > svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+html.ax-console .ac-tab-x {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+html.ax-console .ac-tab-x:hover { background: rgba(0, 0, 0, 0.1); }
+html.ax-console .ac-tab-x svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+
+/* ---------- 页面：紧凑、白卡片、细边框 ---------- */
+html.ax-console .ax-page { gap: 14px; }
+/* 页头：一张白色长条，标题 18px，说明一行灰字 */
+html.ax-console .ax-head {
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--ac-border);
+  border-radius: 8px;
+  background: #fff;
+}
+html.ax-console .ax-head h2 { font-size: 18px; font-weight: 600; letter-spacing: 0; }
+html.ax-console .ax-head p { margin-top: 4px; font-size: 13px; line-height: 1.6; }
+
+/* 页内分类：下划线标签（不再是灰色胶囊分段） */
+html.ax-console .ax-tabs {
+  gap: 4px;
+  width: auto;
+  padding: 0 6px;
+  border: 1px solid var(--ac-border);
+  border-radius: 8px;
+  background: #fff;
+}
+html.ax-console .ax-tab {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: inset 0 -2px 0 transparent;
+  color: var(--ax-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+html.ax-console .ax-tab:hover { color: var(--ax-brand); }
+html.ax-console .ax-tab.is-active { background: transparent; box-shadow: inset 0 -2px 0 var(--ax-brand); color: var(--ax-brand); font-weight: 600; }
+html.ax-console .ax-tab:focus-visible { box-shadow: inset 0 0 0 2px var(--ax-brand-ring); }
+html.ax-console .ax-tab-count { background: var(--ax-fill); }
+
+/* 统计：一排小格子（以前是两排大卡片，很占地方） */
+html.ax-console .ax-stats,
+html.ax-console .ax-stats.is-3,
+html.ax-console .ax-stats.is-5 { grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
+html.ax-console .ax-stats > * { grid-column: auto !important; }
+@media (max-width: 640px) {
+  html.ax-console .ax-stats,
+  html.ax-console .ax-stats.is-3,
+  html.ax-console .ax-stats.is-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+html.ax-console .ax-stat {
+  gap: 2px;
+  padding: 12px 16px;
+  border: 1px solid var(--ac-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+html.ax-console .ax-stat > span { font-size: 13px; }
+html.ax-console .ax-stat > strong { font-size: 22px; font-weight: 600; line-height: 1.25; }
+html.ax-console .ax-stat > small { overflow: hidden; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+html.ax-console button.ax-stat:hover { border-color: rgba(var(--ax-brand-rgb), 0.35); background: #fff; box-shadow: none; }
+
+/* 卡片 */
+html.ax-console .ax-card {
+  padding: 16px 18px;
+  border: 1px solid var(--ac-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+html.ax-console .ax-card.is-flush { padding: 0; }
+html.ax-console .ax-card-head h3 { font-size: 15px; font-weight: 600; }
+html.ax-console .ax-toolbar { gap: 10px; padding: 14px 16px; border-bottom-color: var(--ac-border); }
+
+/* 输入框、下拉：白底细边框（参考后台的筛选条样子） */
+html.ax-console .ax-input,
+html.ax-console .ax-select,
+html.ax-console .ax-textarea,
+html.ax-console .ax-search > input,
+html.ax-console .ax-field > input:not([type='checkbox']):not([type='radio']),
+html.ax-console .ax-field > select,
+html.ax-console .ax-field > textarea {
+  min-height: 34px;
+  border: 1px solid var(--ac-input-border);
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 13.5px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+html.ax-console .ax-input:hover,
+html.ax-console .ax-select:hover,
+html.ax-console .ax-textarea:hover,
+html.ax-console .ax-search > input:hover,
+html.ax-console .ax-field > input:not([type='checkbox']):not([type='radio']):hover,
+html.ax-console .ax-field > select:hover,
+html.ax-console .ax-field > textarea:hover { border-color: #c0c4cc; background-color: #fff; }
+html.ax-console .ax-input:focus,
+html.ax-console .ax-select:focus,
+html.ax-console .ax-textarea:focus,
+html.ax-console .ax-search > input:focus,
+html.ax-console .ax-field > input:focus,
+html.ax-console .ax-field > select:focus,
+html.ax-console .ax-field > textarea:focus { border-color: var(--ax-brand); box-shadow: 0 0 0 3px var(--ax-brand-ring); }
+html.ax-console .ax-input:disabled,
+html.ax-console .ax-select:disabled,
+html.ax-console .ax-field > input:disabled,
+html.ax-console .ax-field > select:disabled { border-color: var(--ac-border); background-color: #f5f7fa; }
+
+/* 按钮：小圆角矩形；主按钮实心蓝 */
+html.ax-console .ax-btn {
+  height: 32px;
+  padding: 0 15px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--ac-input-border);
+  color: var(--ax-text);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+html.ax-console .ax-btn:hover { background: #fff; box-shadow: inset 0 0 0 1px rgba(var(--ax-brand-rgb), 0.5); color: var(--ax-brand); }
+html.ax-console .ax-btn:active { background: #f5f7ff; transform: none; }
+html.ax-console .ax-btn:focus-visible { box-shadow: inset 0 0 0 1px var(--ax-brand), 0 0 0 3px var(--ax-brand-ring); }
+html.ax-console .ax-btn.is-primary { background: var(--ax-brand); box-shadow: none; color: #fff; }
+html.ax-console .ax-btn.is-primary:hover { background: #5b78f3; color: #fff; }
+html.ax-console .ax-btn.is-primary:active { background: var(--ax-brand-ink); }
+html.ax-console .ax-btn.is-soft { background: rgba(var(--ax-brand-rgb), 0.08); box-shadow: inset 0 0 0 1px rgba(var(--ax-brand-rgb), 0.3); color: var(--ax-brand-ink); }
+html.ax-console .ax-btn.is-soft:hover { background: rgba(var(--ax-brand-rgb), 0.13); }
+html.ax-console .ax-btn.is-ghost { background: transparent; box-shadow: none; color: var(--ax-brand); }
+html.ax-console .ax-btn.is-ghost:hover { background: rgba(var(--ax-brand-rgb), 0.07); }
+html.ax-console .ax-btn.is-danger { background: #fff; box-shadow: inset 0 0 0 1px rgba(215, 0, 21, 0.3); color: var(--ax-bad); }
+html.ax-console .ax-btn.is-danger:hover { background: #fff5f5; box-shadow: inset 0 0 0 1px rgba(215, 0, 21, 0.5); color: var(--ax-bad); }
+html.ax-console .ax-btn.is-danger.is-solid { background: #f04438; box-shadow: none; color: #fff; }
+html.ax-console .ax-btn.is-sm { height: 28px; padding: 0 11px; border-radius: 5px; font-size: 12.5px; }
+html.ax-console .ax-link { min-height: 0; color: var(--ax-brand); font-size: 13.5px; }
+html.ax-console .ax-link.is-danger { color: var(--ax-bad); }
+html.ax-console .ax-person:hover strong { color: var(--ax-brand); }
+
+/* 表格：浅灰表头、行高收紧 */
+html.ax-console .ax-table { font-size: 13.5px; }
+html.ax-console .ax-table th {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--ac-border);
+  background: #f7f8fa;
+  color: #5c6370;
+  font-size: 13px;
+  font-weight: 500;
+}
+html.ax-console .ax-table td { padding: 11px 16px; border-bottom-color: var(--ac-border); }
+html.ax-console .ax-table tbody tr:hover { background: #f7f9fc; }
+html.ax-console .ax-table input[type='checkbox'],
+html.ax-console .api-item-head > input[type='checkbox'] { accent-color: var(--ax-brand); }
+
+/* 开关、多选块、列表选中：跟主色走 */
+html.ax-console .ax-switch > input:checked + i { background: var(--ax-brand); }
+html.ax-console .ax-chip-check > input:checked + span { background: rgba(var(--ax-brand-rgb), 0.1); box-shadow: inset 0 0 0 1px rgba(var(--ax-brand-rgb), 0.35); color: var(--ax-brand-ink); }
+html.ax-console .ax-chip-check > input:checked + span::before { border-color: var(--ax-brand-ink); }
+html.ax-console .ax-list-item.is-active { background: var(--ax-brand); }
+html.ax-console .ax-avatar.is-blue { background: linear-gradient(180deg, #8ea2f8 0%, #4565f0 100%); }
+html.ax-console .ax-note { border-radius: 6px; }
+html.ax-console .ax-dialog.el-dialog,
+html.ax-console .el-dialog.ax-dialog { border-radius: 10px; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1280px) {
+  html.ax-console .ac-shell { --as-sidebar-w: 208px; }
+  html.ax-console .ac-shell .as-main { padding: 0 18px 36px; }
+  html.ax-console .ac-shell .as-topbar,
+  html.ax-console .ac-tabs { margin-left: -18px; margin-right: -18px; padding-left: 18px; }
+  html.ax-console .ac-me .as-me-text { display: none; }
+}
+@media (max-width: 1100px) {
+  html.ax-console .ac-search { flex-basis: 170px; }
+  html.ax-console .ac-shell .as-top-link > span { display: none; }
+  html.ax-console .ac-shell .as-top-link { width: 34px; padding: 0; justify-content: center; }
+}
+@media (max-width: 960px) {
+  html.ax-console .ac-shell .as-sidebar { width: min(260px, 82vw); background: #fff; }
+  html.ax-console .ac-shell .as-main { padding: 0 14px 32px; }
+  html.ax-console .ac-shell .as-topbar,
+  html.ax-console .ac-tabs { margin-left: -14px; margin-right: -14px; padding-left: 12px; padding-right: 12px; }
+}
+@media (max-width: 640px) {
+  html.ax-console .ac-shell .as-crumb-group { display: none; }
+  html.ax-console .ac-shell .as-crumbs strong::before { display: none; }
+  html.ax-console .ac-search { flex: 0 0 auto; min-width: 0; width: 34px; }
+  html.ax-console .ac-search:focus-within,
+  html.ax-console .ac-search.is-open { position: absolute; left: 52px; right: 12px; width: auto; z-index: 41; }
+  html.ax-console .ac-search kbd,
+  html.ax-console .ac-top-btn { display: none; }
+  html.ax-console .ac-me { padding-left: 8px; border-left: 0; }
+  html.ax-console .ac-me .as-avatar { display: none; }
+  html.ax-console .ax-head { align-items: flex-start; padding: 12px 14px; }
+}
+@media (pointer: coarse) {
+  html.ax-console .ac-shell .as-section-head { height: 46px; }
+  html.ax-console .ac-shell .as-item { min-height: 44px; }
+}
