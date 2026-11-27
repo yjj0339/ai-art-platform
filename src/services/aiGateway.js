@@ -39,6 +39,17 @@ function normalizeArtworkResponse(payload, request) {
 }
 
 export async function testAiConnection() {
+  // 网页演示版（打包时设 VITE_STATIC_DEMO=1）没有后端可查：给一个「演示」模型，绘画页才能点发送；
+  // 出图走 mockAiService 在本地画的示意图（VITE_AI_MODE=mock），不调用任何 AI、不花钱。服务器部署不设这个变量。
+  if (import.meta.env.VITE_STATIC_DEMO === '1') {
+    return {
+      ok: true,
+      mode: 'mock',
+      latency: 0,
+      message: '网页演示版：出的是本地示意图，不调用真实 AI',
+      data: { mode: 'mock', providers: [{ key: 'mock', label: '演示', configured: true, imageModels: ['demo'], modelLabels: { demo: '示意图' } }] },
+    }
+  }
   const startedAt = Date.now()
   try {
     const response = await apiClient.get('/ai/health')

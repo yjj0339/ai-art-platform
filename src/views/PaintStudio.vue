@@ -2539,7 +2539,7 @@ async function runArtworkSubmission(submission) {
   saveProjectToPortfolio()
   if (response.source === 'api') ElMessage.success('真实AI接口已返回作品')
   else if (response.source === 'mock-fallback') ElMessage.warning(response.error || '真实API失败，已用Mock结果回退')
-  else ElMessage.success('Mock AI作品已生成')
+  else ElMessage.success('示意图已生成（演示模式，未调用真实 AI）')
   speak(batch.length > 1 ? '已生成' + batch.length + '张候选作品' : '作品生成完成')
 }
 async function confirmAdditionalImageTask(required = hasActiveImageGenerationJobs.value) {

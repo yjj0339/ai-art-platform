@@ -27,15 +27,17 @@ function mockArtworkBackground({ prompt, style, difficulty, title, index }) {
     <rect width="1200" height="900" rx="44" fill="url(#bg)"/>
     <circle cx="980" cy="140" r="118" fill="#fff" opacity=".24"/><circle cx="210" cy="720" r="150" fill="#fff" opacity=".18"/>
     <rect x="118" y="155" width="964" height="590" rx="34" fill="#fff" opacity=".9"/>
-    <text x="170" y="250" fill="#ff7a00" font-family="Microsoft YaHei, Arial" font-size="34" font-weight="800">Mock AI 可验收出图</text>
+    <text x="170" y="250" fill="#ff7a00" font-family="Microsoft YaHei, Arial" font-size="34" font-weight="800">示意图 · 未调用真实 AI</text>
     <text x="170" y="320" fill="#111827" font-family="Microsoft YaHei, Arial" font-size="58" font-weight="900">${escapeXml(title)}</text>
     <text x="170" y="395" fill="#334155" font-family="Microsoft YaHei, Arial" font-size="30" font-weight="700">风格/难度：${escapeXml(style || '课堂创作')} / ${escapeXml(difficulty || 'student')}</text>
     <rect x="170" y="455" width="860" height="150" rx="20" fill="#fff7ed"/>
     <text x="205" y="515" fill="#111827" font-family="Microsoft YaHei, Arial" font-size="30" font-weight="800">提示词摘要</text>
     <text x="205" y="570" fill="#475569" font-family="Microsoft YaHei, Arial" font-size="26">${escapeXml(shortText(prompt, 66))}</text>
-    <text x="170" y="675" fill="#64748b" font-family="Microsoft YaHei, Arial" font-size="24">用于检查提示词、参数、报告链路是否正确传递。</text>
+    <text x="170" y="675" fill="#64748b" font-family="Microsoft YaHei, Arial" font-size="24">演示用：只用来走通流程，正式环境会换成真实 AI 出图。</text>
   </svg>`
-  return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}") center / cover no-repeat`
+  // 括号和单引号也要转义：页面会用 /url\(["']?([^"')]+)["']?\)/ 从这串里取图片地址，SVG 里的 url(#bg) 会把它截断
+  const encoded = encodeURIComponent(svg).replace(/[()']/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
+  return `url("data:image/svg+xml;charset=utf-8,${encoded}") center / cover no-repeat`
 }
 
 export async function optimizePrompt({ prompt, strength }) {

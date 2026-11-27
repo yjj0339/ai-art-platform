@@ -6652,8 +6652,8 @@ async function generateAdminCourseCover() {
     if (!cover) throw new Error('AI 未返回可用的封面图')
     adminCourseForm.cover = cover
     adminCourseForm.coverAssetId = ''
-    adminCourseForm.coverFileName = generated.source === 'api' ? 'AI 生成课程封面' : 'Mock AI 课程封面'
-    ElMessage.success(generated.source === 'api' ? 'AI 课程封面图已生成' : '已生成 Mock AI 课程封面图')
+    adminCourseForm.coverFileName = generated.source === 'api' ? 'AI 生成课程封面' : '示意封面（演示模式）'
+    ElMessage.success(generated.source === 'api' ? 'AI 课程封面图已生成' : '已生成示意封面图（演示模式，未调用真实 AI）')
   } catch (error) {
     ElMessage.warning(error.message || 'AI 课程封面图生成失败')
   } finally {
